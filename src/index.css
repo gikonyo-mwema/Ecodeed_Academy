@@ -1,0 +1,134 @@
+@import "flowbite";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+    height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Emoji font support */
+.font-emoji {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+/* Enhanced emoji support with better rendering */
+.emoji-icon {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols", sans-serif;
+    font-feature-settings: "liga", "kern";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.ql-editor{
+    font-size: 1.05rem;
+}
+
+.post-content p{
+    margin-bottom: 0.5rem;
+}
+ 
+.post-content h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    font-family: sans-serif;
+    margin: 1.5rem 0;
+}
+
+.post-content h2{
+    font-size: 1.4rem;
+    font-family: sans-serif;
+    margin: 1.5rem 0;
+}
+
+.post-content a{
+    color: rgb(73, 149, 199);
+    text-decoration: none;
+}
+
+.dark .post-content a{
+    color: rgb(236, 65, 65);
+}
+
+.post-content a:hover{
+    text-decoration: underline;
+}
+
+/* Dark mode readability fixes for post content
+   Quill and pasted content may inject inline black text or white backgrounds.
+   Force appropriate colors in dark mode for legibility. */
+.dark .post-content {
+    color: #e5e7eb !important; /* text-gray-200 */
+}
+
+/* Normalize common elements to inherit the corrected color */
+.dark .post-content p,
+.dark .post-content span,
+.dark .post-content li,
+.dark .post-content h1,
+.dark .post-content h2,
+.dark .post-content h3,
+.dark .post-content h4,
+.dark .post-content h5,
+.dark .post-content h6,
+.dark .post-content blockquote,
+.dark .post-content strong,
+.dark .post-content em {
+    color: inherit !important;
+}
+
+/* Override inline black text colors that come from editors */
+.dark .post-content [style*="color: rgb(0, 0, 0)"] ,
+.dark .post-content [style*="color:#000"],
+.dark .post-content [style*="color: #000"],
+.dark .post-content [style*="color:black"] {
+    color: #e5e7eb !important; /* text-gray-200 */
+}
+
+/* Remove forced white backgrounds on dark */
+.dark .post-content [style*="background-color: rgb(255, 255, 255)"],
+.dark .post-content [style*="background: rgb(255, 255, 255)"],
+.dark .post-content [style*="background-color:#fff"],
+.dark .post-content [style*="background-color: #fff"],
+.dark .post-content [style*="background:white"],
+.dark .post-content [style*="background: #ffffff"] {
+    background-color: transparent !important;
+}
+
+/* Ensure code blocks are readable in dark mode */
+.dark .post-content pre,
+.dark .post-content code {
+    color: #e5e7eb !important; /* text-gray-200 */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+img {
+    animation: fadeIn 300ms ease-out;
+}
+
+/* Quill Editor Image Styles */
+.ql-editor img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px auto;
+    border-radius: 4px;
+}
+
+.ql-editor .ql-image-uploaded {
+    border: 2px solid #10b981;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+}
+
+/* Pattern dots for CallToAction component */
+.pattern-dots {
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 16px 16px;
+}
