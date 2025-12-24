@@ -1,9 +1,27 @@
 """
-Django settings for config project.
+Django Settings for Ecodeed Academy Project.
+
+This module contains all the Django configuration settings for the Ecodeed
+Academy backend application. It includes settings for:
+    - Security and secret keys
+    - Database configuration (MySQL)
+    - Installed applications
+    - Middleware configuration
+    - Authentication (JWT, Social Auth)
+    - REST Framework settings
+    - Static and media files
+    - Email configuration
+    - CORS settings
+
+Environment Variables:
+    Required environment variables should be set in a .env file or
+    through system environment variables. See .env.example for reference.
+
+For more information on Django settings, see:
+    https://docs.djangoproject.com/en/4.2/topics/settings/
 """
 
 import os
-
 from pathlib import Path
 import environ
 from datetime import timedelta
@@ -150,52 +168,51 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
 
 # REST Framework Settings
 REST_FRAMEWORK = {
-        'DEFAULT_AUTHENTICATION_CLASSES': (
-            'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-            'rest_framework.authentication.SessionAuthentication',
-        ),
-        'DEFAULT_PERMISSION_CLASSES': (
-            'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-        ),
-        'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-        'PAGE_SIZE': 10,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
 
 # JWT Settings
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = 'access'
-JWT_AUTH_REFRESH_COOKIEs = 'refresh'
+JWT_AUTH_REFRESH_COOKIE = 'refresh'
 SIMPLE_JWT = {
-        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-        'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-        'ROTATE_REFRESH_TOKENS': True,
-        'BLACKLIST_AFTER_ROTATION': True,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 # Allauth Settings
 SITE_ID = 1
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENICATION_METHOD = 'email'
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_UNIQUE_EMAIL = True
 
-# Email Settings  (Production)
+# Email Settings (Production)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = env.int('EMAIL_PORT', default=587)
-EMAIL_USE_TLs = env.bool('EMAIL_USE_TLS', default=True)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default-'')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 
 # Social Auth Settings
 SOCIALACCOUNT_PROVIDERS = {
-        'google': {
-            'APP': {
-                'client_id': env('GOOGLE_CLIENT_ID', default=''),
-                'secret': env('GOOGLE_CLIENT_SECRET', default=''),
-                'key': ''
-
+    'google': {
+        'APP': {
+            'client_id': env('GOOGLE_CLIENT_ID', default=''),
+            'secret': env('GOOGLE_CLIENT_SECRET', default=''),
+            'key': ''
         },
         'SCOPE': [
             'profile',
@@ -211,7 +228,6 @@ SOCIALACCOUNT_PROVIDERS = {
             'secret': env('FACEBOOK_CLIENT_SECRET', default=''),
             'key': ''
         }
-
     },
     'twitter': {
         'APP': {
