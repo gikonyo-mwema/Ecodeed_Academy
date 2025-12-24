@@ -14,7 +14,7 @@ django-cors-headers
 
 # REST Framework
 djangorestframework
-djangorestframwork-simplejwt
+djangorestframework-simplejwt
 dj-rest-auth
 drf-yasg
 
