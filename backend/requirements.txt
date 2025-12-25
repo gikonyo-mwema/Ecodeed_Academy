@@ -17,6 +17,7 @@ djangorestframework
 djangorestframework-simplejwt
 dj-rest-auth
 drf-yasg
+django-filter
 
 # Security
 python-jose[cryptography]
@@ -25,7 +26,6 @@ cryptography
 
 # Utilities
 Pillow
-python-multiport
 celery
 redis
 django-cleanup
