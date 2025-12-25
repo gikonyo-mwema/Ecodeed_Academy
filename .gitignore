@@ -9,3 +9,5 @@ __pycache__/
 *.pyc
 
 mysql_data/
+
+staticfiles/
