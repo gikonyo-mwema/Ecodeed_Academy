@@ -56,7 +56,9 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt.token_blacklist',  # JWT Token blacklist for logout
     'corsheaders',
+    'drf_yasg',  # Swagger API documentation
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -71,9 +73,9 @@ INSTALLED_APPS = [
 
     # Apps
     'users.apps.UsersConfig',
-    'courses.apps.CoursesConfig',
-    'blog.apps.BlogConfig',
-    'services.apps.ServicesConfig',
+    # 'courses.apps.CoursesConfig',  # TODO: Create courses app
+    # 'blog.apps.BlogConfig',  # TODO: Create blog app
+    # 'services.apps.ServicesConfig',  # TODO: Create services app
 ]
 
 MIDDLEWARE = [
@@ -197,6 +199,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Tell allauth we don't use username
 
 # Email Settings (Production)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
