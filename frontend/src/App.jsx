@@ -57,7 +57,10 @@ import UserCourses from './components/UserCourses';
 // Admin Components
 import { CreateCourse } from './components/Admin/Courses/CreateCourse';
 import { EditCourse } from './components/Admin/Courses/EditCourse';
-import DashServices from './components/Admin/Services/DashServices'; 
+import DashServices from './components/Admin/Services/DashServices';
+
+// OAuth Callback Components
+import { TwitterOAuthCallback } from './components/SocialAuth/TwitterOAuth'; 
 
 /**
  * App Component
@@ -91,6 +94,9 @@ export default function App() {
           <Route path='/post/:postSlug' element={<PostPage />} /> {/* Dynamic blog post pages */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          
+          {/* OAuth Callback Routes */}
+          <Route path="/auth/twitter/callback" element={<TwitterOAuthCallback />} />
 
           {/* ===== AUTHENTICATED USER ROUTES ===== */}
           {/* These routes require user authentication */}

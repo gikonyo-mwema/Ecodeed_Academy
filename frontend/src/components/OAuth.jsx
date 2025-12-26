@@ -7,13 +7,15 @@ import { googleSignIn } from '../redux/user/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
+import { FacebookOAuth, TwitterOAuth } from './SocialAuth';
 
 /**
- * Google OAuth Button
- *
- * Handles Google sign-in via Firebase (popup in dev, redirect in prod).
- * On success, exchanges Google user info with the backend
- * at /api/auth/google to create a session cookie, then navigates home.
+ * OAuth Component
+ * 
+ * Renders all available social authentication options:
+ * - Google (via Firebase)
+ * - Facebook (via Facebook SDK)
+ * - Twitter/X (via OAuth 2.0)
  */
 export default function OAuth() {
     const dispatch = useDispatch();
@@ -119,9 +121,10 @@ export default function OAuth() {
         }
     };
 
-    return (
+    // Google OAuth Button
+    const GoogleButton = () => (
         <Button
-            color="none" // disables default Flowbite blue variant
+            color="none"
             type="button"
             onClick={handleGoogleClick}
             aria-label="Continue with Google"
@@ -139,5 +142,17 @@ export default function OAuth() {
             {isLoading ? 'Signing in...' : (!isFirebaseAvailable() || !auth ? 'Google Sign-in Unavailable' : 'Continue with Google')}
         </Button>
     );
-}
 
+    return (
+        <div className="flex flex-col gap-3">
+            {/* Google OAuth */}
+            <GoogleButton />
+            
+            {/* Facebook OAuth */}
+            <FacebookOAuth />
+            
+            {/* Twitter/X OAuth */}
+            <TwitterOAuth />
+        </div>
+    );
+}

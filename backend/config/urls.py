@@ -10,6 +10,7 @@ URL Structure:
     - /swagger/: Swagger API documentation UI
     - /redoc/: ReDoc API documentation UI
     - /api/auth/: User authentication and registration endpoints
+    - /api/auth/token/: JWT token management
     - /api/auth/social/: Social authentication endpoints
 
 Note:
@@ -22,6 +23,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import permissions
+from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
@@ -52,6 +54,10 @@ urlpatterns = [
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('api/auth/social/', include('allauth.socialaccount.urls')),
+    
+    # JWT Token management
+    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
+    path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token-verify'),
 ]
 
 # Serve media and static files in development mode

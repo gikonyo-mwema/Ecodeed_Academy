@@ -2,7 +2,8 @@
 User Authentication URL Configuration.
 
 This module defines URL patterns for user-related endpoints including
-registration, authentication, profile management, and admin operations.
+registration, authentication, profile management, admin operations,
+and social authentication (Google, Facebook, Twitter/X).
 
 URL Patterns:
     - register/: User registration endpoint
@@ -12,11 +13,23 @@ URL Patterns:
     - profile/update/: User profile update
     - users/: Admin-only user list
     - users/<int:pk>/: Admin-only user detail/update/delete
+    - social/google/: Google OAuth authentication
+    - social/facebook/: Facebook OAuth authentication
+    - social/twitter/: Twitter/X OAuth authentication
+    - social/twitter/login/: Twitter OAuth login initiation
+    - social/twitter/callback/: Twitter OAuth callback handler
 """
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+from .social_auth import (
+    GoogleSocialAuthView,
+    FacebookSocialAuthView,
+    TwitterLoginView,
+    TwitterCallbackView,
+    TwitterSocialAuthView,
+)
 
 
 router = DefaultRouter()
@@ -32,5 +45,12 @@ urlpatterns = [
         # Admin only endpoints
         path('users/', views.UserListView.as_view(), name='user-list'),
         path('users/<int:pk>/', views.UserDetailView.as_view(), name='user_detail'),
-        ]
+
+        # Social authentication endpoints
+        path('social/google/', GoogleSocialAuthView.as_view(), name='social-google'),
+        path('social/facebook/', FacebookSocialAuthView.as_view(), name='social-facebook'),
+        path('social/twitter/', TwitterSocialAuthView.as_view(), name='social-twitter'),
+        path('social/twitter/login/', TwitterLoginView.as_view(), name='social-twitter-login'),
+        path('social/twitter/callback/', TwitterCallbackView.as_view(), name='social-twitter-callback'),
+]
 
