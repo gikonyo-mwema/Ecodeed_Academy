@@ -1,5 +1,22 @@
+# =============================================================================
+# Backend Django CI Pipeline
+# =============================================================================
+# This workflow runs linting, code quality checks, and tests for the Django
+# backend application. It includes:
+#   - Ruff linting and formatting checks
+#   - Flake8 linting with strict error handling
+#   - Django tests with MySQL database
+#   - Code coverage reports uploaded as artifacts
+# =============================================================================
+
 name: Backend Django CI
 
+# -----------------------------------------------------------------------------
+# Trigger Configuration
+# -----------------------------------------------------------------------------
+# - Runs on push to 'develop' branch and any 'features/**' branches
+# - Runs on pull requests targeting 'develop' or 'master' branches
+# -----------------------------------------------------------------------------
 on:
   push:
     branches:
@@ -10,43 +27,126 @@ on:
       - develop
       - master
 
+# -----------------------------------------------------------------------------
+# Global Environment Variables
+# -----------------------------------------------------------------------------
+# Shared variables accessible across all jobs in this workflow
+# -----------------------------------------------------------------------------
 env:
   PYTHON_VERSION: '3.10'
 
 jobs:
+  # ===========================================================================
+  # LINT JOB
+  # ===========================================================================
+  # Runs code quality checks using Ruff (fast Python linter and formatter)
+  # This job must pass before tests can run
+  # ===========================================================================
   lint:
-    name: Lint Code
+    name: Lint Code (Ruff)
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v5
 
+      # Set up the Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      # Install Ruff - a fast Python linter written in Rust
       - name: Install linting tools
         run: |
           python -m pip install --upgrade pip
           pip install ruff
 
+      # Check for code style issues and potential bugs
       - name: Run Ruff linter
         working-directory: backend
         run: |
           ruff check .
 
+      # Verify code formatting matches Ruff's style guidelines
       - name: Run Ruff formatter check
         working-directory: backend
         run: |
           ruff format --check .
 
-  test:
-    name: Run Tests
+  # ===========================================================================
+  # FLAKE8 LINT JOB
+  # ===========================================================================
+  # Runs additional code quality checks using Flake8
+  # Fails the build if any linting errors are detected
+  # ===========================================================================
+  flake8:
+    name: Lint Code (Flake8)
     runs-on: ubuntu-latest
-    needs: lint
 
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # Set up the Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # Install Flake8 and useful plugins for comprehensive linting
+      - name: Install Flake8 and plugins
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 flake8-docstrings flake8-bugbear flake8-comprehensions
+
+      # -----------------------------------------------------------------------
+      # Run Flake8 Linter
+      # -----------------------------------------------------------------------
+      # Configuration:
+      #   --count: Show total error count at the end
+      #   --select=E9,F63,F7,F82: Critical errors (syntax, undefined names, etc.)
+      #   --show-source: Show the source code for each error
+      #   --statistics: Show statistics about error types
+      # This step fails the build if ANY critical errors are found
+      # -----------------------------------------------------------------------
+      - name: Run Flake8 (critical errors - fail build)
+        working-directory: backend
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      # -----------------------------------------------------------------------
+      # Run Flake8 with full checks (warnings)
+      # -----------------------------------------------------------------------
+      # Shows all style issues but treats them as warnings
+      # Max line length set to 127 (Django standard)
+      # Max complexity set to 10 (cyclomatic complexity threshold)
+      # -----------------------------------------------------------------------
+      - name: Run Flake8 (full check - warnings)
+        working-directory: backend
+        run: |
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  # ===========================================================================
+  # TEST JOB
+  # ===========================================================================
+  # Runs Django test suite against a MySQL database with code coverage
+  # Depends on both lint jobs passing first
+  # Generates and uploads coverage reports as build artifacts
+  # ===========================================================================
+  test:
+    name: Run Tests with Coverage
+    runs-on: ubuntu-latest
+    needs: [lint, flake8]  # Only run tests if all linting passes
+
+    # -------------------------------------------------------------------------
+    # Service Containers
+    # -------------------------------------------------------------------------
+    # Spin up a MySQL 8.0 database for integration tests
+    # Health checks ensure MySQL is ready before tests begin
+    # -------------------------------------------------------------------------
     services:
       mysql:
         image: mysql:8.0
@@ -64,14 +164,18 @@ jobs:
           --health-retries=5
 
     steps:
+      # Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v5
 
+      # Set up the Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      # Cache pip dependencies to speed up subsequent workflow runs
+      # Cache key is based on the requirements.txt hash
       - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
@@ -80,24 +184,83 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      # Install all Python dependencies from requirements.txt plus coverage tools
       - name: Install dependencies
         working-directory: backend
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install coverage pytest pytest-django pytest-cov
 
-      - name: Run Django tests
+      # -----------------------------------------------------------------------
+      # Run Django Tests with Coverage
+      # -----------------------------------------------------------------------
+      # Runs the test suite with coverage measurement enabled
+      # Generates both terminal output and XML/HTML reports
+      # -----------------------------------------------------------------------
+      - name: Run Django tests with coverage
         working-directory: backend
         env:
           DJANGO_SETTINGS_MODULE: config.settings
           SECRET_KEY: 'test-secret-key-for-ci-only'
           DEBUG: 'False'
           ALLOWED_HOSTS: 'localhost,127.0.0.1'
+          # MySQL connection settings matching the service container above
           MYSQL_DATABASE: test_db
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_password
           MYSQL_HOST: 127.0.0.1
           MYSQL_PORT: '3306'
         run: |
-          python manage.py test
+          coverage run --source='.' manage.py test
+          coverage report -m
+          coverage xml -o coverage.xml
+          coverage html -d coverage_html
+
+      # -----------------------------------------------------------------------
+      # Generate Coverage Summary
+      # -----------------------------------------------------------------------
+      # Creates a coverage summary in the GitHub Actions job summary
+      # -----------------------------------------------------------------------
+      - name: Generate coverage summary
+        working-directory: backend
+        run: |
+          echo "## 📊 Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          coverage report -m >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      # -----------------------------------------------------------------------
+      # Upload Coverage Reports as Artifacts
+      # -----------------------------------------------------------------------
+      # Uploads both XML and HTML coverage reports for download and analysis
+      # Artifacts are retained for 30 days by default
+      # -----------------------------------------------------------------------
+      - name: Upload coverage XML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-report
+          path: backend/coverage.xml
+          retention-days: 30
+
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html-report
+          path: backend/coverage_html/
+          retention-days: 30
+
+      # -----------------------------------------------------------------------
+      # Coverage Badge (Optional - for README display)
+      # -----------------------------------------------------------------------
+      # Outputs coverage percentage for potential badge generation
+      # -----------------------------------------------------------------------
+      - name: Output coverage percentage
+        working-directory: backend
+        id: coverage
+        run: |
+          COVERAGE=$(coverage report --format=total)
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Coverage: $COVERAGE%"
 
