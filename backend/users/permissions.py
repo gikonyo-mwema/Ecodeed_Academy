@@ -18,19 +18,19 @@ class IsAdminOrReadOnly(permissions.BasePermission):
     """
     Custom permission to allow read-only access to any request,
     but only allow write access to admin users.
-    
+
     Methods:
         has_permission: Check if the request should be permitted.
     """
-    
+
     def has_permission(self, request, view):
         """
         Check if the request has permission.
-        
+
         Args:
             request: The incoming HTTP request.
             view: The view being accessed.
-        
+
         Returns:
             bool: True if request is read-only or user is admin.
         """
@@ -38,25 +38,26 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             return True
         return request.user and request.user.is_admin
 
+
 class IsOwnerOrAdmin(permissions.BasePermission):
     """
     Custom permission to allow access only to object owners or admin users.
-    
+
     Used to protect user-specific resources like profiles.
-    
+
     Methods:
         has_object_permission: Check if user owns the object or is admin.
     """
-    
+
     def has_object_permission(self, request, view, obj):
         """
         Check if the user has permission for the specific object.
-        
+
         Args:
             request: The incoming HTTP request.
             view: The view being accessed.
             obj: The object being accessed.
-        
+
         Returns:
             bool: True if user is admin or owns the object.
         """
@@ -68,21 +69,21 @@ class IsOwnerOrAdmin(permissions.BasePermission):
 class IsMentorOrAdmin(permissions.BasePermission):
     """
     Custom permission to allow access only to mentors or admin users.
-    
+
     Used to protect mentor-specific functionality like course creation.
-    
+
     Methods:
         has_permission: Check if user is a mentor or admin.
     """
-    
+
     def has_permission(self, request, view):
         """
         Check if the request has permission.
-        
+
         Args:
             request: The incoming HTTP request.
             view: The view being accessed.
-        
+
         Returns:
             bool: True if user is mentor or admin.
         """
@@ -92,25 +93,25 @@ class IsMentorOrAdmin(permissions.BasePermission):
 class CanComment(permissions.BasePermission):
     """
     Custom permission to control commenting access.
-    
+
     Allows all users to read comments, but only non-reader users
     can create new comments.
-    
+
     Methods:
         has_permission: Check if user can comment based on user type.
     """
-    
+
     def has_permission(self, request, view):
         """
         Check if the request has permission to comment.
-        
+
         Args:
             request: The incoming HTTP request.
             view: The view being accessed.
-        
+
         Returns:
             bool: True if reading or user is not a reader type.
         """
-        if request.method == 'POST':
+        if request.method == "POST":
             return request.user and not request.user.is_reader
         return True

@@ -24,17 +24,17 @@ User = get_user_model()
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     """
     Create an authentication token for newly registered users.
-    
+
     This signal is triggered after a User instance is saved to the database.
     When a new user is created, it automatically generates an auth token
     that can be used for API authentication.
-    
+
     Args:
         sender (Model): The model class that sent the signal (User).
         instance (User, optional): The actual user instance being saved.
         created (bool): True if a new record was created, False if updated.
         **kwargs: Additional keyword arguments passed by the signal.
-    
+
     Returns:
         None
     """

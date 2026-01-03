@@ -12,8 +12,10 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from .serializers import (
-        UserSerializer, UserRegistrationSerializer,
-        UserLoginSerializer, UserProfileUpdateSerializer
+    UserSerializer,
+    UserRegistrationSerializer,
+    UserLoginSerializer,
+    UserProfileUpdateSerializer,
 )
 
 User = get_user_model()
@@ -51,11 +53,14 @@ class UserRegistrationView(generics.CreateAPIView):
         # Generate tokens
         refresh = RefreshToken.for_user(user)
 
-        return Response({
-            'user': UserSerializer(user).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "user": UserSerializer(user).data,
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class UserLoginView(APIView):
@@ -83,16 +88,18 @@ class UserLoginView(APIView):
         """Authenticate user and return JWT tokens."""
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
+        user = serializer.validated_data["user"]
 
         # Generate tokens
         refresh = RefreshToken.for_user(user)
 
-        return Response({
-            'user': UserSerializer(user).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        })
+        return Response(
+            {
+                "user": UserSerializer(user).data,
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+        )
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -229,4 +236,3 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-

@@ -31,7 +31,7 @@ from drf_yasg import openapi
 schema_view = get_schema_view(
     openapi.Info(
         title="Ecodeed API",
-        default_version='v1',
+        default_version="v1",
         description="API for Ecodeed Platform",
         terms_of_service="https://www.ecodeedconsulting.com/terms/",
         contact=openapi.Contact(email="info@ecodeed.com"),
@@ -43,21 +43,22 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     # Admin interface
-    path('admin/', admin.site.urls),
-
+    path("admin/", admin.site.urls),
     # API Documentation
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-
+    path(
+        "swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
+    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     # Authentication endpoints
-    path('api/auth/', include('users.urls')),
-    path('api/auth/', include('dj_rest_auth.urls')),
-    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('api/auth/social/', include('allauth.socialaccount.urls')),
-    
+    path("api/auth/", include("users.urls")),
+    path("api/auth/", include("dj_rest_auth.urls")),
+    path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
+    path("api/auth/social/", include("allauth.socialaccount.urls")),
     # JWT Token management
-    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
-    path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token-verify'),
+    path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path("api/auth/token/verify/", TokenVerifyView.as_view(), name="token-verify"),
 ]
 
 # Serve media and static files in development mode

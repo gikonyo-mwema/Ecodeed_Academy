@@ -5,41 +5,176 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
+        ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CustomUser',
+            name="CustomUser",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('email', models.EmailField(help_text='Required. Enter a valid email address.', max_length=254, unique=True)),
-                ('first_name', models.CharField(help_text="User's first name (max 30 characters).", max_length=30)),
-                ('last_name', models.CharField(help_text="User's last name (max 30 characters).", max_length=30)),
-                ('user_type', models.CharField(choices=[('STUDENT', 'Student'), ('MENTOR', 'Mentor'), ('ADMIN', 'Admin'), ('READER', 'Reader')], default='READER', help_text='The role of the user in the system.', max_length=10)),
-                ('profile_picture', models.ImageField(blank=True, help_text='Optional profile picture. Uploaded to profile_pics/ directory.', null=True, upload_to='profile_pics/')),
-                ('bio', models.TextField(blank=True, help_text='Optional biography or description (max 500 characters).', max_length=500)),
-                ('phone_number', models.CharField(blank=True, help_text='Optional contact phone number.', max_length=15)),
-                ('google_id', models.CharField(blank=True, help_text='Google OAuth user ID for social authentication.', max_length=100, null=True)),
-                ('facebook_id', models.CharField(blank=True, help_text='Facebook OAuth user ID for social authentication.', max_length=100, null=True)),
-                ('twitter_id', models.CharField(blank=True, help_text='Twitter OAuth user ID for social authentication.', max_length=100, null=True)),
-                ('is_active', models.BooleanField(default=True, help_text='Whether this user account is active. Deactivate instead of deleting.')),
-                ('is_staff', models.BooleanField(default=False, help_text='Whether the user can access the Django admin interface.')),
-                ('is_superuser', models.BooleanField(default=False, help_text='Whether the user has all permissions without explicit assignment.')),
-                ('date_joined', models.DateTimeField(default=django.utils.timezone.now, help_text='The date and time when the user account was created.')),
-                ('last_login', models.DateTimeField(blank=True, help_text="The date and time of the user's last login.", null=True)),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("password", models.CharField(max_length=128, verbose_name="password")),
+                (
+                    "email",
+                    models.EmailField(
+                        help_text="Required. Enter a valid email address.",
+                        max_length=254,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "first_name",
+                    models.CharField(
+                        help_text="User's first name (max 30 characters).",
+                        max_length=30,
+                    ),
+                ),
+                (
+                    "last_name",
+                    models.CharField(
+                        help_text="User's last name (max 30 characters).", max_length=30
+                    ),
+                ),
+                (
+                    "user_type",
+                    models.CharField(
+                        choices=[
+                            ("STUDENT", "Student"),
+                            ("MENTOR", "Mentor"),
+                            ("ADMIN", "Admin"),
+                            ("READER", "Reader"),
+                        ],
+                        default="READER",
+                        help_text="The role of the user in the system.",
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "profile_picture",
+                    models.ImageField(
+                        blank=True,
+                        help_text="Optional profile picture. Uploaded to profile_pics/ directory.",
+                        null=True,
+                        upload_to="profile_pics/",
+                    ),
+                ),
+                (
+                    "bio",
+                    models.TextField(
+                        blank=True,
+                        help_text="Optional biography or description (max 500 characters).",
+                        max_length=500,
+                    ),
+                ),
+                (
+                    "phone_number",
+                    models.CharField(
+                        blank=True,
+                        help_text="Optional contact phone number.",
+                        max_length=15,
+                    ),
+                ),
+                (
+                    "google_id",
+                    models.CharField(
+                        blank=True,
+                        help_text="Google OAuth user ID for social authentication.",
+                        max_length=100,
+                        null=True,
+                    ),
+                ),
+                (
+                    "facebook_id",
+                    models.CharField(
+                        blank=True,
+                        help_text="Facebook OAuth user ID for social authentication.",
+                        max_length=100,
+                        null=True,
+                    ),
+                ),
+                (
+                    "twitter_id",
+                    models.CharField(
+                        blank=True,
+                        help_text="Twitter OAuth user ID for social authentication.",
+                        max_length=100,
+                        null=True,
+                    ),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Whether this user account is active. Deactivate instead of deleting.",
+                    ),
+                ),
+                (
+                    "is_staff",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Whether the user can access the Django admin interface.",
+                    ),
+                ),
+                (
+                    "is_superuser",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Whether the user has all permissions without explicit assignment.",
+                    ),
+                ),
+                (
+                    "date_joined",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        help_text="The date and time when the user account was created.",
+                    ),
+                ),
+                (
+                    "last_login",
+                    models.DateTimeField(
+                        blank=True,
+                        help_text="The date and time of the user's last login.",
+                        null=True,
+                    ),
+                ),
+                (
+                    "groups",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="The groups this user belongs to. A user will get all permissions granted to each of their groups.",
+                        related_name="user_set",
+                        related_query_name="user",
+                        to="auth.group",
+                        verbose_name="groups",
+                    ),
+                ),
+                (
+                    "user_permissions",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="Specific permissions for this user.",
+                        related_name="user_set",
+                        related_query_name="user",
+                        to="auth.permission",
+                        verbose_name="user permissions",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'User',
-                'verbose_name_plural': 'Users',
-                'ordering': ['-date_joined'],
+                "verbose_name": "User",
+                "verbose_name_plural": "Users",
+                "ordering": ["-date_joined"],
             },
         ),
     ]

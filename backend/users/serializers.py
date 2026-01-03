@@ -8,7 +8,6 @@ These serializers handle data validation, transformation, and user creation.
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -34,9 +33,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'user_type',
-                'profile_picture', 'bio', 'phone_number', 'date_joined']
-        read_only_fields = ['id', 'date_joined']
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "user_type",
+            "profile_picture",
+            "bio",
+            "phone_number",
+            "date_joined",
+        ]
+        read_only_fields = ["id", "date_joined"]
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -63,8 +71,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'user_type',
-                'password', 'confirm_password']
+        fields = [
+            "email",
+            "first_name",
+            "last_name",
+            "user_type",
+            "password",
+            "confirm_password",
+        ]
 
     def validate(self, data):
         """
@@ -79,7 +93,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         Raises:
             ValidationError: If passwords don't match.
         """
-        if data['password'] != data.pop('confirm_password'):
+        if data["password"] != data.pop("confirm_password"):
             raise serializers.ValidationError({"password": "Passwords don't match"})
         return data
 
@@ -94,11 +108,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             User: The newly created user instance.
         """
         user = User.objects.create_user(
-            email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            user_type=validated_data.get('user_type', User.UserType.READER),
-            password=validated_data['password']
+            email=validated_data["email"],
+            first_name=validated_data["first_name"],
+            last_name=validated_data["last_name"],
+            user_type=validated_data.get("user_type", User.UserType.READER),
+            password=validated_data["password"],
         )
         return user
 
@@ -136,15 +150,15 @@ class UserLoginSerializer(serializers.Serializer):
         Raises:
             ValidationError: If email/password missing, invalid, or user disabled.
         """
-        email = data.get('email')
-        password = data.get('password')
+        email = data.get("email")
+        password = data.get("password")
 
         if email and password:
             user = User.objects.filter(email=email).first()
             if user and user.check_password(password):
                 if not user.is_active:
                     raise serializers.ValidationError("User account is disabled.")
-                data['user'] = user
+                data["user"] = user
                 return data
             raise serializers.ValidationError("Invalid email or password.")
         raise serializers.ValidationError("Must include email and password.")
@@ -167,4 +181,4 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'profile_picture', 'bio', 'phone_number']
+        fields = ["first_name", "last_name", "profile_picture", "bio", "phone_number"]
