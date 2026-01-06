@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => ({
     }
   },
   server: {
-    port: 5174,
+    port: 5173,
     host: true,
     hmr: {
       port: 5174,
@@ -36,7 +36,8 @@ export default defineConfig(({ mode }) => ({
     ...(mode === 'development' && {
       proxy: {
         '/api': {
-          target: process.env.VITE_API_URL || 'http://localhost:5000',
+          // Use Docker service name for container-to-container communication
+          target: process.env.VITE_PROXY_TARGET || 'http://backend:8000',
           changeOrigin: true,
           secure: false
         }

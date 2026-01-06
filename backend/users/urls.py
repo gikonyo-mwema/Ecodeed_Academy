@@ -43,6 +43,17 @@ urlpatterns = [
     path(
         "profile/update/", views.UserProfileUpdateView.as_view(), name="profile-update"
     ),
+    # Data deletion endpoints (required for Facebook compliance)
+    path(
+        "data-deletion-request/",
+        views.DataDeletionRequestView.as_view(),
+        name="data-deletion-request",
+    ),
+    path(
+        "delete-account/",
+        views.DeleteAccountView.as_view(),
+        name="delete-account",
+    ),
     # Admin only endpoints
     path("users/", views.UserListView.as_view(), name="user-list"),
     path("users/<int:pk>/", views.UserDetailView.as_view(), name="user_detail"),

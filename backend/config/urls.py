@@ -56,6 +56,8 @@ urlpatterns = [
     path("api/auth/", include("dj_rest_auth.urls")),
     path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
     path("api/auth/social/", include("allauth.socialaccount.urls")),
+    # Django allauth URLs (required for social auth redirects)
+    path("accounts/", include("allauth.urls")),
     # JWT Token management
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("api/auth/token/verify/", TokenVerifyView.as_view(), name="token-verify"),

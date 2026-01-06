@@ -301,21 +301,72 @@ class TwitterCallbackView(BaseSocialAuthView):
     """
     Handle Twitter/X OAuth 2.0 callback.
 
-    Exchanges the authorization code for tokens and creates/updates the user.
+    Handles GET redirect from Twitter after user authorization,
+    exchanges the authorization code for tokens, creates/updates the user,
+    and redirects back to the frontend with the tokens.
 
-    Request Body:
+    Query Parameters (GET):
+        - code (str): Authorization code from Twitter.
+        - state (str): State parameter for CSRF verification.
+
+    Request Body (POST):
         - code (str): Authorization code from Twitter.
         - state (str): State parameter for CSRF verification.
 
     Returns:
-        200/201: User data with JWT tokens.
+        GET: Redirect to frontend with tokens in URL.
+        POST: 200/201: User data with JWT tokens.
         400: Validation or authentication error.
     """
 
+    def get(self, request):
+        """Handle GET redirect from Twitter OAuth."""
+        from django.shortcuts import redirect
+        from urllib.parse import urlencode
+        
+        code = request.GET.get("code")
+        state = request.GET.get("state")
+        error = request.GET.get("error")
+        
+        # Frontend URL (get from settings or default to localhost)
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        
+        if error:
+            # User denied access or error occurred
+            params = urlencode({'error': error, 'provider': 'twitter'})
+            return redirect(f"{frontend_url}/sign-in?{params}")
+        
+        if not code:
+            params = urlencode({'error': 'No authorization code received', 'provider': 'twitter'})
+            return redirect(f"{frontend_url}/sign-in?{params}")
+        
+        # Process the OAuth callback
+        result = self._process_twitter_callback(request, code, state)
+        
+        if isinstance(result, Response) and result.status_code >= 400:
+            # Error occurred
+            error_msg = result.data.get('error', 'Authentication failed')
+            params = urlencode({'error': error_msg, 'provider': 'twitter'})
+            return redirect(f"{frontend_url}/sign-in?{params}")
+        
+        # Success - redirect to frontend with tokens
+        user_data = result.data
+        params = urlencode({
+            'access': user_data.get('access', ''),
+            'refresh': user_data.get('refresh', ''),
+            'provider': 'twitter',
+            'success': 'true'
+        })
+        return redirect(f"{frontend_url}/auth/callback?{params}")
+
     def post(self, request):
-        """Process Twitter OAuth callback."""
+        """Process Twitter OAuth callback (for frontend-initiated flow)."""
         code = request.data.get("code")
         state = request.data.get("state")
+        return self._process_twitter_callback(request, code, state)
+
+    def _process_twitter_callback(self, request, code, state):
+        """Common logic for processing Twitter OAuth callback."""
 
         if not code:
             return Response(

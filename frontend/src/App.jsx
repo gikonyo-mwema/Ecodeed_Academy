@@ -40,6 +40,10 @@ import Courses from './pages/Courses';
 import CourseDetails from './pages/CourseDetails';
 import Contact from './pages/Contact';
 import Unsubscribe from './pages/Unsubscribe';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import DataDeletion from './pages/DataDeletion';
+import AuthCallback from './pages/AuthCallback';
 
 // Layout Components
 import Header from './components/Header';
@@ -94,8 +98,12 @@ export default function App() {
           <Route path='/post/:postSlug' element={<PostPage />} /> {/* Dynamic blog post pages */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/data-deletion" element={<DataDeletion />} />
           
           {/* OAuth Callback Routes */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/auth/twitter/callback" element={<TwitterOAuthCallback />} />
 
           {/* ===== AUTHENTICATED USER ROUTES ===== */}

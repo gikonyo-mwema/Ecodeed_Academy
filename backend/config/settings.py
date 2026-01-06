@@ -169,14 +169,21 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.CustomUser"
 
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+# Note: CORS_ALLOW_ALL_ORIGINS cannot be True when CORS_ALLOW_CREDENTIALS is True
+# We must specify explicit origins when using credentials
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
     default=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:3000",
     ],
 )
+CORS_ALLOW_CREDENTIALS = True
+
+# Frontend URL for OAuth redirects
+FRONTEND_URL = env.str("FRONTEND_URL", default="http://localhost:5173")
 
 # REST Framework Settings
 REST_FRAMEWORK = {
