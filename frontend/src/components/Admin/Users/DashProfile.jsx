@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Button, Modal, TextInput } from 'flowbite-react';
+import { Alert, Button, Modal, TextInput, Label, Select } from 'flowbite-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { CircularProgressbar } from 'react-circular-progressbar';
@@ -43,11 +43,17 @@ export default function DashProfile() {
   const [imageFileUploadError, setImageFileUploadError] = useState(null);
   const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
   const [updateUserError, setUpdateUserError] = useState(null);
+  
+  // Updated form data structure for Django backend
   const [formData, setFormData] = useState({
-    username: currentUser?.username || '',
+    firstName: currentUser?.firstName || '',
+    lastName: currentUser?.lastName || '',
     email: currentUser?.email || '',
+    bio: currentUser?.bio || '',
+    phoneNumber: currentUser?.phoneNumber || '',
     password: '',
   });
+  
   const dispatch = useDispatch();
   const filePickerRef = useRef();
   const [showModal, setShowModal] = useState(false);
@@ -55,8 +61,11 @@ export default function DashProfile() {
   useEffect(() => {
     if (currentUser) {
       setFormData({
-        username: currentUser.username,
-        email: currentUser.email,
+        firstName: currentUser.firstName || '',
+        lastName: currentUser.lastName || '',
+        email: currentUser.email || '',
+        bio: currentUser.bio || '',
+        phoneNumber: currentUser.phoneNumber || '',
         password: '',
       });
     }
@@ -89,13 +98,24 @@ export default function DashProfile() {
 
     try {
       const formDataToSend = new FormData();
-      if (imageFile) formDataToSend.append('file', imageFile);
-      formDataToSend.append('username', formData.username);
+      
+      // Add profile picture if changed
+      if (imageFile) formDataToSend.append('profile_picture', imageFile);
+      
+      // Map frontend camelCase to backend snake_case
+      formDataToSend.append('first_name', formData.firstName);
+      formDataToSend.append('last_name', formData.lastName);
       formDataToSend.append('email', formData.email);
-      if (formData.password) formDataToSend.append('password', formData.password);
+      formDataToSend.append('bio', formData.bio);
+      formDataToSend.append('phone_number', formData.phoneNumber);
+      
+      // Only include password if it's being changed
+      if (formData.password) {
+        formDataToSend.append('password', formData.password);
+      }
 
       const resultAction = await dispatch(updateUser({
-        userId: currentUser._id,
+        userId: currentUser.id || currentUser._id,
         formData: formDataToSend,
         onUploadProgress: (progressEvent) => {
           const progress = Math.round(
@@ -108,6 +128,7 @@ export default function DashProfile() {
       if (updateUser.fulfilled.match(resultAction)) {
         setUpdateUserSuccess('Profile updated successfully');
         setImageFileUploadProgress(0);
+        setFormData(prev => ({ ...prev, password: '' })); // Clear password field
       } else if (updateUser.rejected.match(resultAction)) {
         setUpdateUserError(resultAction.payload);
         setImageFileUploadProgress(0);
@@ -121,7 +142,7 @@ export default function DashProfile() {
   const handleDeleteUser = async () => {
     setShowModal(false);
     try {
-      const resultAction = await dispatch(deleteUser(currentUser._id));
+      const resultAction = await dispatch(deleteUser(currentUser.id || currentUser._id));
       if (deleteUser.fulfilled.match(resultAction)) {
         // Successfully deleted
       }
@@ -145,6 +166,11 @@ export default function DashProfile() {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
+
+  // Display user's full name
+  const displayName = currentUser?.username || 
+    `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() ||
+    currentUser?.email?.split('@')[0] || 'User';
 
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
@@ -189,28 +215,81 @@ export default function DashProfile() {
           />
         </div>
         {imageFileUploadError && <Alert color="failure">{imageFileUploadError}</Alert>}
-        <TextInput
-          type="text"
-          id="username"
-          placeholder="username"
-          value={formData.username}
-          onChange={handleChange}
-        />
+        
+        {/* Name Section */}
+        <div className="text-center mb-2">
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">{displayName}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{currentUser?.userType || 'Reader'}</p>
+        </div>
+        
+        {/* Name Fields */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="firstName" value="First Name" className="mb-2" />
+            <TextInput
+              type="text"
+              id="firstName"
+              placeholder="First name"
+              value={formData.firstName}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <Label htmlFor="lastName" value="Last Name" className="mb-2" />
+            <TextInput
+              type="text"
+              id="lastName"
+              placeholder="Last name"
+              value={formData.lastName}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
        
-        <TextInput
-          type="email"
-          id="email"
-          placeholder="email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <TextInput
-          type="password"
-          id="password"
-          placeholder="password"
-          value={formData.password}
-          onChange={handleChange}
-        />
+        <div>
+          <Label htmlFor="email" value="Email" className="mb-2" />
+          <TextInput
+            type="email"
+            id="email"
+            placeholder="email"
+            value={formData.email}
+            onChange={handleChange}
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="phoneNumber" value="Phone Number" className="mb-2" />
+          <TextInput
+            type="tel"
+            id="phoneNumber"
+            placeholder="Phone number"
+            value={formData.phoneNumber}
+            onChange={handleChange}
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="bio" value="Bio" className="mb-2" />
+          <TextInput
+            type="text"
+            id="bio"
+            placeholder="Tell us about yourself..."
+            value={formData.bio}
+            onChange={handleChange}
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="password" value="New Password (leave blank to keep current)" className="mb-2" />
+          <TextInput
+            type="password"
+            id="password"
+            placeholder="New password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+        </div>
+        
         <Button
           type="submit"
           className="bg-brand-green hover:bg-green-700 text-white font-medium py-2 px-4 rounded-full transition duration-300 w-32"

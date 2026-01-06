@@ -3,4 +3,11 @@ node_modules/
 .env
 dist/
 .vite/
-*.local
+
+
+__pycache__/
+*.pyc
+
+mysql_data/
+
+staticfiles/
