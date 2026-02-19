@@ -125,6 +125,12 @@ export default function CourseDetails() {
 
   const enrollUser = async (paymentData = null) => {
     try {
+      // If paid course, verify payment via callback (not direct enrollment)
+      // This function handles free course enrollment or post-payment enrollment
+      if (!course.isFree && !paymentData) {
+         throw new Error("Payment required for this course.");
+      }
+
       await apiFetch('/api/enrollments', {
         method: 'POST',
         headers: {
@@ -393,7 +399,8 @@ export default function CourseDetails() {
         show={showPaymentModal} 
         onClose={() => setShowPaymentModal(false)}
         course={course}
-        onSuccess={enrollUser}
+        user={currentUser}
+        onSuccess={() => setIsEnrolled(true)}
       />
     </div>
   );

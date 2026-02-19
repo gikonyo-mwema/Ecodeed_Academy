@@ -3,12 +3,23 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Course, Enrollment
-from .serializers import CourseSerializer, EnrollmentSerializer
+from .serializers import CourseSerializer, EnrollmentSerializer, CourseContentSerializer
+from .permissions import IsInstructorOrReadOnly
 
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsInstructorOrReadOnly()]
+        return [permissions.AllowAny()]
+
+    def perform_create(self, serializer):
+        # Assign current user as instructor if they are creating the course
+        serializer.save(instructor=self.request.user)
+
     lookup_field = 'id' # Use id for most things (like delete)
 
     def get_object(self):
@@ -30,6 +41,23 @@ class CourseViewSet(viewsets.ModelViewSet):
         obj = get_object_or_404(queryset, **filter_kwargs)
         self.check_object_permissions(self.request, obj)
         return obj
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated], url_path='my-taught-courses')
+    def my_taught_courses(self, request):
+        if request.user.is_staff:
+             # Admins see all
+             courses = self.queryset.all()
+        else:
+             # Mentors see only their own
+             courses = self.queryset.filter(instructor=request.user)
+        
+        page = self.paginate_queryset(courses)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(courses, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='by-category')
     def by_category(self, request):
@@ -59,11 +87,8 @@ class CourseViewSet(viewsets.ModelViewSet):
             )
             
         # If enrolled, return full data including protected assets
-        # Note: In a real app, you might use a different serializer here 
-        # that includes 'video_url' which is excluded from public view.
-        # Since our current model puts everything in 'curriculum' JSON, 
-        # we return the standard data, but this endpoint acts as the Gatekeeper.
-        serializer = self.get_serializer(course)
+# Use the specialized serializer that includes protected content (video_url)
+        serializer = CourseContentSerializer(course)
         return Response(serializer.data)
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
@@ -77,6 +102,14 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         return Enrollment.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
+        from rest_framework.exceptions import PermissionDenied
+        course = serializer.validated_data.get('course')
+        
+        # Security: Prevent direct enrollment in paid courses via API
+        if not course.is_free and not self.request.user.is_staff:
+             # Paid enrollments must go through the payment verification flow
+             raise PermissionDenied("Direct enrollment is restricted for paid courses. Please complete payment.")
+             
         serializer.save(user=self.request.user)
 
     @action(detail=False, methods=['get'])

@@ -117,10 +117,11 @@ export const DashCourses = () => {
     try {
       setLoading(true);
       
-      // Build URL with pagination parameter if needed
+      // Use the 'my-taught-courses' endpoint to filter by instructor (or show all for admin)
+      // This ensures mentors only see their own courses.
       const url = startIndex > 0 
-        ? `/api/courses/?startIndex=${startIndex}`
-        : '/api/courses/';
+        ? `/api/courses/my-taught-courses?startIndex=${startIndex}`
+        : '/api/courses/my-taught-courses/';
       
       const data = await apiFetch(url);
       

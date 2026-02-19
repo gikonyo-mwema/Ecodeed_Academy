@@ -38,6 +38,8 @@ class Course(models.Model):
     is_popular = models.BooleanField(default=False)
     is_live = models.BooleanField(default=False)
     
+    instructor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses_taught')
+
     image = models.URLField(max_length=1000, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

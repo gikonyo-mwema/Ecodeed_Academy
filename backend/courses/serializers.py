@@ -1,13 +1,25 @@
 from rest_framework import serializers
 from .models import Course, Enrollment, Module, Lesson, LessonCompletion
 
-class LessonSerializer(serializers.ModelSerializer):
+class PublicLessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ['id', 'title', 'duration', 'is_free_preview', 'order']
+
+class FullLessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ['id', 'title', 'content', 'video_url', 'duration', 'is_free_preview', 'order']
 
 class ModuleSerializer(serializers.ModelSerializer):
-    lessons = LessonSerializer(many=True, read_only=True)
+    lessons = PublicLessonSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Module
+        fields = ['id', 'title', 'description', 'order', 'lessons']
+
+class FullModuleSerializer(serializers.ModelSerializer):
+    lessons = FullLessonSerializer(many=True, read_only=True)
     
     class Meta:
         model = Module
@@ -26,8 +38,16 @@ class CourseSerializer(serializers.ModelSerializer):
             'id', '_id', 'title', 'slug', 'short_description', 'full_description',
             'image', 'price', 'category', 'is_free', 'modules', 'curriculum',
             'created_at', 'updated_at', 'level', 'format', 'features', 'faqs',
-            'target_audience', 'resources', 'external_url', 'is_popular', 'is_live'
+            'target_audience', 'resources', 'external_url', 'is_popular', 'is_live',
+            'instructor'
         ]
+        read_only_fields = ['instructor']
+
+class CourseContentSerializer(CourseSerializer):
+    modules = FullModuleSerializer(many=True, read_only=True)
+    
+    class Meta(CourseSerializer.Meta):
+        fields = CourseSerializer.Meta.fields
         
     def get_curriculum(self, obj):
         return [
