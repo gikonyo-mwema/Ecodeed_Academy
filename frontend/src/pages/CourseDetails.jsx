@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { 
   HiOutlineCheckCircle, 
@@ -81,7 +81,7 @@ export default function CourseDetails() {
       try {
         const [courseRes, enrollmentRes] = await Promise.all([
           fetch(`/api/courses/${slug}`),
-          currentUser && fetch(`/api/enrollments/check?userId=${currentUser._id}&courseSlug=${slug}`)
+          currentUser && fetch(`/api/enrollments/check?userId=${currentUser.id || currentUser._id}&courseSlug=${slug}`)
         ]);
 
         let courseData;
