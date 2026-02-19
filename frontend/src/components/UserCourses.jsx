@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Badge, Button, Spinner } from 'flowbite-react';
+import { Table, Badge, Button, Spinner, Progress } from 'flowbite-react';
 import { HiOutlineBookOpen, HiOutlinePlay } from 'react-icons/hi';
 import { apiFetch } from '../utils/api';
 import { Link } from 'react-router-dom';
@@ -51,9 +51,21 @@ const UserCourses = ({ purchasedCourses: propCourses }) => {
                         {course.title}
                     </Table.Cell>
                     <Table.Cell>
-                        <Badge color="success" className="w-fit">
-                        {enrollment.status || 'Active'}
-                        </Badge>
+                        <div className="w-full min-w-[150px]">
+                            <div className="flex justify-between mb-1">
+                                <span className="text-sm font-medium text-gray-700">
+                                   {enrollment.progress?.percentage ? Math.round(enrollment.progress.percentage) : 0}%
+                                </span>
+                                <Badge color="success" className="w-fit">
+                                    {enrollment.status || 'Active'}
+                                </Badge>
+                            </div>
+                            <Progress 
+                                progress={enrollment.progress?.percentage || 0} 
+                                color="teal" 
+                                size="sm" 
+                            />
+                        </div>
                     </Table.Cell>
                     <Table.Cell>
                         {new Date(enrollment.enrolled_at || enrollment.purchasedAt).toLocaleDateString()}

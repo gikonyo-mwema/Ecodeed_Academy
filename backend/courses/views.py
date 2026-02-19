@@ -133,13 +133,43 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='my-courses')
     def my_courses(self, request):
-        # Explicit filter for the logged-in user, regardless of admin status
-        enrollments = Enrollment.objects.filter(user=request.user).order_by('-enrolled_at')
+        enrollments = self.get_queryset().order_by('-enrolled_at')
         serializer = self.get_serializer(enrollments, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'], url_path='my-courses')
-    def my_courses(self, request):
-        enrollments = self.get_queryset()
-        serializer = self.get_serializer(enrollments, many=True)
-        return Response(serializer.data)
+    @action(detail=True, methods=['post'], url_path='complete-lesson')
+    def complete_lesson(self, request, pk=None):
+        enrollment = self.get_object()
+        lesson_id = request.data.get('lesson_id')
+        
+        if not lesson_id:
+            return Response({'message': 'Lesson ID required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Update specific lesson completion
+        from .models import Lesson, LessonCompletion
+        lesson = get_object_or_404(Lesson, id=lesson_id)
+        
+        # Verify lesson belongs to course
+        if lesson.module.course != enrollment.course:
+             return Response({'message': 'Invalid lesson for this course'}, status=status.HTTP_400_BAD_REQUEST)
+             
+        LessonCompletion.objects.get_or_create(enrollment=enrollment, lesson=lesson)
+        
+        # Update overall progress
+        total_lessons = Lesson.objects.filter(module__course=enrollment.course).count()
+        completed = LessonCompletion.objects.filter(enrollment=enrollment).count()
+        completed_lesson_ids = list(LessonCompletion.objects.filter(enrollment=enrollment).values_list('lesson_id', flat=True))
+        
+        progress_data = enrollment.progress or {}
+        progress_data['completed_count'] = completed
+        progress_data['completed_lessons'] = completed_lesson_ids
+        progress_data['total_count'] = total_lessons
+        progress_data['percentage'] = (completed / total_lessons) * 100 if total_lessons > 0 else 0
+        
+        enrollment.progress = progress_data
+        enrollment.save()
+        
+        return Response({
+            'message': 'Lesson marked as complete',
+            'progress': enrollment.progress
+        })

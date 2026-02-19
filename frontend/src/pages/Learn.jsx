@@ -21,6 +21,8 @@ export default function Learn() {
   const [error, setError] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [enrollment, setEnrollment] = useState(null);
+  const [completing, setCompleting] = useState(false);
 
   // Parse course content to find initial lesson
   const findFirstLesson = (courseData) => {
@@ -52,6 +54,19 @@ export default function Learn() {
         const data = await res.json();
         setCourse(data);
         
+        // Fetch Enrollment Details (including progress)
+        if (currentUser) {
+            const enrollRes = await fetch(`/api/enrollments/check?userId=${currentUser?._id || currentUser?.id}&courseSlug=${slug}`, {
+                headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+            });
+            if (enrollRes.ok) {
+                const enrollData = await enrollRes.json();
+                if (enrollData.isEnrolled) {
+                    setEnrollment(enrollData);
+                }
+            }
+        }
+        
         // Auto-select first lesson if none selected
         if (!activeLesson) {
           const first = findFirstLesson(data);
@@ -72,6 +87,31 @@ export default function Learn() {
       setError('Please log in to continue.');
     }
   }, [slug, currentUser, navigate]);
+
+  const handleLessonComplete = async () => {
+      if (!enrollment || !activeLesson) return;
+      setCompleting(true);
+      try {
+          const res = await fetch(`/api/enrollments/${enrollment.id}/complete-lesson/`, {
+              method: 'POST',
+              headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ lesson_id: activeLesson.id })
+          });
+          
+          if (res.ok) {
+              const data = await res.json();
+              setEnrollment(prev => ({ ...prev, progress: data.progress }));
+              // Could auto-advance to next lesson here
+          }
+      } catch (err) {
+          console.error("Failed to complete lesson", err);
+      } finally {
+          setCompleting(false);
+      }
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
@@ -118,8 +158,14 @@ export default function Learn() {
                    >
                      {/* Status Icon */}
                      <div className="mt-0.5">
-                       {/* TODO: Check completed_lessons state */}
-                       <HiOutlinePlay className={`w-4 h-4 ${activeLesson?.id === lesson.id ? 'text-teal-600' : 'text-gray-400'}`} />
+                       {/* Completed Check or Active Play or Future */}
+                       {enrollment?.progress?.completed_lessons?.includes(lesson.id) ? (
+                            <HiCheckCircle className="w-5 h-5 text-teal-500" />
+                       ) : activeLesson?.id === lesson.id ? (
+                            <HiOutlinePlay className="w-4 h-4 text-teal-600" />
+                       ) : (
+                            <div className="w-4 h-4 rounded-full border border-gray-300"></div>
+                       )}
                      </div>
                      <div className={activeLesson?.id === lesson.id ? 'text-teal-700 font-medium' : 'text-gray-600'}>
                        {lIndex + 1}. {lesson.title}
@@ -186,11 +232,16 @@ export default function Learn() {
               <h3 className="font-medium text-gray-900 md:hidden">{activeLesson.title}</h3>
             </div>
             <div className="flex gap-3">
-               {/* <Button color="light">Previous</Button> */}
-               <Button gradientDuoTone="tealToLime">
-                 Mark as Complete <HiCheckCircle className="ml-2 h-5 w-5" />
+               <Button 
+                 gradientDuoTone="tealToLime" 
+                 onClick={handleLessonComplete}
+                 disabled={completing || enrollment?.progress?.completed_lessons?.includes(activeLesson.id)}
+               >
+                 {enrollment?.progress?.completed_lessons?.includes(activeLesson.id) 
+                   ? 'Completed' 
+                   : completing ? 'Saving...' : 'Mark as Complete'}
+                 <HiCheckCircle className="ml-2 h-5 w-5" />
                </Button>
-               {/* <Button color="light">Next</Button> */}
             </div>
           </div>
         )}
