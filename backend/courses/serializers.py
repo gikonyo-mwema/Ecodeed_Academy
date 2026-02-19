@@ -1,5 +1,20 @@
 from rest_framework import serializers
-from .models import Course, Enrollment, Module, Lesson, LessonCompletion
+from .models import Course, Enrollment, Module, Lesson, LessonCompletion, Assignment, LiveSession, Resource
+
+class AssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assignment
+        fields = ['id', 'title', 'description', 'due_date', 'resource_url']
+
+class LiveSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LiveSession
+        fields = ['id', 'title', 'description', 'date_time', 'zoom_link', 'recording_url']
+
+class ResourceModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Resource
+        fields = ['id', 'title', 'file_url']
 
 class PublicLessonSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,17 +28,23 @@ class FullLessonSerializer(serializers.ModelSerializer):
 
 class ModuleSerializer(serializers.ModelSerializer):
     lessons = PublicLessonSerializer(many=True, read_only=True)
+    assignments = AssignmentSerializer(many=True, read_only=True)
+    live_sessions = LiveSessionSerializer(many=True, read_only=True)
+    resources = ResourceModelSerializer(many=True, read_only=True)
     
     class Meta:
         model = Module
-        fields = ['id', 'title', 'description', 'order', 'lessons']
+        fields = ['id', 'title', 'description', 'order', 'lessons', 'assignments', 'live_sessions', 'resources']
 
 class FullModuleSerializer(serializers.ModelSerializer):
     lessons = FullLessonSerializer(many=True, read_only=True)
+    assignments = AssignmentSerializer(many=True, read_only=True)
+    live_sessions = LiveSessionSerializer(many=True, read_only=True)
+    resources = ResourceModelSerializer(many=True, read_only=True)
     
     class Meta:
         model = Module
-        fields = ['id', 'title', 'description', 'order', 'lessons']
+        fields = ['id', 'title', 'description', 'order', 'lessons', 'assignments', 'live_sessions', 'resources']
 
 class CourseSerializer(serializers.ModelSerializer):
     modules = ModuleSerializer(many=True, read_only=True)
@@ -42,6 +63,19 @@ class CourseSerializer(serializers.ModelSerializer):
             'instructor'
         ]
         read_only_fields = ['instructor']
+
+    def get_curriculum(self, obj):
+        return [
+            {
+                "id": module.id,
+                "title": module.title,
+                "items": [
+                    {"id": lesson.id, "title": lesson.title} 
+                    for lesson in module.lessons.all()
+                ]
+            }
+            for module in obj.modules.all()
+        ]
 
 class CourseContentSerializer(CourseSerializer):
     modules = FullModuleSerializer(many=True, read_only=True)

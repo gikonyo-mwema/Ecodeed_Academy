@@ -42,7 +42,9 @@ import {
   HiAcademicCap,
   HiOutlineViewGrid,
   HiMail,
-  HiShoppingBag
+  HiShoppingBag,
+  HiVideoCamera,
+  HiArchive
 } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -143,7 +145,10 @@ export default function DashSidebar() {
     { id: "newsletter", name: "Newsletter", icon: HiMail },
     { id: "services", name: "Services", icon: HiClipboardCheck },
     { id: "courses", name: "Courses", icon: HiAcademicCap },
-    { id: "enrollments", name: "Enrollments", icon: HiShoppingBag }
+    { id: "enrollments", name: "Enrollments", icon: HiShoppingBag },
+    { id: "assignments", name: "Assignments", icon: HiClipboardCheck },
+    { id: "live-session", name: "Live Sessions", icon: HiVideoCamera },
+    { id: "resources", name: "Resources", icon: HiArchive },
   ];
 
   return (

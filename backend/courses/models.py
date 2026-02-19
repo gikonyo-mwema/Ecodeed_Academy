@@ -79,6 +79,47 @@ class Lesson(models.Model):
     def __str__(self):
         return self.title
 
+class Assignment(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='assignments')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    due_date = models.DateTimeField(null=True, blank=True)
+    resource_url = models.URLField(blank=True, null=True, help_text="Link to assignment file or template")
+
+    def __str__(self):
+        return self.title
+
+class AssignmentSubmission(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
+    submission_file_url = models.URLField(max_length=1000)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    feedback = models.TextField(blank=True, null=True)
+    grade = models.CharField(max_length=50, blank=True, null=True)
+    is_reviewed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.student.username} - {self.assignment.title}"
+
+class LiveSession(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='live_sessions')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    date_time = models.DateTimeField()
+    zoom_link = models.URLField(max_length=1000)
+    recording_url = models.URLField(max_length=1000, blank=True, null=True)
+
+    def __str__(self):
+        return self.title
+
+class Resource(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='resources')
+    title = models.CharField(max_length=255)
+    file_url = models.URLField(max_length=1000)
+
+    def __str__(self):
+        return self.title
+
 class Enrollment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
