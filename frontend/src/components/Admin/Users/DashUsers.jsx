@@ -44,6 +44,7 @@ import { useSelector } from 'react-redux';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../../../utils/api';
 
 /**
  * DashUsers Component
@@ -113,44 +114,25 @@ export default function DashUsers() {
       setLoading(true);
       setError(null);
       
-      // Get authentication token for API request
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/users/getUsers?startIndex=${startIndex}&limit=9`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        }
-      });
+      const data = await apiFetch(`/api/auth/users/getUsers?startIndex=${startIndex}&limit=9`);
 
-      // Handle different error responses
-      if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error('Session expired. Please login again.');
-        }
-        if (res.status === 403) {
-          throw new Error('You are not authorized to view this page');
-        }
-        throw new Error('Failed to fetch users');
-      }
-
-      const data = await res.json();
-      
       // Handle initial load vs pagination
       if (startIndex === 0) {
-        setUsers(data.users);
-        setStats({
-          totalUsers: data.totalUsers,
-          lastMonthUsers: data.lastMonthUsers,
-          adminCount: data.users.filter(user => user.isAdmin).length
-        });
+        setUsers(data.users || []);
+        if (data.users) {
+          setStats({
+            totalUsers: data.totalUsers,
+            lastMonthUsers: data.lastMonthUsers,
+            adminCount: data.users.filter(user => user.isAdmin).length
+          });
+        }
       } else {
         // Append to existing users for pagination
-        setUsers(prev => [...prev, ...data.users]);
+        setUsers(prev => [...prev, ...(data.users || [])]);
       }
 
       // Update pagination control
-      setShowMore(data.users.length >= 9);
+      setShowMore(data.users && data.users.length >= 9);
     } catch (error) {
       console.error('Fetch error:', error);
       setError(error.message);
@@ -187,27 +169,16 @@ export default function DashUsers() {
    */
   const handleDeleteUser = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/users/delete/${userIdToDelete}`, {
+      await apiFetch(`/api/auth/users/delete/${userIdToDelete}`, {
         method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        }
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to delete user');
-      }
-
       // Update local state after successful deletion
-      setUsers(prev => prev.filter(user => user._id !== userIdToDelete));
+      setUsers(prev => prev.filter(user => (user._id || user.id) !== userIdToDelete));
       setStats(prev => ({
         ...prev,
         totalUsers: prev.totalUsers - 1,
-        adminCount: prev.adminCount - (users.find(u => u._id === userIdToDelete)?.isAdmin ? 1 : 0)
+        adminCount: prev.adminCount - (users.find(u => (u._id || u.id) === userIdToDelete)?.isAdmin ? 1 : 0)
       }));
       setShowModal(false);
     } catch (error) {

@@ -95,9 +95,9 @@ export default function Home() {
         console.log('📊 Response data:', response);
         
         // Match the backend response structure from your dashboard
-        const postsData = response.data?.posts || [];
-        const paginationData = response.data?.pagination || {
-          totalPosts: 0,
+        const postsData = response.posts || [];
+        const paginationData = response.pagination || {
+          totalPosts: response.totalPosts || 0,
           totalPages: 1,
           currentPage: 1,
           postsPerPage: pagination.postsPerPage,

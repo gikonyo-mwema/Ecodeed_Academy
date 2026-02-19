@@ -1,31 +1,16 @@
-# Core Django
-Django>=4.2, <5.0
+Django>=4.2,<5.0
 django-environ
-
-# Database
 dj-database-url
-mysqlclient
-
-
-# Authentication & Authorization
+pymysql
 django-allauth
-django-allauth[socialaccount]
 django-cors-headers
-
-# REST Framework
 djangorestframework
 djangorestframework-simplejwt
 dj-rest-auth
 drf-yasg
 django-filter
-
-# Security
-python-jose[cryptography]
-passlib[bcrypt]
-cryptography
-
-# Utilities
 Pillow
-celery
-redis
 django-cleanup
+requests
+cryptography
+oauthlib

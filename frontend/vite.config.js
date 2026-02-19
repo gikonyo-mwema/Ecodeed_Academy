@@ -26,17 +26,22 @@ export default defineConfig(({ mode }) => ({
     }
   },
   server: {
-    port: 5174,
+    port: 5173,
     host: true,
     hmr: {
-      port: 5174,
+      port: 5173,
       host: 'localhost'
     },
     // Only use proxy in development mode
     ...(mode === 'development' && {
       proxy: {
         '/api': {
-          target: process.env.VITE_API_URL || 'http://localhost:5000',
+          target: process.env.VITE_PROXY_TARGET || process.env.VITE_API_URL || 'http://localhost:8000',
+          changeOrigin: true,
+          secure: false
+        },
+        '/media': {
+          target: process.env.VITE_PROXY_TARGET || process.env.VITE_API_URL || 'http://localhost:8000',
           changeOrigin: true,
           secure: false
         }

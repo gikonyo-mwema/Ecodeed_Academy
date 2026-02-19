@@ -59,6 +59,17 @@ export default function Header() {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   /**
+   * Effect to handle automatic logout on auth failure
+   */
+  useEffect(() => {
+    const handleLogout = () => {
+      dispatch(signOut());
+    };
+    window.addEventListener('auth:logout', handleLogout);
+    return () => window.removeEventListener('auth:logout', handleLogout);
+  }, [dispatch]);
+
+  /**
    * Effect to sync search term with URL parameters
    * Updates local search state when URL search parameters change
    */
@@ -107,7 +118,7 @@ export default function Header() {
     : "https://res.cloudinary.com/dcrubaesi/image/upload/v1737333837/ECODEED_COLORED_LOGO_wj2yy8.png";
 
   // Default user avatar
-  const userAvatar = currentUser?.profilePicture || 
+  const userAvatar = currentUser?.profile_picture || 
     "https://res.cloudinary.com/dcrubaesi/image/upload/v1753008847/EcodeedUser2_ekhqvm.jpg";
 
   return (
@@ -181,7 +192,8 @@ export default function Header() {
             { to: "/", label: "Home" },
             { to: "/about", label: "About" },
             { to: "/services", label: "Services" },
-            /*{ to: "/courses", label: "Courses" },*/
+            { to: "/courses", label: "Courses" },
+            { to: "/contact", label: "Contact" },
           ].map(({ to, label }) => (
             <Link
               key={to}
@@ -249,7 +261,7 @@ export default function Header() {
             >
               <Dropdown.Header>
                 <span className="block text-sm font-medium text-gray-900 dark:text-white">
-                  @{currentUser.username}
+                  {currentUser.first_name || currentUser.email} {currentUser.last_name}
                 </span>
                 <span className="block text-sm text-gray-500 dark:text-gray-400 truncate">
                   {currentUser.email}
@@ -349,6 +361,8 @@ export default function Header() {
             { to: "/", label: "Home" },
             { to: "/about", label: "About" },
             { to: "/services", label: "Services" },
+            { to: "/courses", label: "Courses" },
+            { to: "/contact", label: "Contact" },
           ].map(({ to, label }) => (
             <Navbar.Link
               key={to}

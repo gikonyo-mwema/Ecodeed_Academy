@@ -6,9 +6,11 @@ import { apiFetch } from '../utils/api';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
-    username: "",
+     firstName: "",
+    lastName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,27 +25,44 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { username, email, password } = formData;
+    const { firstName, lastName, email, password, confirmPassword } = formData;
 
-    if (!username || !email || !password) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
       return setErrorMessage("Please fill out all fields.");
+    }
+    
+    if (password !== confirmPassword) {
+       return setErrorMessage("Passwords do not match.");
+    }
+
+    if (password.length < 8) {
+      return setErrorMessage("Password must be at least 8 characters.");
     }
 
     try {
       setLoading(true);
       setErrorMessage(null);
 
-      const data = await apiFetch("/api/auth/signup", {
+      const data = await apiFetch("/api/auth/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        // Backend expects snake_case for fields
+        body: JSON.stringify({ 
+            first_name: firstName, 
+            last_name: lastName, 
+            email, 
+            password,
+            confirm_password: confirmPassword
+        }),
       });
 
       setLoading(false);
       navigate("/sign-in");
     } catch (err) {
       console.error("Signup error:", err);
-      setErrorMessage("Something went wrong. Please try again.");
+      // Try to extract useful error message from API response text if possible
+      // Assuming apiFetch throws an error with message property
+      setErrorMessage(err.message || "Something went wrong. Please try again.");
       setLoading(false);
     }
   };
@@ -97,21 +116,39 @@ export default function SignUp() {
             Create your account
           </h2>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            <div>
-              <Label
-                htmlFor="username"
-                value="Username"
-                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-              />
-              <TextInput
-                type="text"
-                placeholder="Choose a username"
-                id="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                className="focus:ring-brand-green focus:border-brand-green"
-              />
+            <div className="flex gap-4">
+                <div className="flex-1">
+                    <Label
+                        htmlFor="firstName"
+                        value="First Name"
+                        className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    />
+                    <TextInput
+                        type="text"
+                        placeholder="First Name"
+                        id="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        required
+                        className="focus:ring-brand-green focus:border-brand-green"
+                    />
+                </div>
+                <div className="flex-1">
+                    <Label
+                        htmlFor="lastName"
+                        value="Last Name"
+                        className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    />
+                    <TextInput
+                        type="text"
+                        placeholder="Last Name"
+                        id="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        required
+                        className="focus:ring-brand-green focus:border-brand-green"
+                    />
+                </div>
             </div>
             <div>
               <Label
@@ -140,6 +177,22 @@ export default function SignUp() {
                 placeholder="••••••••"
                 id="password"
                 value={formData.password}
+                onChange={handleChange}
+                required
+                className="focus:ring-brand-green focus:border-brand-green"
+              />
+            </div>
+             <div>
+              <Label
+                htmlFor="confirmPassword"
+                value="Confirm Password"
+                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+              />
+              <TextInput
+                type="password"
+                placeholder="••••••••"
+                id="confirmPassword"
+                value={formData.confirmPassword}
                 onChange={handleChange}
                 required
                 className="focus:ring-brand-green focus:border-brand-green"

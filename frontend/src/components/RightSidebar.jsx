@@ -16,7 +16,7 @@ export default function RightSidebar() {
     const fetchTrendingPosts = async () => {
       try {
         const data = await apiFetch('/api/posts/trending');
-        setTrendingPosts(data.data.posts || []);
+        setTrendingPosts(data.posts || []);
       } catch (error) {
         console.error('Error fetching trending posts:', error);
       }
@@ -34,11 +34,11 @@ export default function RightSidebar() {
         
         // Get recent posts
         const recentData = await apiFetch('/api/posts/getPosts?limit=5&order=desc');
-        setRecentPosts(recentData.data.posts || []);
+        setRecentPosts(recentData.posts || []);
 
         // Get all posts to calculate category stats
         const allPostsData = await apiFetch('/api/posts/getPosts?limit=100');
-        const posts = allPostsData.data.posts || [];
+        const posts = allPostsData.posts || [];
         
         console.log('✅ Sidebar data fetched successfully');
         

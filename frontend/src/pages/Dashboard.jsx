@@ -9,9 +9,10 @@ import DashComments from '../components/Admin/Comments/DashComments';
 import DashboardComponent from '../components/Admin/DashboardComponent';
 import DashServices from '../components/Admin/Services/DashServices';
 import { DashCourses } from '../components/Admin/Courses/DashCourses';
+import DashEnrollments from '../components/Admin/Courses/DashEnrollments';
 import DashNewsletter from '../components/Admin/DashNewsletter';
 import { useSelector } from 'react-redux';
-//import UserCourses from '../components/UserCourses';
+import UserCourses from '../components/UserCourses';
 import axios from 'axios';
 
 export default function Dashboard() {
@@ -63,6 +64,8 @@ export default function Dashboard() {
         {tab === 'dash' && <DashboardComponent />}
         {tab === 'services' && <DashServices />}
         {tab === 'courses' && <DashCourses />}
+        {tab === 'enrollments' && <DashEnrollments />}
+        {tab === 'learning' && <UserCourses />}
         {/*{tab === 'user-courses' && <UserCourses purchasedCourses={purchasedCourses} loading={loading} />} */}
       </div>
     </div>
