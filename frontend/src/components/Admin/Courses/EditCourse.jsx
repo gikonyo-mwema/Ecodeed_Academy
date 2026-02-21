@@ -2,8 +2,9 @@ import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CourseForm } from './CourseForm';
-//import { useCourseForm } from './CourseForm';
+import { useCourseForm } from './useCourseForm';
 import { Unauthorized } from './Unauthorized';
+import { apiFetch } from '../../../utils/api';
 
 export const EditCourse = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -19,7 +20,15 @@ export const EditCourse = () => {
     handleChange,
     handleFeatureChange,
     addFeatureField,
-    removeFeatureField
+    removeFeatureField,
+    handleCurriculumChange,
+    handleCurriculumItemChange,
+    addCurriculumSection,
+    addCurriculumItem,
+    removeCurriculumItem,
+    handleFaqChange,
+    addFaq,
+    removeFaq
   } = useCourseForm({
     title: '',
     slug: '',
@@ -28,35 +37,34 @@ export const EditCourse = () => {
     description: '',
     externalUrl: '',
     isPopular: false,
-    paymentOption: 'one-time',
+    category: 'specialized',
     features: [''],
-    cta: 'Enroll Now',
-    iconName: 'HiOutlineAcademicCap'
+    faqs: [{ question: '', answer: '' }],
+    level: [],
+    format: [],
+    curriculum: []
   });
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/courses/${courseId}`);
-        const data = await res.json();
-        
-        if (!res.ok) {
-          throw new Error(data.message || 'Failed to fetch course');
-        }
+        const data = await apiFetch(`/api/courses/${courseId}`);
 
         setFormData({
-          title: data.title,
-          slug: data.slug,
-          price: data.price,
-          shortDescription: data.shortDescription,
-          description: data.description,
-          externalUrl: data.externalUrl,
-          isPopular: data.isPopular || false,
-          paymentOption: data.paymentOption || 'one-time',
-          features: data.features || [''],
-          cta: data.cta || 'Enroll Now',
-          iconName: data.iconName || 'HiOutlineAcademicCap'
+          title: data.title || '',
+          slug: data.slug || '',
+          price: data.price || '',
+          shortDescription: data.short_description || data.shortDescription || '',
+          description: data.full_description || data.description || '',
+          externalUrl: data.external_url || data.externalUrl || '',
+          isPopular: data.is_popular !== undefined ? data.is_popular : (data.isPopular || false),
+          category: data.category || 'specialized',
+          features: Array.isArray(data.features) ? data.features : [''],
+          faqs: Array.isArray(data.faqs) ? data.faqs : [{ question: '', answer: '' }],
+          level: Array.isArray(data.level) ? data.level : [],
+          format: Array.isArray(data.format) ? data.format : [],
+          curriculum: Array.isArray(data.curriculum) ? data.curriculum : []
         });
       } catch (error) {
         setError(error.message);
@@ -80,25 +88,19 @@ export const EditCourse = () => {
         throw new Error('Only admins can edit courses');
       }
 
-      // Validate required fields
-      if (!formData.slug || !formData.externalUrl) {
-        throw new Error('Slug and External URL are required');
-      }
+      // Map back to snake_case for Django
+      const submitData = {
+        ...formData,
+        short_description: formData.shortDescription,
+        full_description: formData.description,
+        external_url: formData.externalUrl,
+        is_popular: formData.isPopular,
+      };
 
-      const res = await fetch(`/api/courses/${courseId}`, {
+      const data = await apiFetch(`/api/courses/${courseId}/`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
-        },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
-
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to update course');
-      }
 
       navigate('/dashboard?tab=courses');
     } catch (error) {
@@ -130,8 +132,16 @@ export const EditCourse = () => {
       loading={loading}
       handleChange={handleChange}
       handleFeatureChange={handleFeatureChange}
+      handleCurriculumChange={handleCurriculumChange}
+      handleCurriculumItemChange={handleCurriculumItemChange}
+      handleFaqChange={handleFaqChange}
       addFeatureField={addFeatureField}
       removeFeatureField={removeFeatureField}
+      addCurriculumSection={addCurriculumSection}
+      addCurriculumItem={addCurriculumItem}
+      removeCurriculumItem={removeCurriculumItem}
+      addFaq={addFaq}
+      removeFaq={removeFaq}
       handleSubmit={handleSubmit}
       title="Edit Course"
       submitButtonText="Update Course"

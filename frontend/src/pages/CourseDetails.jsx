@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { 
   HiOutlineCheckCircle, 
@@ -81,7 +81,7 @@ export default function CourseDetails() {
       try {
         const [courseRes, enrollmentRes] = await Promise.all([
           fetch(`/api/courses/${slug}`),
-          currentUser && fetch(`/api/enrollments/check?userId=${currentUser._id}&courseSlug=${slug}`)
+          currentUser && fetch(`/api/enrollments/check?userId=${currentUser.id || currentUser._id}&courseSlug=${slug}`)
         ]);
 
         let courseData;
@@ -125,6 +125,12 @@ export default function CourseDetails() {
 
   const enrollUser = async (paymentData = null) => {
     try {
+      // If paid course, verify payment via callback (not direct enrollment)
+      // This function handles free course enrollment or post-payment enrollment
+      if (!course.isFree && !paymentData) {
+         throw new Error("Payment required for this course.");
+      }
+
       await apiFetch('/api/enrollments', {
         method: 'POST',
         headers: {
@@ -393,7 +399,8 @@ export default function CourseDetails() {
         show={showPaymentModal} 
         onClose={() => setShowPaymentModal(false)}
         course={course}
-        onSuccess={enrollUser}
+        user={currentUser}
+        onSuccess={() => setIsEnrolled(true)}
       />
     </div>
   );

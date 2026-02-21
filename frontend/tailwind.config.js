@@ -1,5 +1,5 @@
 import flowbite from 'flowbite/plugin';
-import tailwindcss from 'tailwindcss';
+// import tailwindcss from 'tailwindcss'; // Removed unused import to prevent confusion
 import typography from '@tailwindcss/typography';
 
 /** @type {import('tailwindcss').Config} */

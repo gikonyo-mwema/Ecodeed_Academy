@@ -49,6 +49,11 @@ urlpatterns = [
 
     # Authentication endpoints
     path('api/auth/', include('users.urls')),
+    # path('api/', include('posts.urls')),
+    # path('api/comments/', include('comments.urls')),
+    path('api/', include('courses.urls')),
+    # path('api/', include('services.urls')),
+    # path('api/payments/', include('payments.urls')),
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('api/auth/social/', include('allauth.socialaccount.urls')),

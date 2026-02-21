@@ -41,7 +41,10 @@ import {
   HiClipboardCheck,
   HiAcademicCap,
   HiOutlineViewGrid,
-  HiMail
+  HiMail,
+  HiShoppingBag,
+  HiVideoCamera,
+  HiArchive
 } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -141,7 +144,11 @@ export default function DashSidebar() {
     { id: "comments", name: "Comments", icon: HiAnnotation },
     { id: "newsletter", name: "Newsletter", icon: HiMail },
     { id: "services", name: "Services", icon: HiClipboardCheck },
-    { id: "courses", name: "Courses", icon: HiAcademicCap }
+    { id: "courses", name: "Courses", icon: HiAcademicCap },
+    { id: "enrollments", name: "Enrollments", icon: HiShoppingBag },
+    { id: "assignments", name: "Assignments", icon: HiClipboardCheck },
+    { id: "live-session", name: "Live Sessions", icon: HiVideoCamera },
+    { id: "resources", name: "Resources", icon: HiArchive },
   ];
 
   return (
@@ -176,6 +183,19 @@ export default function DashSidebar() {
                 className="cursor-pointer"
               >
                 {!collapsed && "Profile"}
+              </Sidebar.Item>
+            </Tooltip>
+
+            {/* My Learning (Visible to All) */}
+            <Tooltip content="My Learning" placement="right" trigger={collapsed ? "hover" : null}>
+              <Sidebar.Item
+                active={tab === "learning"}
+                icon={HiAcademicCap}
+                onClick={() => handleTabClick("learning")}
+                as="div"
+                className="cursor-pointer"
+              >
+                {!collapsed && "My Learning"}
               </Sidebar.Item>
             </Tooltip>
 

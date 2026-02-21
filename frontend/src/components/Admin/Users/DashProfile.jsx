@@ -44,9 +44,11 @@ export default function DashProfile() {
   const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
   const [updateUserError, setUpdateUserError] = useState(null);
   const [formData, setFormData] = useState({
-    username: currentUser?.username || '',
-    email: currentUser?.email || '',
+    first_name: '',
+    last_name: '',
+    email: '',
     password: '',
+    bio: '',
   });
   const dispatch = useDispatch();
   const filePickerRef = useRef();
@@ -55,9 +57,11 @@ export default function DashProfile() {
   useEffect(() => {
     if (currentUser) {
       setFormData({
-        username: currentUser.username,
-        email: currentUser.email,
+        first_name: currentUser.first_name || '',
+        last_name: currentUser.last_name || '',
+        email: currentUser.email || '',
         password: '',
+        bio: currentUser.bio || '',
       });
     }
   }, [currentUser]);
@@ -89,13 +93,15 @@ export default function DashProfile() {
 
     try {
       const formDataToSend = new FormData();
-      if (imageFile) formDataToSend.append('file', imageFile);
-      formDataToSend.append('username', formData.username);
-      formDataToSend.append('email', formData.email);
-      if (formData.password) formDataToSend.append('password', formData.password);
+      if (imageFile) formDataToSend.append('profile_picture', imageFile);
+      formDataToSend.append('first_name', formData.first_name);
+      formDataToSend.append('last_name', formData.last_name);
+      formDataToSend.append('bio', formData.bio);
+      // Removed password from here as it's not supported by UserProfileUpdateSerializer
+      // If password update is needed, use a separate endpoint or update the serializer
 
       const resultAction = await dispatch(updateUser({
-        userId: currentUser._id,
+        userId: currentUser.id,
         formData: formDataToSend,
         onUploadProgress: (progressEvent) => {
           const progress = Math.round(
@@ -148,7 +154,9 @@ export default function DashProfile() {
 
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
-      <h1 className="my-7 text-center font-semibold text-3xl">Profile</h1>
+      <h1 className="my-7 text-center font-bold text-3xl text-gray-800 dark:text-gray-100">
+        Profile Settings
+      </h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="file"
@@ -181,7 +189,7 @@ export default function DashProfile() {
             />
           )}
           <img
-            src={imageFileUrl || currentUser?.profilePicture}
+            src={imageFileUrl || currentUser?.profile_picture}
             alt="user"
             className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
               imageFileUploadProgress > 0 && imageFileUploadProgress < 100 && 'opacity-60'
@@ -191,32 +199,40 @@ export default function DashProfile() {
         {imageFileUploadError && <Alert color="failure">{imageFileUploadError}</Alert>}
         <TextInput
           type="text"
-          id="username"
-          placeholder="username"
-          value={formData.username}
+          id="first_name"
+          placeholder="First Name"
+          value={formData.first_name || ''}
           onChange={handleChange}
         />
-       
+        <TextInput
+          type="text"
+          id="last_name"
+          placeholder="Last Name"
+          value={formData.last_name || ''}
+          onChange={handleChange}
+        />
+        <TextInput
+          type="text"
+          id="bio"
+          placeholder="Bio"
+          value={formData.bio || ''}
+          onChange={handleChange}
+        />
         <TextInput
           type="email"
           id="email"
           placeholder="email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-        <TextInput
-          type="password"
-          id="password"
-          placeholder="password"
-          value={formData.password}
-          onChange={handleChange}
+          value={formData.email || ''}
+          disabled
+          readOnly
         />
         <Button
           type="submit"
-          className="bg-brand-green hover:bg-green-700 text-white font-medium py-2 px-4 rounded-full transition duration-300 w-32"
+          className="bg-brand-green hover:bg-green-700 text-black font-semibold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md w-full sm:w-auto self-center mt-4"
           disabled={loading}
+          gradientDuoTone="greenToBlue"
         >
-          {loading ? 'Loading...' : 'Update'}
+          {loading ? 'Updating...' : 'Update Profile'}
         </Button>
         {currentUser?.isAdmin && (
           <Link to={'/create-post'}>
@@ -230,13 +246,23 @@ export default function DashProfile() {
           </Link>
         )}
       </form>
-      <div className="text-red-500 flex justify-between mt-5">
-        <span onClick={() => setShowModal(true)} className="cursor-pointer">
+      <div className="flex flex-row justify-between w-full mt-4">
+        <Button 
+          color="failure" 
+          outline 
+          onClick={() => setShowModal(true)} 
+          className="w-40 transition-transform hover:scale-105"
+        >
           Delete Account
-        </span>
-        <span onClick={handleSignout} className="cursor-pointer">
+        </Button>
+        <Button 
+          color="gray" 
+          outline 
+          onClick={handleSignout} 
+          className="w-40 transition-transform hover:scale-105"
+        >
           Sign Out
-        </span>
+        </Button>
       </div>
       {[updateUserSuccess, updateUserError, error].map(
         (message, index) =>

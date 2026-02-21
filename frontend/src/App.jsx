@@ -38,6 +38,7 @@ import Services from './pages/Services';
 import ServiceDetail from './pages/ServiceDetail';
 import Courses from './pages/Courses';
 import CourseDetails from './pages/CourseDetails';
+import LearningPlayer from './pages/LearningPlayer';
 import Contact from './pages/Contact';
 import Unsubscribe from './pages/Unsubscribe';
 
@@ -97,6 +98,7 @@ export default function App() {
           <Route element={<PrivateRoute />}>
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/my-courses' element={<UserCourses />} />
+            <Route path='/learn/:slug' element={<LearningPlayer />} />
           </Route>
 
           {/* ===== ADMIN-ONLY ROUTES ===== */}

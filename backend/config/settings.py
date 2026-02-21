@@ -26,12 +26,13 @@ from pathlib import Path
 import environ
 from datetime import timedelta
 
-# Initialize environment variables
-env = environ.Env()
-environ.Env.read_env()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Initialize environment variables
+env = environ.Env()
+# Read .env file from backend root
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY', default='e1lgcfh_9keys_z@u2ng!r4m-*(j23g@+rer3jwx!w%=v@t#&y')
@@ -39,7 +40,7 @@ SECRET_KEY = env('SECRET_KEY', default='e1lgcfh_9keys_z@u2ng!r4m-*(j23g@+rer3jwx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=True)
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'backend'])
 
 # Application definition
 
@@ -73,7 +74,11 @@ INSTALLED_APPS = [
 
     # Apps
     'users.apps.UsersConfig',
-    # 'courses.apps.CoursesConfig',  # TODO: Create courses app
+    'posts',
+    'comments',
+    'courses',
+    'services',
+    'payments',
     # 'blog.apps.BlogConfig',  # TODO: Create blog app
     # 'services.apps.ServicesConfig',  # TODO: Create services app
 ]
@@ -120,6 +125,9 @@ DATABASES = {
         'PASSWORD': env('MYSQL_PASSWORD'),
         'HOST': env('MYSQL_HOST', default='db'),
         'PORT': env('MYSQL_PORT', default='3306'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 

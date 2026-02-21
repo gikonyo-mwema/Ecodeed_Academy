@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { CourseForm } from './CourseForm';
 import { useCourseForm } from './useCourseForm';
 import { Unauthorized } from './Unauthorized';
+import { apiFetch } from '../../../utils/api';
 
 export const CreateCourse = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -14,6 +15,14 @@ export const CreateCourse = () => {
     loading,
     handleChange,
     handleFeatureChange,
+    handleCurriculumChange,
+    handleCurriculumItemChange,
+    addCurriculumSection,
+    addCurriculumItem,
+    removeCurriculumItem,
+    handleFaqChange,
+    addFaq,
+    removeFaq,
     addFeatureField,
     removeFeatureField,
     setError,
@@ -26,10 +35,12 @@ export const CreateCourse = () => {
     description: '',
     externalUrl: '',
     isPopular: false,
-    paymentOption: 'one-time',
+    category: 'specialized',
     features: [''],
-    cta: 'Enroll Now',
-    iconName: 'HiOutlineAcademicCap'
+    faqs: [{ question: '', answer: '' }],
+    level: [],
+    format: [],
+    curriculum: [{ title: '', items: [''] }]
   });
 
   const handleSubmit = async (e) => {
@@ -53,24 +64,20 @@ export const CreateCourse = () => {
         throw new Error('Slug can only contain lowercase letters, numbers, and hyphens');
       }
 
-      const res = await fetch('/api/courses', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
-        },
-        body: JSON.stringify({
-          ...formData,
-          // Ensure price is stored as number
-          price: Number(formData.price)
-        }),
-      });
+      // Map back to snake_case for Django
+      const submitData = {
+        ...formData,
+        short_description: formData.shortDescription,
+        full_description: formData.description,
+        external_url: formData.externalUrl,
+        is_popular: formData.isPopular,
+        price: Number(formData.price) || 0
+      };
 
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to create course');
-      }
+      await apiFetch('/api/courses/', {
+        method: 'POST',
+        body: JSON.stringify(submitData),
+      });
 
       navigate('/dashboard?tab=courses');
     } catch (error) {
@@ -91,6 +98,14 @@ export const CreateCourse = () => {
       loading={loading}
       handleChange={handleChange}
       handleFeatureChange={handleFeatureChange}
+      handleCurriculumChange={handleCurriculumChange}
+      handleCurriculumItemChange={handleCurriculumItemChange}
+      addCurriculumSection={addCurriculumSection}
+      addCurriculumItem={addCurriculumItem}
+      removeCurriculumItem={removeCurriculumItem}
+      handleFaqChange={handleFaqChange}
+      addFaq={addFaq}
+      removeFaq={removeFaq}
       addFeatureField={addFeatureField}
       removeFeatureField={removeFeatureField}
       handleSubmit={handleSubmit}
