@@ -216,6 +216,18 @@ export const apiFetch = async (endpoint, options = {}) => {
       throw error;
     }
     
+    // Handle empty responses (e.g., 204 No Content for DELETE requests)
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+    
+    // Check if response has content before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      // No JSON content, return null or empty object
+      return null;
+    }
+    
     // Parse the response as JSON
     const data = await response.json();
     return data;
