@@ -1,25 +1,10 @@
-"""
-User Authentication URL Configuration.
-
-This module defines URL patterns for user-related endpoints including
-registration, authentication, profile management, and admin operations.
-
-URL Patterns:
-    - register/: User registration endpoint
-    - login/: User login endpoint
-    - logout/: User logout endpoint
-    - profile/: User profile retrieval
-    - profile/update/: User profile update
-    - users/: Admin-only user list
-    - users/<int:pk>/: Admin-only user detail/update/delete
-"""
-
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-
+from .views import UserViewSet
 
 router = DefaultRouter()
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
         path('', include(router.urls)),
@@ -29,8 +14,9 @@ urlpatterns = [
         path('profile/', views.UserProfileView.as_view(), name='profile'),
         path('profile/update/', views.UserProfileUpdateView.as_view(), name='profile-update'),
 
-        # Admin only endpoints
-        path('users/', views.UserListView.as_view(), name='user-list'),
-        path('users/<int:pk>/', views.UserDetailView.as_view(), name='user_detail'),
-        ]
+        # Legacy / Dashboard mappings
+        path('users/getUsers', UserViewSet.as_view({'get': 'getUsers'}), name='get-users'),
+        path('users/delete/<int:pk>', UserViewSet.as_view({'delete': 'deleteUser'}), name='delete-user'),
+        path('users/updateRole/<int:pk>', UserViewSet.as_view({'patch': 'updateRole'}), name='update-role'),
+]
 

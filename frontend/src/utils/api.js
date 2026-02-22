@@ -51,13 +51,18 @@ export const apiFetch = async (endpoint, options = {}) => {
   const getAuthToken = () => {
     // Try localStorage
     const localToken = localStorage.getItem('token');
-    if (localToken) return localToken;
+    if (localToken && localToken !== 'undefined' && localToken !== 'null') {
+      return localToken;
+    }
     
     // Try extracting from cookies as fallback
     const cookies = document.cookie.split('; ');
     const tokenCookie = cookies.find(row => row.startsWith('access_token='));
     if (tokenCookie) {
-      return tokenCookie.split('=')[1];
+      const value = tokenCookie.split('=')[1];
+      if (value && value !== 'undefined' && value !== 'null') {
+        return value;
+      }
     }
     
     return null;
@@ -103,12 +108,100 @@ export const apiFetch = async (endpoint, options = {}) => {
     
     // Check if the response is OK
     if (!response.ok) {
+        const isAuthEndpoint = endpoint.includes('/auth/login') || 
+                              endpoint.includes('/auth/logout') || 
+                              endpoint.includes('/auth/register');
+
+        // Special handling for 401 Unauthorized with invalid token
+        if (response.status === 401 && !isAuthEndpoint) {
+            // Check if we are already on sign-in or sign-up pages to avoid loops
+            const isAuthPage = window.location.pathname.includes('/sign-in') || 
+                              window.location.pathname.includes('/sign-up');
+            
+            // If the token is invalid/expired, we should clear it and potentially retry
+            // if the endpoint allows anonymous access (like getPosts)
+            try {
+                const errorClone = response.clone();
+                let errorData = {};
+                try {
+                    errorData = await errorClone.json();
+                } catch (e) {
+                    // Not JSON
+                }
+
+                // Improved check to catch more token related errors
+                const checkString = JSON.stringify(errorData);
+                const isTokenError = checkString && (
+                    checkString.includes('token_not_valid') || 
+                    checkString.includes('Given token not valid') ||
+                    checkString.includes('Invalid token') ||
+                    checkString.includes('Authentication credentials were not provided')
+                );
+
+                if (isTokenError || response.status === 401) {
+                    console.warn(`Authentication token is invalid or expired (401) for ${endpoint}.`);
+                    
+                    // Only dispatch logout if we're not already on an auth page and actually have a token to clear
+                    if (!isAuthPage && localStorage.getItem('token')) {
+                        console.log('Logging out due to 401 on protected endpoint');
+                        localStorage.removeItem('token');
+                        window.dispatchEvent(new CustomEvent('auth:logout'));
+                    }
+                    
+                    // Remove Authorization header and retry anonymously
+                    const retryOptions = { ...defaultOptions };
+                    retryOptions.credentials = 'omit';
+                    
+                    if (retryOptions.headers) {
+                        const newHeaders = { ...retryOptions.headers };
+                        delete newHeaders['Authorization'];
+                        retryOptions.headers = newHeaders;
+                    }
+                    
+                    // Retry the request
+                    const retryResponse = await fetch(url, retryOptions);
+                    if (retryResponse.ok) {
+                        try {
+                            return await retryResponse.json();
+                        } catch (e) {
+                            return null;
+                        }
+                    }
+                    
+                    // If retry fails, use it's error details
+                    let retryErrorData = {};
+                    try {
+                        retryErrorData = await retryResponse.json();
+                    } catch (e) {}
+
+                    const retryErrorMessage = retryErrorData.detail || retryErrorData.message || 
+                        (typeof retryErrorData === 'string' ? retryErrorData : `Request failed with status ${retryResponse.status}`);
+                    
+                    const retryError = new Error(retryErrorMessage);
+                    retryError.status = retryResponse.status;
+                    throw retryError;
+                }
+            } catch (e) {
+                if (e.status) throw e; 
+            }
+        }
+
       // Try to get error message from response
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
+        if (errorData.message) {
+            errorMessage = errorData.message;
+        } else if (errorData.error) {
+            errorMessage = errorData.error;
+        } else if (typeof errorData === 'object' && errorData !== null) {
+            // Handle DRF validation errors: { "field": ["Error msg"], ... }
+            const messages = Object.values(errorData).flat();
+            if (messages.length > 0) {
+                errorMessage = messages.join(' ');
+            }
+        }
       } catch (parseError) {
         // If we can't parse the error response, use the status text
         if (response.status === 502) {
@@ -121,6 +214,18 @@ export const apiFetch = async (endpoint, options = {}) => {
       const error = new Error(errorMessage);
       error.status = response.status;
       throw error;
+    }
+    
+    // Handle empty responses (e.g., 204 No Content for DELETE requests)
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+    
+    // Check if response has content before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      // No JSON content, return null or empty object
+      return null;
     }
     
     // Parse the response as JSON

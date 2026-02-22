@@ -41,7 +41,10 @@ import {
   HiClipboardCheck,
   HiAcademicCap,
   HiOutlineViewGrid,
-  HiMail
+  HiMail,
+  HiShoppingBag,
+  HiVideoCamera,
+  HiArchive
 } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -141,7 +144,14 @@ export default function DashSidebar() {
     { id: "comments", name: "Comments", icon: HiAnnotation },
     { id: "newsletter", name: "Newsletter", icon: HiMail },
     { id: "services", name: "Services", icon: HiClipboardCheck },
-    { id: "courses", name: "Courses", icon: HiAcademicCap }
+  ];
+
+  const courseTabs = [
+    { id: "courses", name: "All Courses", icon: HiAcademicCap },
+    { id: "enrollments", name: "Enrollments", icon: HiShoppingBag },
+    { id: "assignments", name: "Assignments", icon: HiClipboardCheck },
+    { id: "live-session", name: "Live Sessions", icon: HiVideoCamera },
+    { id: "resources", name: "Resources", icon: HiArchive },
   ];
 
   return (
@@ -155,7 +165,7 @@ export default function DashSidebar() {
         <HiOutlineViewGrid className="w-6 h-6" />
       </button>
 
-            {/* Main sidebar component with responsive design */}
+      {/* Main sidebar component with responsive design */}
       <Sidebar 
         className={`w-full md:w-56 fixed md:relative z-40 transition-all duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
@@ -179,20 +189,58 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Tooltip>
 
-            {/* Admin navigation tabs */}
-            {currentUser?.isAdmin && adminTabs.map((item) => (
-              <Tooltip key={item.id} content={item.name} placement="right" trigger={collapsed ? "hover" : null}>
+            {/* My Learning - Only visible to students (non-admin users) */}
+            {!currentUser?.isAdmin && (
+              <Tooltip content="My Learning" placement="right" trigger={collapsed ? "hover" : null}>
                 <Sidebar.Item
-                  active={tab === item.id}
-                  icon={item.icon}
-                  onClick={() => handleTabClick(item.id)}
+                  active={tab === "learning"}
+                  icon={HiAcademicCap}
+                  onClick={() => handleTabClick("learning")}
                   as="div"
                   className="cursor-pointer"
                 >
-                  {!collapsed && item.name}
+                  {!collapsed && "My Learning"}
                 </Sidebar.Item>
               </Tooltip>
-            ))}
+            )}
+
+            {/* Admin navigation tabs - Course Management & Content Management */}
+            {currentUser?.isAdmin && (
+              <>
+                <Sidebar.Collapse 
+                  icon={HiAcademicCap} 
+                  label="Courses" 
+                  open={courseTabs.some(t => t.id === tab)}
+                >
+                  {courseTabs.map((item) => (
+                    <Sidebar.Item
+                      key={item.id}
+                      active={tab === item.id}
+                      icon={item.icon}
+                      onClick={() => handleTabClick(item.id)}
+                      as="div"
+                      className="cursor-pointer"
+                    >
+                      {item.name}
+                    </Sidebar.Item>
+                  ))}
+                </Sidebar.Collapse>
+
+                {adminTabs.map((item) => (
+                  <Tooltip key={item.id} content={item.name} placement="right" trigger={collapsed ? "hover" : null}>
+                    <Sidebar.Item
+                      active={tab === item.id}
+                      icon={item.icon}
+                      onClick={() => handleTabClick(item.id)}
+                      as="div"
+                      className="cursor-pointer"
+                    >
+                      {!collapsed && item.name}
+                    </Sidebar.Item>
+                  </Tooltip>
+                ))}
+              </>
+            )}
 
             {/* Sign out option */}
             <Tooltip content="Sign Out" placement="right" trigger={collapsed ? "hover" : null}>

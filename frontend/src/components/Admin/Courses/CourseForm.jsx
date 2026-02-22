@@ -133,7 +133,7 @@ export const CourseForm = ({
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="isFree"
-                  checked={formData.isFree}
+                  checked={Boolean(formData.isFree)}
                   onChange={handleChange}
                 />
                 <Label htmlFor="isFree">Free Course</Label>
@@ -225,7 +225,7 @@ export const CourseForm = ({
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="isPopular"
-                  checked={formData.isPopular}
+                  checked={Boolean(formData.isPopular)}
                   onChange={handleChange}
                 />
                 <Label htmlFor="isPopular">Mark as Popular Course</Label>
@@ -253,13 +253,14 @@ export const CourseForm = ({
                     key={level}
                     type="button"
                     onClick={() => {
-                      const newLevels = formData.level.includes(level)
-                        ? formData.level.filter(l => l !== level)
-                        : [...formData.level, level];
+                      const currentLevels = Array.isArray(formData.level) ? formData.level : [];
+                      const newLevels = currentLevels.includes(level)
+                        ? currentLevels.filter(l => l !== level)
+                        : [...currentLevels, level];
                       handleChange({ target: { id: 'level', value: newLevels } });
                     }}
                     className={`px-3 py-1 rounded-full text-sm ${
-                      formData.level.includes(level)
+                      (Array.isArray(formData.level) && formData.level.includes(level))
                         ? 'bg-teal-100 text-teal-800 border border-teal-300'
                         : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                     }`}
@@ -279,13 +280,14 @@ export const CourseForm = ({
                     key={format}
                     type="button"
                     onClick={() => {
-                      const newFormats = formData.format.includes(format)
-                        ? formData.format.filter(f => f !== format)
-                        : [...formData.format, format];
+                      const currentFormats = Array.isArray(formData.format) ? formData.format : [];
+                      const newFormats = currentFormats.includes(format)
+                        ? currentFormats.filter(f => f !== format)
+                        : [...currentFormats, format];
                       handleChange({ target: { id: 'format', value: newFormats } });
                     }}
                     className={`px-3 py-1 rounded-full text-sm ${
-                      formData.format.includes(format)
+                      (Array.isArray(formData.format) && formData.format.includes(format))
                         ? 'bg-purple-100 text-purple-800 border border-purple-300'
                         : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                     }`}
@@ -348,33 +350,13 @@ export const CourseForm = ({
                 </Button>
               </div>
               
-              {formData.curriculum.map((section, sectionIndex) => (
-                <div key={sectionIndex} className="mb-4 border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <TextInput
-                      placeholder="Section title"
-                      value={section.title}
-                      onChange={(e) => handleCurriculumChange(sectionIndex, 'title', e.target.value)}
-                      className="flex-1"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      color="failure"
-                      size="xs"
-                      onClick={() => removeCurriculumItem(sectionIndex)}
-                      disabled={formData.curriculum.length <= 1}
-                    >
-                      <HiOutlineX className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  {section.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="flex items-center gap-2 mb-2">
+{(Array.isArray(formData.curriculum) ? formData.curriculum : []).map((section, sectionIndex) => (
+                  <div key={sectionIndex} className="mb-4 border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
                       <TextInput
-                        placeholder={`Lesson ${itemIndex + 1}`}
-                        value={item}
-                        onChange={(e) => handleCurriculumItemChange(sectionIndex, itemIndex, e.target.value)}
+                        placeholder="Section title"
+                        value={section.title}
+                        onChange={(e) => handleCurriculumChange(sectionIndex, 'title', e.target.value)}
                         className="flex-1"
                         required
                       />
@@ -382,8 +364,28 @@ export const CourseForm = ({
                         type="button"
                         color="failure"
                         size="xs"
-                        onClick={() => removeCurriculumItem(sectionIndex, itemIndex)}
-                        disabled={section.items.length <= 1}
+                        onClick={() => removeCurriculumItem(sectionIndex)}
+                        disabled={(formData.curriculum || []).length <= 1}
+                      >
+                        <HiOutlineX className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {(Array.isArray(section.items) ? section.items : []).map((item, itemIndex) => (
+                      <div key={itemIndex} className="flex items-center gap-2 mb-2">
+                        <TextInput
+                          placeholder={`Lesson ${itemIndex + 1}`}
+                          value={typeof item === 'object' ? item.title : item}
+                          onChange={(e) => handleCurriculumItemChange(sectionIndex, itemIndex, e.target.value)}
+                          className="flex-1"
+                          required
+                        />
+                        <Button
+                          type="button"
+                          color="failure"
+                          size="xs"
+                          onClick={() => removeCurriculumItem(sectionIndex, itemIndex)}
+                          disabled={(section.items || []).length <= 1}
                       >
                         <HiOutlineX className="h-4 w-4" />
                       </Button>
@@ -404,52 +406,52 @@ export const CourseForm = ({
               ))}
             </div>
 
-            {/* FAQs Section */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label value="Frequently Asked Questions" />
-                <Button
-                  type="button"
-                  outline
-                  gradientDuoTone="tealToLime"
-                  size="xs"
-                  onClick={addFaq}
-                >
-                  <HiOutlinePlus className="mr-1" /> Add FAQ
-                </Button>
-              </div>
-              
-              {formData.faqs.map((faq, index) => (
-                <div key={index} className="mb-4 border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <TextInput
-                      placeholder="Question"
-                      value={faq.question}
-                      onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
-                      className="flex-1"
+              {/* FAQs Section */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <Label value="Frequently Asked Questions" />
+                  <Button
+                    type="button"
+                    outline
+                    gradientDuoTone="tealToLime"
+                    size="xs"
+                    onClick={addFaq}
+                  >
+                    <HiOutlinePlus className="mr-1" /> Add FAQ
+                  </Button>
+                </div>
+                
+                {(Array.isArray(formData.faqs) ? formData.faqs : []).map((faq, index) => (
+                  <div key={index} className="mb-4 border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <TextInput
+                        placeholder="Question"
+                        value={faq.question}
+                        onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
+                        className="flex-1"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        color="failure"
+                        size="xs"
+                        onClick={() => removeFaq(index)}
+                        disabled={(formData.faqs || []).length <= 1}
+                        className="ml-2"
+                      >
+                        <HiOutlineX className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Textarea
+                      placeholder="Answer"
+                      value={faq.answer}
+                      onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
+                      rows={2}
                       required
                     />
-                    <Button
-                      type="button"
-                      color="failure"
-                      size="xs"
-                      onClick={() => removeFaq(index)}
-                      disabled={formData.faqs.length <= 1}
-                      className="ml-2"
-                    >
-                      <HiOutlineX className="h-4 w-4" />
-                    </Button>
                   </div>
-                  <Textarea
-                    placeholder="Answer"
-                    value={faq.answer}
-                    onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
-                    rows={2}
-                    required
-                  />
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
             {/* Submit Button */}
             <div className="pt-4">

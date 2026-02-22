@@ -22,21 +22,59 @@ class UserSerializer(serializers.ModelSerializer):
 
     Fields:
         id (int): Unique user identifier (read-only).
+        _id (int): Alias for id for frontend compatibility.
         email (str): User's email address.
+        username (str): Alias for email for frontend compatibility.
         first_name (str): User's first name.
+        firstName (str): Alias for first_name.
         last_name (str): User's last name.
+        lastName (str): Alias for last_name.
         user_type (str): Type/role of the user.
         profile_picture (str): URL to user's profile picture.
+        profilePicture (str): Alias for profile_picture.
         bio (str): User's biography/description.
         phone_number (str): User's phone number.
+        phoneNumber (str): Alias for phone_number.
         date_joined (datetime): Account creation timestamp (read-only).
+        createdAt (datetime): Alias for date_joined for frontend compatibility.
+        isAdmin (bool): Whether the user has admin privileges.
+        isInstructor (bool): Whether the user is an instructor/tutor.
+        hasEnrollments (bool): Whether the user has any course enrollments (is a student).
     """
+
+    isAdmin = serializers.SerializerMethodField()
+    isInstructor = serializers.SerializerMethodField()
+    hasEnrollments = serializers.SerializerMethodField()
+    _id = serializers.IntegerField(source='id', read_only=True)
+    username = serializers.CharField(source='email', read_only=True)
+    firstName = serializers.CharField(source='first_name', read_only=True)
+    lastName = serializers.CharField(source='last_name', read_only=True)
+    profilePicture = serializers.ImageField(source='profile_picture', read_only=True)
+    phoneNumber = serializers.CharField(source='phone_number', read_only=True)
+    createdAt = serializers.DateTimeField(source='date_joined', read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'user_type',
-                'profile_picture', 'bio', 'phone_number', 'date_joined']
-        read_only_fields = ['id', 'date_joined']
+        fields = ['id', '_id', 'email', 'username', 'first_name', 'firstName', 
+                'last_name', 'lastName', 'user_type', 'profile_picture', 'profilePicture', 
+                'bio', 'phone_number', 'phoneNumber', 'date_joined', 'createdAt', 
+                'isAdmin', 'isInstructor', 'hasEnrollments']
+        read_only_fields = ['id', '_id', 'username', 'date_joined', 'createdAt', 
+                           'isAdmin', 'isInstructor', 'hasEnrollments']
+
+    def get_isAdmin(self, obj):
+        """Check if user is an admin."""
+        return obj.user_type == 'ADMIN' or obj.is_staff or obj.is_superuser
+    
+    def get_isInstructor(self, obj):
+        """Check if user is an instructor/tutor (MENTOR type)."""
+        return obj.user_type == 'MENTOR'
+    
+    def get_hasEnrollments(self, obj):
+        """Check if user has any course enrollments (is a student)."""
+        # Import here to avoid circular imports
+        from payments.models import Enrollment
+        return Enrollment.objects.filter(user=obj).exists()
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):

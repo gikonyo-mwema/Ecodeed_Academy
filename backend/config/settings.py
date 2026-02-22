@@ -26,12 +26,13 @@ from pathlib import Path
 import environ
 from datetime import timedelta
 
-# Initialize environment variables
-env = environ.Env()
-environ.Env.read_env()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Initialize environment variables
+env = environ.Env()
+# Read .env file from backend root
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY', default='e1lgcfh_9keys_z@u2ng!r4m-*(j23g@+rer3jwx!w%=v@t#&y')
@@ -39,7 +40,7 @@ SECRET_KEY = env('SECRET_KEY', default='e1lgcfh_9keys_z@u2ng!r4m-*(j23g@+rer3jwx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=True)
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'backend'])
 
 # Application definition
 
@@ -73,7 +74,11 @@ INSTALLED_APPS = [
 
     # Apps
     'users.apps.UsersConfig',
-    # 'courses.apps.CoursesConfig',  # TODO: Create courses app
+    'posts',
+    'comments',
+    'courses',
+    'services',
+    'payments',
     # 'blog.apps.BlogConfig',  # TODO: Create blog app
     # 'services.apps.ServicesConfig',  # TODO: Create services app
 ]
@@ -120,6 +125,9 @@ DATABASES = {
         'PASSWORD': env('MYSQL_PASSWORD'),
         'HOST': env('MYSQL_HOST', default='db'),
         'PORT': env('MYSQL_PORT', default='3306'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 
@@ -165,6 +173,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Site URL for generating absolute URLs (avoid Docker internal hostnames)
+# In development, this should be http://localhost:8000
+# In production, set via SITE_URL environment variable
+SITE_URL = env('SITE_URL', default='http://localhost:8000')
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -204,9 +217,8 @@ SIMPLE_JWT = {
 
 # Allauth Settings
 SITE_ID = 1
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Tell allauth we don't use username

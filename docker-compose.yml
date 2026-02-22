@@ -1,7 +1,6 @@
 # Docker Compose configuration for Ecodeed Academy
 # Includes backend (Django), frontend (Vite/React), and MySQL database services
 # Environment variables are loaded from .env file
-version: "3.9"
 
 services:
   # ===========================================
@@ -51,6 +50,7 @@ services:
       - frontend_node_modules:/app/node_modules  # Persist node_modules (prevents overwrite)
     environment:
       - VITE_API_BASE_URL=${VITE_API_BASE_URL}  # Backend API URL from .env
+      - VITE_PROXY_TARGET=http://backend:8000   # Internal URL for Vite Proxy
     depends_on:
       - backend  # Wait for backend before starting
 

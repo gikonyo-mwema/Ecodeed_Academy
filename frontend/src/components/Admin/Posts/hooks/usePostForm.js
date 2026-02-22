@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { apiFetch } from '../../../../utils/api';
 
 export default function usePostForm(initialPost, isEdit, currentUser, onSuccess) {
   
@@ -43,21 +43,13 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
       if (!formData.content.trim() || formData.content === '<p><br></p>') {
         throw new Error('Content is required');
       }
-      
-      // Check if there are images in the content or a featured image
-      const hasContentImages = formData.content.includes('<img');
-      const hasFeaturedImage = !!formData.image;
-      
-      if (!hasFeaturedImage && !hasContentImages) {
-        throw new Error('Please add at least one image - either a featured image or images within your content');
-      }
 
-      // Prepare API request
+      // Prepare API request (trailing slash required by Django)
       const url = isEdit 
-        ? `/api/posts/update/${initialPost._id}/${currentUser._id}`
-        : '/api/posts/create';
+        ? `/api/posts/update/${initialPost._id}/${currentUser._id}/`
+        : '/api/posts/create/';
       
-      const method = isEdit ? 'put' : 'post';
+      const method = isEdit ? 'PUT' : 'POST';
       
       // Prepare the payload without userId
       const postPayload = {
@@ -67,10 +59,13 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
         image: formData.image || '', // Ensure empty string instead of undefined
       };
 
-      // Send request with cookies for authentication (withCredentials is set globally)
-      const response = await axios[method](url, postPayload);
+      // Send request using apiFetch
+      const data = await apiFetch(url, {
+        method,
+        body: JSON.stringify(postPayload)
+      });
 
-      console.log('Post submission successful:', response.data);
+      console.log('Post submission successful:', data);
 
       // Reset form and call success handler
       if (!isEdit) {
@@ -78,16 +73,11 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
       }
       onSuccess();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          error.message || 
-                          'Internal Server Error';
+      const errorMessage = error.message || 'Internal Server Error';
       setError(errorMessage);
       
       console.error('=== FORM SUBMISSION ERROR DETAILS ===');
       console.error('Error message:', errorMessage);
-      console.error('Response status:', error.response?.status);
-      console.error('Response data:', error.response?.data);
       console.error('Full error:', error);
       console.error('=====================================');
     } finally {

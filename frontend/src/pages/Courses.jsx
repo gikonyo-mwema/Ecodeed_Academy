@@ -37,7 +37,8 @@ export default function Courses() {
     specialized: [],
     masterclass: [],
     webinar: null,
-    coaching: []
+    coaching: [],
+    compliance: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,14 +48,33 @@ export default function Courses() {
       try {
         const data = await apiFetch('/api/courses/by-category');
         
-        // Transform backend data to match frontend structure
-        const transformedData = {
-          specialized: data.filter(c => c.category === 'specialized'),
-          masterclass: data.filter(c => c.category === 'masterclass'),
-          webinar: data.find(c => c.category === 'webinar') || null,
-          coaching: data.filter(c => c.category === 'coaching')
-        };
-        setCourses(transformedData);
+          // Determine correctly if using Django pagination (results) or naked list
+          const courseList = Array.isArray(data) ? data : (data.results || []);
+
+          // Normalize keys (snake_case -> camelCase)
+          const normalize = (c) => ({
+            ...c,
+            id: c.id || c._id,
+            shortDescription: c.short_description || c.shortDescription || '',
+            fullDescription: c.full_description || c.fullDescription || '',
+            isFree: c.is_free !== undefined ? c.is_free : c.isFree,
+            isLive: c.is_live !== undefined ? c.is_live : c.isLive,
+            isPopular: c.is_popular !== undefined ? c.is_popular : c.isPopular,
+            features: Array.isArray(c.features) ? c.features : [],
+            category: c.category || 'specialized'
+          });
+
+          const coursesData = courseList.map(normalize);
+          
+          // Transform backend data to match frontend structure
+          const transformedData = {
+            specialized: coursesData.filter(c => c.category === 'specialized'),
+            masterclass: coursesData.filter(c => c.category === 'masterclass'),
+            webinar: coursesData.find(c => c.category === 'webinar') || null,
+            coaching: coursesData.filter(c => c.category === 'coaching'),
+            compliance: coursesData.filter(c => c.category === 'compliance'),
+          };
+          setCourses(transformedData);
       } catch (err) {
         console.error('Fetch error:', err);
         setError(err.message);
@@ -71,35 +91,11 @@ export default function Courses() {
   // Local data fallback
   const getLocalCourses = () => {
     return {
-      specialized: [
-        {
-          _id: '2.1',
-          title: "How to Start and Grow Your Environmental Consulting Business",
-          shortDescription: "Step-by-step guide to launching your consulting business",
-          features: ["Business setup guide", "Overcoming zero-experience", "Essential tools", "Scaling strategies"],
-          slug: "start-environmental-business",
-          price: 15000,
-          category: "specialized",
-          isPopular: true
-        },
-        // Add other courses from your original data...
-      ],
-      masterclass: [
-        // Add masterclass courses...
-      ],
-      webinar: {
-        _id: '4.1',
-        title: "Weekly Live Webinar: Environmental Approvals",
-        shortDescription: "Learn how to get approvals faster and avoid delays",
-        features: ["Process optimization", "Avoiding delays", "Case studies"],
-        slug: "approvals-webinar",
-        price: 0,
-        category: "webinar",
-        isLive: true
-      },
-      coaching: [
-        // Add coaching sessions...
-      ]
+      specialized: [],
+      masterclass: [],
+      webinar: null,
+      coaching: [],
+      compliance: []
     };
   };
 
@@ -109,6 +105,10 @@ export default function Courses() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl font-extrabold text-center text-teal-800 dark:text-teal-400 mb-12">
+          Professional Environmental Courses
+        </h1>
+
         {/* Specialized Courses */}
         {courses.specialized.length > 0 && (
           <section className="mb-16">
@@ -117,7 +117,21 @@ export default function Courses() {
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {courses.specialized.map((course) => (
-                <CourseCard key={course._id} course={course} />
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Compliance Courses */}
+        {courses.compliance.length > 0 && (
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold text-teal-800 dark:text-teal-300 mb-8 text-center">
+              Compliance & Auditing
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {courses.compliance.map((course) => (
+                <CourseCard key={course.id} course={course} />
               ))}
             </div>
           </section>
@@ -127,11 +141,11 @@ export default function Courses() {
         {courses.masterclass.length > 0 && (
           <section className="mb-16">
             <h2 className="text-3xl font-bold text-teal-800 dark:text-teal-300 mb-8 text-center">
-              Free Masterclasses
+              Masterclasses
             </h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {courses.masterclass.map((course) => (
-                <CourseCard key={course._id} course={{ ...course, isFree: true }} />
+                <CourseCard key={course.id} course={course} />
               ))}
             </div>
           </section>
@@ -157,7 +171,7 @@ export default function Courses() {
             </h2>
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {courses.coaching.map((course) => (
-                <CourseCard key={course._id} course={course} />
+                <CourseCard key={course.id} course={course} />
               ))}
             </div>
           </section>
@@ -186,13 +200,13 @@ function CourseCard({ course }) {
         </p>
         
         <ul className="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-300 mb-6">
-          {course.features.slice(0, 3).map((feature, index) => (
-            <li key={index}>{feature}</li>
+          {(course.features || []).slice(0, 3).map((feature, index) => (
+            <li key={index} className='text-sm'>{feature}</li>
           ))}
         </ul>
         
-        <div className="mt-auto">
-          <div className="flex flex-wrap gap-2 mb-3">
+        <div className="mt-auto pt-4">
+          <div className="flex flex-wrap gap-2 mb-3 justify-center">
             {course.isFree && (
               <Badge color="success" className="inline-flex">
                 Free Masterclass
@@ -208,9 +222,9 @@ function CourseCard({ course }) {
                 Popular
               </Badge>
             )}
-            {course.price > 0 && (
+            {course.price > 0 && !course.isFree && (
               <Badge color="gray" className="inline-flex">
-                Ksh {course.price.toLocaleString()}
+                Ksh {Number(course.price).toLocaleString()}
               </Badge>
             )}
           </div>

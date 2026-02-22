@@ -119,28 +119,29 @@ export default function PostCard({ post, isCompact = false, className = '' }) {
   return (
     <div className={`rounded-lg shadow-md overflow-hidden hover:shadow-[0_4px_12px_rgba(5,24,54,0.2)] hover:ring-1 hover:ring-brand-blue transition-all duration-300 h-full flex flex-col bg-white dark:bg-gray-800 dark:shadow-gray-900/50 ${className}`}>
       {/* Image Container */}
-      <Link 
-        to={`/post/${post?.slug || '#'}`} 
+      <div 
         className="block relative overflow-hidden group"
         style={{
           aspectRatio: '16/9',
           backgroundColor: !imageLoaded ? '#f3f4f6' : 'transparent'
         }}
       >
-        {currentImage && (
-          <img
-            src={currentImage}
-            alt={post?.title || 'Post image'}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            } group-hover:scale-105 transition-transform duration-500`}
-            loading="lazy"
-            onError={() => {
-              setCurrentImage(getDefaultImageUrl());
-              setImageLoaded(true);
-            }}
-          />
-        )}
+        <Link to={`/post/${post?.slug || '#'}`} className="absolute inset-0 z-0">
+          {currentImage && (
+            <img
+              src={currentImage}
+              alt={post?.title || 'Post image'}
+              className={`w-full h-full object-cover transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              } group-hover:scale-105 transition-transform duration-500`}
+              loading="lazy"
+              onError={() => {
+                setCurrentImage(getDefaultImageUrl());
+                setImageLoaded(true);
+              }}
+            />
+          )}
+        </Link>
 
         {!imageLoaded && (
           <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
@@ -150,7 +151,6 @@ export default function PostCard({ post, isCompact = false, className = '' }) {
           <div className="absolute top-2 right-2 z-10">
             <Link 
               to={`/search?category=${encodeURIComponent(post.category)}`}
-              onClick={(e) => e.stopPropagation()}
               className={`text-xs font-semibold px-2 py-1 rounded-full ${
                 getCategoryColorClass(post.category)
               } shadow-sm hover:opacity-80 transition-opacity`}
@@ -159,7 +159,7 @@ export default function PostCard({ post, isCompact = false, className = '' }) {
             </Link>
           </div>
         )}
-      </Link>
+      </div>
 
       {/* Card Content */}
       <div className="p-5 flex-1 flex flex-col">

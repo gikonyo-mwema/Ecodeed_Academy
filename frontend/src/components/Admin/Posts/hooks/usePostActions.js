@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import apiRequest from '../../../../utils/apiRequest';
+import { apiFetch } from '../../../../utils/api';
 
-export default function usePostActions(currentUser, setShowEditForm, setCurrentPost) {
+export default function usePostActions(currentUser, setShowEditForm, setCurrentPost, onDeleteSuccess) {
   const [showModal, setShowModal] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState('');
   const [publishError, setPublishError] = useState(null);
@@ -14,11 +14,14 @@ export default function usePostActions(currentUser, setShowEditForm, setCurrentP
   const handleDeletePost = async () => {
     setShowModal(false);
     try {
-      await apiRequest(
-        `/api/posts/delete/${postIdToDelete}/${currentUser._id}`,
-        currentUser.token,
+      await apiFetch(
+        `/api/posts/delete/${postIdToDelete}/${currentUser._id}/`,
         { method: 'DELETE' }
       );
+      // Refresh the posts list after successful deletion
+      if (onDeleteSuccess) {
+        onDeleteSuccess();
+      }
       return true;
     } catch (error) {
       setPublishError(error.message);

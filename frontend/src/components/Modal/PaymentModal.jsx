@@ -3,7 +3,7 @@ import { Modal, Button, Select, TextInput, Alert, Spinner } from 'flowbite-react
 import { HiOutlinePhone } from 'react-icons/hi';
 import PaystackPop from '@paystack/inline-js';
 
-export default function PaymentModal({ course, show, onClose, user }) {
+export default function PaymentModal({ course, show, onClose, user, onSuccess }) {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState(user?.email || '');
@@ -25,6 +25,8 @@ export default function PaymentModal({ course, show, onClose, user }) {
 
       setSuccess(true);
       setTimeout(() => {
+        // Call parent success handler to update UI state
+        if (onSuccess) onSuccess();
         onClose(true); // Notify parent of successful payment
         resetModal();
       }, 2000);

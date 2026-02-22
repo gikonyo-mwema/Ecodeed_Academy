@@ -64,6 +64,7 @@ import { HiOutlinePlus, HiOutlinePencilAlt, HiOutlineExclamationCircle } from 'r
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Unauthorized } from './Unauthorized';
+import { apiFetch } from '../../../utils/api';
 
 /**
  * DashCourses Component
@@ -116,25 +117,36 @@ export const DashCourses = () => {
     try {
       setLoading(true);
       
-      // Build URL with pagination parameter if needed
+      // Use the 'my-taught-courses' endpoint to filter by instructor (or show all for admin)
+      // This ensures mentors only see their own courses.
       const url = startIndex > 0 
-        ? `/api/courses?startIndex=${startIndex}`
-        : '/api/courses';
+        ? `/api/courses/my-taught-courses?startIndex=${startIndex}`
+        : '/api/courses/my-taught-courses/';
       
-      const res = await fetch(url);
-      const data = await res.json();
+      const data = await apiFetch(url);
       
-      if (res.ok) {
-        if (startIndex > 0) {
-          // Append to existing courses for pagination
-          setCourses(prev => [...prev, ...(data.courses || data)]);
-        } else {
-          // Set initial courses data
-          setCourses(data.courses || data);
-        }
-        // Update pagination control
-        setShowMore((data.courses || data).length >= 9);
+      // Determine correctly if using Django pagination (results) or naked list
+      const courseList = Array.isArray(data) ? data : (data.results || data.courses || []);
+      
+      // Normalize Django snake_case to Frontend camelCase/Mongo-style _id
+      const normalizedCourses = courseList.map(c => ({
+        ...c,
+        _id: c.id || c._id,
+        isPopular: c.is_popular !== undefined ? c.is_popular : c.isPopular,
+        shortDescription: c.short_description || c.shortDescription,
+        features: Array.isArray(c.features) ? c.features : []
+      }));
+
+      if (startIndex > 0) {
+        // Append to existing courses for pagination
+        setCourses(prev => [...prev, ...normalizedCourses]);
+      } else {
+        // Set initial courses data
+        setCourses(normalizedCourses);
       }
+      
+      // Update pagination control
+      setShowMore(normalizedCourses.length >= 9);
     } catch (error) {
       console.error('Error fetching courses:', error.message);
     } finally {
@@ -166,21 +178,12 @@ export const DashCourses = () => {
    */
   const handleDeleteCourse = async () => {
     try {
-      const res = await fetch(`/api/courses/${courseIdToDelete}`, {
+      await apiFetch(`/api/courses/${courseIdToDelete}/`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
-        }
       });
-      const data = await res.json();
       
-      if (res.ok) {
-        setCourses(prev => prev.filter(course => course._id !== courseIdToDelete));
-        setShowModal(false);
-      } else {
-        throw new Error(data.message || 'Failed to delete course');
-      }
+      setCourses(prev => prev.filter(course => (course._id || course.id) !== courseIdToDelete));
+      setShowModal(false);
     } catch (error) {
       console.error('Error deleting course:', error.message);
     }

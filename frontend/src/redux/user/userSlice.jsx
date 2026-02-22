@@ -10,9 +10,26 @@ const initialState = {
 };
 
 // Helper functions
+const fixProfileUrl = (user) => {
+  if (!user) return user;
+
+  // Normalize ID for frontend compatibility (MongoDB -> SQL transition)
+  if (user.id && !user._id) {
+    user._id = user.id;
+  }
+
+  if (user.profile_picture && typeof user.profile_picture === 'string') {
+    // Replace internal docker hostname with localhost for browser access
+    user.profile_picture = user.profile_picture.replace('http://backend:8000', 'http://localhost:8000');
+    user.profile_picture = user.profile_picture.replace('http://backend', 'http://localhost:8000');
+  }
+  return user;
+};
+
 const validateUser = (user) => {
   if (!user || typeof user !== 'object') return false;
-  if (!user._id || !user.username || !user.email) return false;
+  // Adjusted validation for backend response format (email is the critical field)
+  if (!user.email) return false;
   return true;
 };
 
@@ -26,7 +43,7 @@ export const signUp = createAsyncThunk(
   'user/signup',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await apiFetch('/api/auth/signup', {
+      const response = await apiFetch('/api/auth/register/', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -41,7 +58,7 @@ export const signIn = createAsyncThunk(
   'user/signin',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await apiFetch('/api/auth/signin', {
+      const response = await apiFetch('/api/auth/login/', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -71,7 +88,9 @@ export const updateUser = createAsyncThunk(
   'user/update',
   async ({ userId, formData, onUploadProgress }, { rejectWithValue }) => {
     try {
-      const response = await apiFetch(`/api/users/update/${userId}`, {
+      // Use the correct endpoint for updating the current user's profile
+      // It doesn't require the ID in the URL as it uses the authenticated user from the request
+      const response = await apiFetch('/api/auth/profile/update/', {
         method: 'PUT',
         body: formData, // apiFetch will handle FormData properly
       });
@@ -100,13 +119,16 @@ export const signOut = createAsyncThunk(
   'user/signout',
   async (_, { rejectWithValue }) => {
     try {
-      await apiFetch('/api/auth/signout', {
+      await apiFetch('/api/auth/logout/', {
         method: 'POST',
         body: JSON.stringify({}),
       });
       return true;
     } catch (error) {
-      return rejectWithValue(handleApiError(error));
+      // If backend logout fails (e.g. no refresh token, network error),
+      // we still want to log the user out on the frontend.
+      console.warn('Backend logout failed, forcing local logout:', error);
+      return true;
     }
   }
 );
@@ -138,18 +160,25 @@ const userSlice = createSlice({
     };
 
     const authFulfilledState = (state, action) => {
-      if (validateUser(action.payload)) {
-        state.currentUser = action.payload;
-        state.token = action.payload.token;
+      // Direct access from payload.user based on how backend sends it
+      const userData = action.payload.user || action.payload;
+      const token = action.payload.token || action.payload.access || action.payload.key;
+
+      if (validateUser(userData)) {
+        state.loading = false;
+        state.currentUser = fixProfileUrl(userData);
+        state.token = token;
+        state.error = null;
         try {
-          if (action.payload.token) {
-            localStorage.setItem('token', action.payload.token);
+          if (token) {
+            localStorage.setItem('token', token);
           }
         } catch {}
       } else {
-        state.error = 'Invalid user data';
+        state.loading = false;
+        state.error = 'Invalid user data received from server';
+        console.error('Invalid user data:', userData);
       }
-      state.loading = false;
     };
 
     const clearUserState = (state) => {
@@ -157,29 +186,94 @@ const userSlice = createSlice({
       state.token = null;
       state.loading = false;
       state.error = null;
+      localStorage.removeItem('token');
     };
 
     builder
-      .addCase(signUp.pending, pendingState)
-      .addCase(signUp.fulfilled, authFulfilledState)
+      .addCase(signUp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(signUp.fulfilled, (state, action) => {
+        const userData = action.payload.user || action.payload;
+        const token = action.payload.token || action.payload.access || action.payload.key;
+        
+        state.loading = false;
+        state.currentUser = fixProfileUrl(userData);
+        state.token = token;
+        state.error = null;
+        
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+      })
       .addCase(signUp.rejected, rejectedState)
 
-      .addCase(signIn.pending, pendingState)
-      .addCase(signIn.fulfilled, authFulfilledState)
+      .addCase(signIn.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(signIn.fulfilled, (state, action) => {
+        const userData = action.payload.user || action.payload;
+        const token = action.payload.token || action.payload.access || action.payload.key;
+        
+        state.loading = false;
+        state.currentUser = fixProfileUrl(userData);
+        state.token = token;
+        state.error = null;
+        
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+      })
       .addCase(signIn.rejected, rejectedState)
 
-      .addCase(googleSignIn.pending, pendingState)
-      .addCase(googleSignIn.fulfilled, authFulfilledState)
+      .addCase(googleSignIn.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(googleSignIn.fulfilled, (state, action) => {
+        const userData = action.payload.user || action.payload;
+        const token = action.payload.token || action.payload.access || action.payload.key;
+        
+        state.loading = false;
+        state.currentUser = fixProfileUrl(userData);
+        state.token = token;
+        state.error = null;
+        
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+      })
       .addCase(googleSignIn.rejected, rejectedState)
 
       .addCase(updateUser.pending, pendingState)
       .addCase(updateUser.fulfilled, (state, action) => {
-        if (validateUser(action.payload)) {
-          state.currentUser = action.payload;
-        } else {
-          state.error = 'Invalid user data';
+        console.log('Update payload:', action.payload);
+        let updatedFields = action.payload; // Contains profile_picture, etc.
+        
+        // Handle potential nested wrapper from backend (just in case)
+        if (updatedFields && updatedFields.user) {
+            updatedFields = updatedFields.user;
+        }
+
+        // Merge allowed update fields with existing user data
+        if (state.currentUser && typeof updatedFields === 'object') {
+            // Create a new object for currentUser to ensure immutability
+            const newCurrentUser = { ...state.currentUser, ...updatedFields };
+            
+            // Fix profile URL if present and starts with internal backend URL
+            if (newCurrentUser.profile_picture && typeof newCurrentUser.profile_picture === 'string') {
+               newCurrentUser.profile_picture = newCurrentUser.profile_picture.replace('http://backend:8000', 'http://localhost:8000').replace('http://backend', 'http://localhost:8000');
+            }
+            
+            state.currentUser = newCurrentUser;
+        } else if (validateUser(updatedFields)) {
+             // Fallback if full user object is returned
+             state.currentUser = fixProfileUrl(updatedFields);
         }
         state.loading = false;
+        state.error = null;
       })
       .addCase(updateUser.rejected, rejectedState)
 
