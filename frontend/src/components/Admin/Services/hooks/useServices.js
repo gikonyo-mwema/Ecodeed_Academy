@@ -81,14 +81,15 @@ export const useServices = () => {
     async (params = {}) => {
       try {
         setLoading(prev => ({ ...prev, table: true }));
-        const { data } = await axios.get('/api/services', {
+        const { data } = await axios.get('/api/services/', {
           params,
           ...getAxiosConfig(),
         });
         
         // Extract services array from API response format
-        const servicesArray = data?.data?.services || data?.services || data || [];
-        setServices(servicesArray);
+        // Handle DRF paginated response (results), or other common formats
+        const servicesArray = data?.results || data?.data?.services || data?.services || data || [];
+        setServices(Array.isArray(servicesArray) ? servicesArray : []);
       } catch (err) {
         console.error('Error fetching services:', err);
         showAlert(
@@ -111,7 +112,29 @@ export const useServices = () => {
     return retryOperation(async () => {
       try {
         setLoading(prev => ({ ...prev, operation: true }));
-        const { data } = await axios.post('/api/services', serviceData, {
+        
+        // Map frontend field names to backend field names
+        const backendData = {
+          title: serviceData.title,
+          short_description: serviceData.shortDescription || serviceData.short_description || '',
+          full_description: serviceData.fullDescription || serviceData.description || serviceData.full_description || '',
+          category: serviceData.category || '',
+          is_published: serviceData.isPublished ?? serviceData.is_published ?? true,
+          price: serviceData.price || null,
+          price_suffix: serviceData.priceSuffix || serviceData.price_suffix || null,
+          features: serviceData.features || [],
+          benefits: serviceData.benefits || [],
+          process: serviceData.process || serviceData.processSteps || [],
+          faqs: serviceData.faqs || [],
+          deliverables: serviceData.deliverables || [],
+          timeline: serviceData.timeline || null,
+          image: serviceData.image || null,
+          icon: serviceData.icon || null,
+        };
+        
+        console.log('Creating service with data:', backendData);
+        
+        const { data } = await axios.post('/api/services/', backendData, {
           ...getAxiosConfig(),
           headers: { 'Content-Type': 'application/json', ...(getAxiosConfig().headers || {}) }
         });
@@ -122,17 +145,10 @@ export const useServices = () => {
       } catch (error) {
         console.error('Create failed:', error);
         console.error('Error response:', error.response?.data);
-        const fieldErrors = error.response?.data?.errors;
-        if (fieldErrors && typeof fieldErrors === 'object') {
-          const firstKey = Object.keys(fieldErrors)[0];
-          const firstMsg = fieldErrors[firstKey];
-          showAlert(`Validation failed: ${firstKey} → ${firstMsg}`, 'failure');
-        } else {
-          showAlert(
-            `Create failed: ${error.response?.data?.message || error.message}`,
-            'failure'
-          );
-        }
+        const errorMsg = error.response?.data 
+          ? JSON.stringify(error.response.data) 
+          : error.message;
+        showAlert(`Create failed: ${errorMsg}`, 'failure');
         throw error;
       } finally {
         setLoading(prev => ({ ...prev, operation: false }));
@@ -150,17 +166,40 @@ export const useServices = () => {
     return retryOperation(async () => {
       try {
         setLoading(prev => ({ ...prev, operation: true }));
-        const { data } = await axios.put(`/api/services/${id}`, serviceData, getAxiosConfig());
+        
+        // Map frontend field names to backend field names
+        const backendData = {
+          title: serviceData.title,
+          short_description: serviceData.shortDescription || serviceData.short_description || '',
+          full_description: serviceData.fullDescription || serviceData.description || serviceData.full_description || '',
+          category: serviceData.category || '',
+          is_published: serviceData.isPublished ?? serviceData.is_published ?? true,
+          price: serviceData.price || null,
+          price_suffix: serviceData.priceSuffix || serviceData.price_suffix || null,
+          features: serviceData.features || [],
+          benefits: serviceData.benefits || [],
+          process: serviceData.process || serviceData.processSteps || [],
+          faqs: serviceData.faqs || [],
+          deliverables: serviceData.deliverables || [],
+          timeline: serviceData.timeline || null,
+          image: serviceData.image || null,
+          icon: serviceData.icon || null,
+        };
+        
+        console.log('Updating service with data:', backendData);
+        
+        const { data } = await axios.put(`/api/services/${id}/`, backendData, getAxiosConfig());
         const updatedService = data?.data?.service || data?.service || data;
-        setServices(prev => prev.map(s => (s._id === id ? updatedService : s)));
+        setServices(prev => prev.map(s => (s._id === id || s.id === id ? updatedService : s)));
         showAlert('Service updated successfully');
         return updatedService;
       } catch (error) {
         console.error('Update failed:', error);
-        showAlert(
-          `Update failed: ${error.response?.data?.message || error.message}`,
-          'failure'
-        );
+        console.error('Error response data:', error.response?.data);
+        const errorMsg = error.response?.data 
+          ? JSON.stringify(error.response.data) 
+          : error.message;
+        showAlert(`Update failed: ${errorMsg}`, 'failure');
         throw error;
       } finally {
         setLoading(prev => ({ ...prev, operation: false }));
@@ -177,8 +216,8 @@ export const useServices = () => {
     return retryOperation(async () => {
       try {
         setLoading(prev => ({ ...prev, operation: true }));
-        await axios.delete(`/api/services/${id}`, getAxiosConfig());
-        setServices(prev => prev.filter(s => s._id !== id));
+        await axios.delete(`/api/services/${id}/`, getAxiosConfig());
+        setServices(prev => prev.filter(s => s._id !== id && s.id !== id));
         showAlert('Service deleted successfully');
         return true;
       } catch (error) {
