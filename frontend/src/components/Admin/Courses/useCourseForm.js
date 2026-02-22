@@ -7,106 +7,122 @@ export const useCourseForm = (initialState) => {
 
   const handleChange = (e) => {
     const { id, value, type, checked } = e.target;
-    setFormData({ 
-      ...formData, 
+    setFormData(prev => ({ 
+      ...prev, 
       [id]: type === 'checkbox' ? (checked !== undefined ? checked : value === 'true') : value 
-    });
+    }));
   };
 
   const handleFeatureChange = (index, value) => {
-    const newFeatures = [...(formData.features || [])];
-    newFeatures[index] = value;
-    setFormData({ ...formData, features: newFeatures });
+    setFormData(prev => {
+      const newFeatures = [...(prev.features || [])];
+      newFeatures[index] = value;
+      return { ...prev, features: newFeatures };
+    });
   };
 
   const addFeatureField = () => {
-    setFormData({ ...formData, features: [...(formData.features || []), ''] });
+    setFormData(prev => ({ ...prev, features: [...(prev.features || []), ''] }));
   };
 
   const removeFeatureField = (index) => {
-    const newFeatures = (formData.features || []).filter((_, i) => i !== index);
-    setFormData({ ...formData, features: newFeatures });
+    setFormData(prev => {
+      const newFeatures = (prev.features || []).filter((_, i) => i !== index);
+      return { ...prev, features: newFeatures };
+    });
   };
 
   // Curriculum Handlers
   const handleCurriculumChange = (sectionIndex, field, value) => {
-    const newCurriculum = [...(formData.curriculum || [])];
-    if (newCurriculum[sectionIndex]) {
-      newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], [field]: value };
-      setFormData({ ...formData, curriculum: newCurriculum });
-    }
-  };
-
-  const handleCurriculumItemChange = (sectionIndex, itemIndex, value) => {
-    const newCurriculum = [...(formData.curriculum || [])];
-    if (newCurriculum[sectionIndex] && Array.isArray(newCurriculum[sectionIndex].items)) {
-      const newItems = [...newCurriculum[sectionIndex].items];
-      
-      // Update object if it's an object, or convert string to object (migration safety)
-      const currentItem = newItems[itemIndex];
-      if (typeof currentItem === 'object' && currentItem !== null) {
-         newItems[itemIndex] = { ...currentItem, title: value };
-      } else {
-         newItems[itemIndex] = { title: value };
+    setFormData(prev => {
+      const newCurriculum = [...(prev.curriculum || [])];
+      if (newCurriculum[sectionIndex]) {
+        newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], [field]: value };
       }
-      
-      newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], items: newItems };
-      setFormData({ ...formData, curriculum: newCurriculum });
-    }
-  };
-
-  const addCurriculumSection = () => {
-    setFormData({ 
-      ...formData, 
-      curriculum: [...(formData.curriculum || []), { title: '', items: [{ title: '' }] }] 
+      return { ...prev, curriculum: newCurriculum };
     });
   };
 
+  const handleCurriculumItemChange = (sectionIndex, itemIndex, value) => {
+    setFormData(prev => {
+      const newCurriculum = [...(prev.curriculum || [])];
+      if (newCurriculum[sectionIndex] && Array.isArray(newCurriculum[sectionIndex].items)) {
+        const newItems = [...newCurriculum[sectionIndex].items];
+        
+        // Update object if it's an object, or convert string to object (migration safety)
+        const currentItem = newItems[itemIndex];
+        if (typeof currentItem === 'object' && currentItem !== null) {
+           newItems[itemIndex] = { ...currentItem, title: value };
+        } else {
+           newItems[itemIndex] = { title: value };
+        }
+        
+        newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], items: newItems };
+      }
+      return { ...prev, curriculum: newCurriculum };
+    });
+  };
+
+  const addCurriculumSection = () => {
+    setFormData(prev => ({ 
+      ...prev, 
+      curriculum: [...(prev.curriculum || []), { title: '', items: [{ title: '' }] }] 
+    }));
+  };
+
   const addCurriculumItem = (sectionIndex) => {
-    const newCurriculum = [...(formData.curriculum || [])];
-    if (newCurriculum[sectionIndex]) {
-      newCurriculum[sectionIndex] = { 
-        ...newCurriculum[sectionIndex], 
-        items: [...(newCurriculum[sectionIndex].items || []), { title: '' }] 
-      };
-      setFormData({ ...formData, curriculum: newCurriculum });
-    }
+    setFormData(prev => {
+      const newCurriculum = [...(prev.curriculum || [])];
+      if (newCurriculum[sectionIndex]) {
+        newCurriculum[sectionIndex] = { 
+          ...newCurriculum[sectionIndex], 
+          items: [...(newCurriculum[sectionIndex].items || []), { title: '' }] 
+        };
+      }
+      return { ...prev, curriculum: newCurriculum };
+    });
   };
 
   const removeCurriculumItem = (sectionIndex, itemIndex) => {
-    const newCurriculum = [...(formData.curriculum || [])];
-    if (newCurriculum[sectionIndex]) {
-      if (itemIndex !== undefined) {
-        // Remove specific lesson
-        const newItems = newCurriculum[sectionIndex].items.filter((_, i) => i !== itemIndex);
-        newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], items: newItems };
-      } else {
-        // Remove whole section
-        newCurriculum.splice(sectionIndex, 1);
+    setFormData(prev => {
+      const newCurriculum = [...(prev.curriculum || [])];
+      if (newCurriculum[sectionIndex]) {
+        if (itemIndex !== undefined) {
+          // Remove specific lesson
+          const newItems = newCurriculum[sectionIndex].items.filter((_, i) => i !== itemIndex);
+          newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], items: newItems };
+        } else {
+          // Remove whole section
+          newCurriculum.splice(sectionIndex, 1);
+        }
       }
-      setFormData({ ...formData, curriculum: newCurriculum });
-    }
+      return { ...prev, curriculum: newCurriculum };
+    });
   };
 
   // FAQ Handlers
   const handleFaqChange = (index, field, value) => {
-    const newFaqs = [...(formData.faqs || [])];
-    if (newFaqs[index]) {
-      newFaqs[index] = { ...newFaqs[index], [field]: value };
-      setFormData({ ...formData, faqs: newFaqs });
-    }
-  };
-
-  const addFaq = () => {
-    setFormData({ 
-      ...formData, 
-      faqs: [...(formData.faqs || []), { question: '', answer: '' }] 
+    setFormData(prev => {
+      const newFaqs = [...(prev.faqs || [])];
+      if (newFaqs[index]) {
+        newFaqs[index] = { ...newFaqs[index], [field]: value };
+      }
+      return { ...prev, faqs: newFaqs };
     });
   };
 
+  const addFaq = () => {
+    setFormData(prev => ({ 
+      ...prev, 
+      faqs: [...(prev.faqs || []), { question: '', answer: '' }] 
+    }));
+  };
+
   const removeFaq = (index) => {
-    const newFaqs = (formData.faqs || []).filter((_, i) => i !== index);
-    setFormData({ ...formData, faqs: newFaqs });
+    setFormData(prev => {
+      const newFaqs = (prev.faqs || []).filter((_, i) => i !== index);
+      return { ...prev, faqs: newFaqs };
+    });
   };
 
   return {

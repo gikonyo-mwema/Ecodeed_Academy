@@ -133,7 +133,7 @@ export const CourseForm = ({
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="isFree"
-                  checked={formData.isFree}
+                  checked={Boolean(formData.isFree)}
                   onChange={handleChange}
                 />
                 <Label htmlFor="isFree">Free Course</Label>
@@ -225,7 +225,7 @@ export const CourseForm = ({
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="isPopular"
-                  checked={formData.isPopular}
+                  checked={Boolean(formData.isPopular)}
                   onChange={handleChange}
                 />
                 <Label htmlFor="isPopular">Mark as Popular Course</Label>

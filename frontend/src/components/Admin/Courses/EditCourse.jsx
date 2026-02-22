@@ -37,6 +37,7 @@ export const EditCourse = () => {
     description: '',
     externalUrl: '',
     isPopular: false,
+    isFree: false,
     category: 'specialized',
     features: [''],
     faqs: [{ question: '', answer: '' }],
@@ -49,9 +50,10 @@ export const EditCourse = () => {
     const fetchCourse = async () => {
       try {
         setLoading(true);
-        const data = await apiFetch(`/api/courses/${courseId}`);
+        const data = await apiFetch(`/api/courses/${courseId}/`);
 
-        setFormData({
+        setFormData(prev => ({
+          ...prev,
           title: data.title || '',
           slug: data.slug || '',
           price: data.price || '',
@@ -59,13 +61,14 @@ export const EditCourse = () => {
           description: data.full_description || data.description || '',
           externalUrl: data.external_url || data.externalUrl || '',
           isPopular: data.is_popular !== undefined ? data.is_popular : (data.isPopular || false),
+          isFree: data.is_free !== undefined ? data.is_free : (data.isFree || false),
           category: data.category || 'specialized',
-          features: Array.isArray(data.features) ? data.features : [''],
-          faqs: Array.isArray(data.faqs) ? data.faqs : [{ question: '', answer: '' }],
+          features: Array.isArray(data.features) && data.features.length > 0 ? data.features : [''],
+          faqs: Array.isArray(data.faqs) && data.faqs.length > 0 ? data.faqs : [{ question: '', answer: '' }],
           level: Array.isArray(data.level) ? data.level : [],
           format: Array.isArray(data.format) ? data.format : [],
-          curriculum: Array.isArray(data.curriculum) ? data.curriculum : []
-        });
+          curriculum: Array.isArray(data.curriculum) && data.curriculum.length > 0 ? data.curriculum : []
+        }));
       } catch (error) {
         setError(error.message);
       } finally {
@@ -95,6 +98,8 @@ export const EditCourse = () => {
         full_description: formData.description,
         external_url: formData.externalUrl,
         is_popular: formData.isPopular,
+        is_free: formData.isFree,
+        price: Number(formData.price) || 0
       };
 
       const data = await apiFetch(`/api/courses/${courseId}/`, {
