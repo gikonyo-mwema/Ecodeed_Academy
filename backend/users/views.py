@@ -122,3 +122,37 @@ class UserViewSet(viewsets.ModelViewSet):
         user.delete()
         return Response({'message': 'User deleted successfully'})
 
+    @action(detail=True, methods=['patch'])
+    def updateRole(self, request, pk=None):
+        """
+        Update user role/type.
+        Only admins can promote users to different roles.
+        
+        Valid roles: READER, STUDENT, MENTOR, ADMIN
+        """
+        if not request.user.is_superuser and not request.user.is_staff:
+            return Response({'message': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        
+        user = self.get_object()
+        new_role = request.data.get('user_type') or request.data.get('role')
+        
+        valid_roles = ['READER', 'STUDENT', 'MENTOR', 'ADMIN']
+        if not new_role or new_role.upper() not in valid_roles:
+            return Response(
+                {'message': f'Invalid role. Must be one of: {valid_roles}'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.user_type = new_role.upper()
+        
+        # If promoting to admin, also set is_staff
+        if new_role.upper() == 'ADMIN':
+            user.is_staff = True
+        
+        user.save()
+        
+        return Response({
+            'message': f'User role updated to {new_role.upper()}',
+            'user': UserSerializer(user).data
+        })
+

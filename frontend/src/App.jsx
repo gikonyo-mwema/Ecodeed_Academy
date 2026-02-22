@@ -28,6 +28,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
+import InstructorDashboard from './pages/InstructorDashboard';
 import Projects from './pages/Projects';
 import SignUp from './pages/SignUp';
 import CreatePost from './pages/CreatePost';
@@ -97,6 +98,7 @@ export default function App() {
           {/* These routes require user authentication */}
           <Route element={<PrivateRoute />}>
             <Route path='/dashboard' element={<Dashboard />} />
+            <Route path='/instructor-dashboard' element={<InstructorDashboard />} />
             <Route path='/my-courses' element={<UserCourses />} />
             <Route path='/learn/:slug' element={<LearningPlayer />} />
           </Route>

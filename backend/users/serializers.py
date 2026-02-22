@@ -38,9 +38,13 @@ class UserSerializer(serializers.ModelSerializer):
         date_joined (datetime): Account creation timestamp (read-only).
         createdAt (datetime): Alias for date_joined for frontend compatibility.
         isAdmin (bool): Whether the user has admin privileges.
+        isInstructor (bool): Whether the user is an instructor/tutor.
+        hasEnrollments (bool): Whether the user has any course enrollments (is a student).
     """
 
     isAdmin = serializers.SerializerMethodField()
+    isInstructor = serializers.SerializerMethodField()
+    hasEnrollments = serializers.SerializerMethodField()
     _id = serializers.IntegerField(source='id', read_only=True)
     username = serializers.CharField(source='email', read_only=True)
     firstName = serializers.CharField(source='first_name', read_only=True)
@@ -53,11 +57,24 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', '_id', 'email', 'username', 'first_name', 'firstName', 
                 'last_name', 'lastName', 'user_type', 'profile_picture', 'profilePicture', 
-                'bio', 'phone_number', 'phoneNumber', 'date_joined', 'createdAt', 'isAdmin']
-        read_only_fields = ['id', '_id', 'username', 'date_joined', 'createdAt', 'isAdmin']
+                'bio', 'phone_number', 'phoneNumber', 'date_joined', 'createdAt', 
+                'isAdmin', 'isInstructor', 'hasEnrollments']
+        read_only_fields = ['id', '_id', 'username', 'date_joined', 'createdAt', 
+                           'isAdmin', 'isInstructor', 'hasEnrollments']
 
     def get_isAdmin(self, obj):
+        """Check if user is an admin."""
         return obj.user_type == 'ADMIN' or obj.is_staff or obj.is_superuser
+    
+    def get_isInstructor(self, obj):
+        """Check if user is an instructor/tutor (MENTOR type)."""
+        return obj.user_type == 'MENTOR'
+    
+    def get_hasEnrollments(self, obj):
+        """Check if user has any course enrollments (is a student)."""
+        # Import here to avoid circular imports
+        from payments.models import Enrollment
+        return Enrollment.objects.filter(user=obj).exists()
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):

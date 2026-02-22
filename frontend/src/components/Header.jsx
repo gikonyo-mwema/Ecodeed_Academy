@@ -272,6 +272,26 @@ export default function Header() {
                   My Profile
                 </Dropdown.Item>
               </Link>
+              
+              {/* Student Dashboard - shown if user has enrollments (is a student) */}
+              {currentUser.hasEnrollments && !currentUser.isAdmin && (
+                <Link to="/dashboard?tab=learning">
+                  <Dropdown.Item className="text-gray-700 dark:text-gray-200 hover:!bg-brand-green dark:hover:!bg-brand-green hover:!text-white dark:hover:!text-white transition-colors duration-200 focus:!bg-brand-green focus:!text-white">
+                    My Learning
+                  </Dropdown.Item>
+                </Link>
+              )}
+              
+              {/* Instructor Dashboard - shown if user is a tutor/mentor */}
+              {currentUser.isInstructor && !currentUser.isAdmin && (
+                <Link to="/instructor-dashboard">
+                  <Dropdown.Item className="text-gray-700 dark:text-gray-200 hover:!bg-brand-yellow dark:hover:!bg-brand-yellow hover:!text-white dark:hover:!text-gray-900 transition-colors duration-200 focus:!bg-brand-yellow focus:!text-white">
+                    Instructor Dashboard
+                  </Dropdown.Item>
+                </Link>
+              )}
+              
+              {/* Admin Dashboard - shown if user is admin */}
               {currentUser.isAdmin && (
                 <Link to="/dashboard">
                   <Dropdown.Item className="text-gray-700 dark:text-gray-200 hover:!bg-brand-blue dark:hover:!bg-brand-blue hover:!text-white dark:hover:!text-white transition-colors duration-200 focus:!bg-brand-blue focus:!text-white">
@@ -279,6 +299,7 @@ export default function Header() {
                   </Dropdown.Item>
                 </Link>
               )}
+              
               <Dropdown.Divider />
               <Dropdown.Item 
                 onClick={handleSignout}

@@ -17,5 +17,6 @@ urlpatterns = [
         # Legacy / Dashboard mappings
         path('users/getUsers', UserViewSet.as_view({'get': 'getUsers'}), name='get-users'),
         path('users/delete/<int:pk>', UserViewSet.as_view({'delete': 'deleteUser'}), name='delete-user'),
+        path('users/updateRole/<int:pk>', UserViewSet.as_view({'patch': 'updateRole'}), name='update-role'),
 ]
 
