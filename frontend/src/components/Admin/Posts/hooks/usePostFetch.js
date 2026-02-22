@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import apiRequest from '../../../../utils/apiRequest';
+import { apiFetch } from '../../../../utils/api';
 
 export default function usePostFetch(currentUser) {
   const [userPosts, setUserPosts] = useState([]);
@@ -13,18 +13,16 @@ export default function usePostFetch(currentUser) {
     
     setLoading(true);
     try {
+      // Backend expects startIndex for offset pagination
       const query = new URLSearchParams({
-        page: pagination.page,
-        limit: pagination.limit,
-        // userId: currentUser._id
+        startIndex: ((pagination.page - 1) * pagination.limit).toString(),
+        limit: pagination.limit.toString(),
+        order: 'desc'
       }).toString();
 
-      const response = await apiRequest(
-        `/api/posts/getPosts?${query}`,
-        currentUser.token
-      );
+      const data = await apiFetch(`/api/posts/getPosts?${query}`);
 
-      const newPosts = response.data?.posts || [];
+      const newPosts = data.posts || [];
       setUserPosts(prev => {
         if (pagination.page === 1) {
           return newPosts;
@@ -34,8 +32,10 @@ export default function usePostFetch(currentUser) {
         const uniqueNewPosts = newPosts.filter(p => !existingIds.has(p._id));
         return [...prev, ...uniqueNewPosts];
       });
-      setShowMore(response.data?.pagination?.hasNextPage || false);
+      // Backend returns totalPosts
+      setShowMore(data.totalPosts > (pagination.page * pagination.limit));
     } catch (error) {
+      console.error('Error fetching posts:', error);
       setError(error.message);
     } finally {
       setLoading(false);

@@ -94,7 +94,7 @@ export default function DashPosts() {
     handleEditPost,
     publishError,
     setPublishError
-  } = usePostActions(currentUser, setShowEditForm, setCurrentPost);
+  } = usePostActions(currentUser, setShowEditForm, setCurrentPost, fetchPosts);
 
   return (
     <div className="p-3 max-w-6xl mx-auto min-h-screen">
