@@ -277,7 +277,7 @@ export default function Header() {
               {currentUser.hasEnrollments && !currentUser.isAdmin && (
                 <Link to="/dashboard?tab=learning">
                   <Dropdown.Item className="text-gray-700 dark:text-gray-200 hover:!bg-brand-green dark:hover:!bg-brand-green hover:!text-white dark:hover:!text-white transition-colors duration-200 focus:!bg-brand-green focus:!text-white">
-                    My Learning
+                    Student Dashboard
                   </Dropdown.Item>
                 </Link>
               )}

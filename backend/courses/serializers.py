@@ -60,7 +60,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'image', 'price', 'category', 'is_free', 'modules', 'curriculum',
             'created_at', 'updated_at', 'level', 'format', 'features', 'faqs',
             'target_audience', 'resources', 'external_url', 'is_popular', 'is_live',
-            'instructor'
+            'has_certificate', 'instructor'
         ]
         read_only_fields = ['instructor']
 

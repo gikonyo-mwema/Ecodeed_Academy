@@ -35,6 +35,7 @@ export const CreateCourse = () => {
     description: '',
     externalUrl: '',
     isPopular: false,
+    hasCertificate: false,
     category: 'specialized',
     features: [''],
     faqs: [{ question: '', answer: '' }],
@@ -71,6 +72,7 @@ export const CreateCourse = () => {
         full_description: formData.description,
         external_url: formData.externalUrl,
         is_popular: formData.isPopular,
+        has_certificate: formData.hasCertificate,
         price: Number(formData.price) || 0
       };
 

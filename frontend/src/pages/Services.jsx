@@ -16,7 +16,8 @@ const Services = () => {
         const res = await axios.get('/api/services?isPublished=true');
         
         // Extract services from the nested response format
-        const servicesData = res.data?.data?.services || res.data?.services || res.data || [];
+        // Handle DRF pagination format (results), nested data, or direct array
+        const servicesData = res.data?.results || res.data?.data?.services || res.data?.services || (Array.isArray(res.data) ? res.data : []);
         setServices(servicesData);
       } catch (err) {
         console.error('Failed to fetch services:', err);

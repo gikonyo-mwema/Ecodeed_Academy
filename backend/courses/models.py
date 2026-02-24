@@ -37,6 +37,7 @@ class Course(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     is_popular = models.BooleanField(default=False)
     is_live = models.BooleanField(default=False)
+    has_certificate = models.BooleanField(default=False, help_text="Whether this course offers a certificate upon completion")
     
     instructor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses_taught')
 

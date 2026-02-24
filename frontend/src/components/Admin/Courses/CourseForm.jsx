@@ -221,7 +221,7 @@ export const CourseForm = ({
             </div>
 
             {/* Course Options */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="isPopular"
@@ -229,6 +229,15 @@ export const CourseForm = ({
                   onChange={handleChange}
                 />
                 <Label htmlFor="isPopular">Mark as Popular Course</Label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="hasCertificate"
+                  checked={Boolean(formData.hasCertificate)}
+                  onChange={handleChange}
+                />
+                <Label htmlFor="hasCertificate">Offers Certificate</Label>
               </div>
 
               <div>

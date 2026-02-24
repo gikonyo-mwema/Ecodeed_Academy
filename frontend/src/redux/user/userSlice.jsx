@@ -133,6 +133,23 @@ export const signOut = createAsyncThunk(
   }
 );
 
+// Refresh user data from backend (to get updated hasEnrollments, etc.)
+export const refreshUser = createAsyncThunk(
+  'user/refresh',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { user } = getState();
+      if (!user.currentUser) {
+        throw new Error('No user logged in');
+      }
+      const response = await apiFetch('/api/auth/profile/');
+      return response;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+);
+
 // Slice creation
 const userSlice = createSlice({
   name: 'user',
@@ -283,7 +300,22 @@ const userSlice = createSlice({
 
       .addCase(signOut.pending, pendingState)
       .addCase(signOut.fulfilled, clearUserState)
-      .addCase(signOut.rejected, rejectedState);
+      .addCase(signOut.rejected, rejectedState)
+
+      // Refresh user data
+      .addCase(refreshUser.fulfilled, (state, action) => {
+        const userData = action.payload.user || action.payload;
+        if (validateUser(userData)) {
+          state.currentUser = fixProfileUrl(userData);
+        }
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(refreshUser.rejected, (state, action) => {
+        // Don't clear user on refresh failure, just log
+        console.warn('User refresh failed:', action.payload);
+        state.loading = false;
+      });
   },
 });
 

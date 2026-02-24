@@ -73,7 +73,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_hasEnrollments(self, obj):
         """Check if user has any course enrollments (is a student)."""
         # Import here to avoid circular imports
-        from payments.models import Enrollment
+        from courses.models import Enrollment
         return Enrollment.objects.filter(user=obj).exists()
 
 

@@ -103,14 +103,27 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         from rest_framework.exceptions import PermissionDenied
+        from users.models import CustomUser
+        
         course = serializer.validated_data.get('course')
+        user = self.request.user
         
         # Security: Prevent direct enrollment in paid courses via API
-        if not course.is_free and not self.request.user.is_staff:
+        if not course.is_free and not user.is_staff:
              # Paid enrollments must go through the payment verification flow
              raise PermissionDenied("Direct enrollment is restricted for paid courses. Please complete payment.")
-             
-        serializer.save(user=self.request.user)
+        
+        # Check if user is already enrolled
+        if Enrollment.objects.filter(user=user, course=course).exists():
+            raise PermissionDenied("You are already enrolled in this course.")
+        
+        # Save the enrollment
+        serializer.save(user=user)
+        
+        # Update user role to STUDENT if they're currently a READER
+        if user.user_type == CustomUser.UserType.READER:
+            user.user_type = CustomUser.UserType.STUDENT
+            user.save(update_fields=['user_type'])
 
     @action(detail=False, methods=['get'])
     def check(self, request):

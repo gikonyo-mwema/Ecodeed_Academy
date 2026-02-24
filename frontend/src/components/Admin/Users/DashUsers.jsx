@@ -196,10 +196,12 @@ export default function DashUsers() {
         totalUsers: prev.totalUsers - 1,
         adminCount: prev.adminCount - (users.find(u => (u._id || u.id) === userIdToDelete)?.isAdmin ? 1 : 0)
       }));
-      setShowModal(false);
     } catch (error) {
       console.error('Delete error:', error);
       setError(error.message);
+    } finally {
+      setShowModal(false);
+      setUserIdToDelete(null);
     }
   };
 
