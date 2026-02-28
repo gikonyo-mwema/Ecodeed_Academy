@@ -1,10 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactPlayer from 'react-player';
-import { Button, Sidebar, Progress, Accordion, Checkbox, Tooltip } from 'flowbite-react';
-import { HiOutlineChevronLeft, HiOutlineCheckCircle, HiOutlineLockClosed, HiOutlinePlay, HiOutlineDocumentText } from 'react-icons/hi';
+import { 
+  HiOutlineChevronLeft, 
+  HiOutlineChevronRight,
+  HiOutlineCheckCircle, 
+  HiOutlinePlay, 
+  HiOutlineDocumentText,
+  HiOutlineDownload,
+  HiOutlineClipboardList,
+  HiOutlineExternalLink,
+  HiOutlineBookOpen,
+  HiOutlineAcademicCap,
+  HiMenu,
+  HiX,
+  HiOutlineClock,
+  HiOutlineLightBulb,
+  HiOutlineLink
+} from 'react-icons/hi';
 import { apiFetch } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+
+// Brand colors
+const brandColors = {
+  green: '#008037',
+  yellow: '#F8BF0F',
+  blue: '#051836'
+};
 
 export default function LearningPlayer() {
   const { slug } = useParams();
@@ -13,8 +35,40 @@ export default function LearningPlayer() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentLesson, setCurrentLesson] = useState(null);
+  const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('content');
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [showSidebar, setShowSidebar] = useState(window.innerWidth >= 768);
+  const [expandedWeek, setExpandedWeek] = useState(0);
+  const [expandedSection, setExpandedSection] = useState('lessons');
+
+  // Flatten all lessons for navigation
+  const allLessons = useMemo(() => {
+    if (!course?.modules) return [];
+    return course.modules.flatMap((module, mIdx) => 
+      module.lessons?.map(lesson => ({ ...lesson, moduleIndex: mIdx, moduleTitle: module.title })) || []
+    );
+  }, [course]);
+
+  // Current lesson index in flattened array
+  const currentLessonIndex = useMemo(() => {
+    if (!currentLesson || !allLessons.length) return -1;
+    return allLessons.findIndex(l => l.id === currentLesson.id);
+  }, [currentLesson, allLessons]);
+
+  // Get current module data
+  const currentModule = useMemo(() => {
+    if (!course?.modules || currentModuleIndex < 0) return null;
+    return course.modules[currentModuleIndex];
+  }, [course, currentModuleIndex]);
+
+  // Calculate progress
+  const progressPercentage = useMemo(() => {
+    if (!allLessons.length) return 0;
+    return Math.round((completedLessons.length / allLessons.length) * 100);
+  }, [completedLessons, allLessons]);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -22,176 +76,441 @@ export default function LearningPlayer() {
         const data = await apiFetch(`/api/courses/${slug}/content`);
         setCourse(data);
         
-        // Auto-select first lesson if available and nothing selected
         if (data.modules?.length > 0 && data.modules[0].lessons?.length > 0) {
-            setCurrentLesson(data.modules[0].lessons[0]);
+          setCurrentLesson(data.modules[0].lessons[0]);
+          setCurrentModuleIndex(0);
         }
       } catch (error) {
         console.error("Access error:", error);
-        // Redirect to course sales page if access denied
         navigate(`/courses/${slug}`); 
       } finally {
         setLoading(false);
       }
     };
     fetchContent();
+
+    const handleResize = () => {
+      setShowSidebar(window.innerWidth >= 768 ? sidebarOpen : false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [slug, navigate]);
 
-  const handleLessonSelect = (lesson) => {
+  const handleLessonSelect = (lesson, moduleIndex) => {
     setCurrentLesson(lesson);
-    // On mobile, maybe close sidebar
-    if (window.innerWidth < 768) setSidebarOpen(false);
+    setCurrentModuleIndex(moduleIndex);
+    setActiveTab('content');
+    setVideoProgress(0);
+    if (window.innerWidth < 768) setShowSidebar(false);
   };
 
   const isLessonCompleted = (id) => completedLessons.includes(id);
 
   const markComplete = async () => {
-      // TODO: Implement backend completion call
-      if (currentLesson && !completedLessons.includes(currentLesson.id)) {
-          setCompletedLessons([...completedLessons, currentLesson.id]);
-      }
-      autoAdvance();
+    if (currentLesson && !completedLessons.includes(currentLesson.id)) {
+      setCompletedLessons([...completedLessons, currentLesson.id]);
+      // Auto-navigate to next lesson
+      goToNextLesson();
+      // TODO: Persist to backend
+    }
   };
 
-  const autoAdvance = () => {
-       // Logic to find next lesson
-       if (!course || !currentLesson) return;
-       
-       let foundCurrent = false;
-       for (const module of course.modules) {
-           for (const lesson of module.lessons) {
-               if (foundCurrent) {
-                   setCurrentLesson(lesson);
-                   return;
-               }
-               if (lesson.id === currentLesson.id) foundCurrent = true;
-           }
-       }
+  const goToPreviousLesson = () => {
+    if (currentLessonIndex > 0) {
+      const prevLesson = allLessons[currentLessonIndex - 1];
+      setCurrentLesson(prevLesson);
+      setCurrentModuleIndex(prevLesson.moduleIndex);
+      setActiveTab('content');
+    }
+  };
+
+  const goToNextLesson = () => {
+    if (currentLessonIndex < allLessons.length - 1) {
+      const nextLesson = allLessons[currentLessonIndex + 1];
+      setCurrentLesson(nextLesson);
+      setCurrentModuleIndex(nextLesson.moduleIndex);
+      setActiveTab('content');
+    }
+  };
+
+  const goToNextModule = () => {
+    if (course?.modules && currentModuleIndex < course.modules.length - 1) {
+      const nextModule = course.modules[currentModuleIndex + 1];
+      if (nextModule.lessons?.length > 0) {
+        setCurrentLesson(nextModule.lessons[0]);
+        setCurrentModuleIndex(currentModuleIndex + 1);
+        setActiveTab('content');
+      }
+    }
+  };
+
+  const toggleSidebar = () => {
+    setShowSidebar(!showSidebar);
+    setSidebarOpen(!showSidebar);
   };
 
   if (loading) return <LoadingSpinner fullScreen />;
-  if (!course) return <div>Course content unavailable.</div>;
+  if (!course) return (
+    <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: brandColors.blue }}>
+      <div className="text-white text-center">
+        <p className="text-xl">Course content unavailable</p>
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className="mt-4 px-6 py-2 rounded-lg transition-colors"
+          style={{ backgroundColor: brandColors.green }}
+        >
+          Return to Dashboard
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: brandColors.blue }}>
+      {/* Sidebar Overlay for Mobile */}
+      {showSidebar && window.innerWidth < 768 && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20"
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+
       {/* Sidebar - Curriculum */}
-      <div className={`${sidebarOpen ? 'w-full md:w-80' : 'w-0'} flex-shrink-0 bg-gray-800 border-r border-gray-700 transition-all duration-300 flex flex-col`}>
-        <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-          <h2 className="font-bold truncate" title={course.title}>{course.title}</h2>
-          <Button color="gray" size="xs" onClick={() => navigate('/dashboard')}>
-             Exit
-          </Button>
+      <div 
+        className={`${showSidebar ? 'translate-x-0' : '-translate-x-full'} 
+          fixed md:relative md:translate-x-0 w-80 lg:w-96 h-full 
+          transition-transform duration-300 ease-in-out z-30
+          flex flex-col overflow-hidden shadow-2xl`}
+        style={{ backgroundColor: '#FFFFFF' }}
+      >
+        {/* Sidebar Header */}
+        <div className="p-6 border-b" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-lg truncate text-gray-800">{course.title}</h2>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-3 py-1 text-sm rounded-lg transition-colors"
+              style={{ 
+                backgroundColor: 'rgba(0,0,0,0.08)',
+                color: '#333'
+              }}
+            >
+              Exit
+            </button>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span style={{ color: brandColors.yellow }}>Your progress</span>
+              <span className="text-gray-800">{progressPercentage}%</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full rounded-full transition-all duration-300"
+                style={{ width: `${progressPercentage}%`, backgroundColor: brandColors.green }}
+              />
+            </div>
+          </div>
         </div>
         
+        {/* Module List */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          {course.modules?.map((module, mIndex) => (
-            <div key={module.id} className="border-b border-gray-700">
-              <div className="px-4 py-3 bg-gray-900 font-semibold text-sm text-gray-300">
-                Section {mIndex + 1}: {module.title}
-              </div>
-              <div>
-                {module.lessons?.map((lesson, lIndex) => (
-                  <button
-                    key={lesson.id}
-                    onClick={() => handleLessonSelect(lesson)}
-                    className={`w-full text-left px-4 py-3 text-sm flex items-start space-x-3 hover:bg-gray-700 transition-colors ${
-                      currentLesson?.id === lesson.id ? 'bg-gray-700 border-l-4 border-brand-green' : 'border-l-4 border-transparent'
-                    }`}
-                  >
-                    <div className="mt-0.5">
-                       {isLessonCompleted(lesson.id) ? (
-                           <HiOutlineCheckCircle className="text-green-400 w-5 h-5" />
-                       ) : (
-                           lesson.video_url ? <HiOutlinePlay className="w-5 h-5 opacity-70" /> : <HiOutlineDocumentText className="w-5 h-5 opacity-70" />
-                       )}
+          {course.modules?.map((module, mIndex) => {
+            const moduleLessons = module.lessons || [];
+            const isCurrentModule = mIndex === currentModuleIndex;
+            const isWeekExpanded = expandedWeek === mIndex;
+            
+            return (
+              <div key={module.id} className="border-b" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
+                {/* Week Header */}
+                <button
+                  onClick={() => {
+                    setExpandedWeek(isWeekExpanded ? -1 : mIndex);
+                    setCurrentModuleIndex(mIndex);
+                  }}
+                  className={`w-full px-6 py-4 text-left transition-colors ${
+                    isCurrentModule ? 'bg-gray-50' : 'hover:bg-gray-25'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-gray-800">{module.title}</p>
+                    <span className="text-gray-400">
+                      {isWeekExpanded ? '−' : '+'}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Week Sections */}
+                {isWeekExpanded && (
+                  <div className="bg-gray-25 border-t" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
+                    {/* Lessons Section */}
+                    <div>
+                      <button
+                        onClick={() => setExpandedSection(expandedSection === 'lessons' ? '' : 'lessons')}
+                        className="w-full px-8 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors text-sm font-medium"
+                        style={{ color: brandColors.blue }}
+                      >
+                        <span>📚 Lessons ({moduleLessons.length})</span>
+                        <span className="text-gray-400">{expandedSection === 'lessons' ? '−' : '+'}</span>
+                      </button>
+                      
+                      {expandedSection === 'lessons' && (
+                        <div className="bg-white">
+                          {moduleLessons.map((lesson) => {
+                            const isCompleted = isLessonCompleted(lesson.id);
+                            const isActive = currentLesson?.id === lesson.id;
+                            
+                            return (
+                              <button
+                                key={lesson.id}
+                                onClick={() => {
+                                  handleLessonSelect(lesson, mIndex);
+                                  setExpandedSection('');
+                                }}
+                                className={`w-full text-left px-12 py-2.5 text-sm flex items-start gap-3 transition-all border-l-4
+                                  ${isActive ? 'bg-gray-100 border-green-500' : 'border-transparent hover:bg-gray-50'}`}
+                              >
+                                <div className="mt-0.5 flex-shrink-0">
+                                  {isCompleted ? (
+                                    <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: brandColors.green }}>
+                                      <span className="text-white text-xs">✓</span>
+                                    </div>
+                                  ) : (
+                                    <div className="w-4 h-4 rounded-full border-2" style={{ borderColor: 'rgba(0,0,0,0.2)' }} />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`truncate ${isActive ? 'text-gray-800 font-medium' : 'text-gray-600'}`}>
+                                    {lesson.title}
+                                  </p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex-1">
-                        <p className={`${currentLesson?.id === lesson.id ? 'text-white' : 'text-gray-400'}`}>
-                            {lIndex + 1}. {lesson.title}
-                        </p>
-                        <span className="text-xs text-gray-500">{Math.floor(lesson.duration / 60)} min</span>
-                    </div>
-                  </button>
-                ))}
+
+                    {/* Resources Section */}
+                    {module.resources?.length > 0 && (
+                      <div>
+                        <button
+                          onClick={() => setExpandedSection(expandedSection === 'resources' ? '' : 'resources')}
+                          className="w-full px-8 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors text-sm font-medium border-t"
+                          style={{ borderColor: 'rgba(0,0,0,0.1)', color: brandColors.blue }}
+                        >
+                          <span>📄 Resources ({module.resources.length})</span>
+                          <span className="text-gray-400">{expandedSection === 'resources' ? '−' : '+'}</span>
+                        </button>
+                        
+                        {expandedSection === 'resources' && (
+                          <div className="bg-white px-8 py-2">
+                            {module.resources.map((resource, idx) => (
+                              <a
+                                key={idx}
+                                href={resource.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block py-2 text-sm text-gray-600 hover:text-gray-800 truncate transition-colors"
+                              >
+                                📎 {resource.title}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Assignments Section */}
+                    {module.assignments?.length > 0 && (
+                      <div>
+                        <button
+                          onClick={() => setExpandedSection(expandedSection === 'assignments' ? '' : 'assignments')}
+                          className="w-full px-8 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors text-sm font-medium border-t"
+                          style={{ borderColor: 'rgba(0,0,0,0.1)', color: brandColors.blue }}
+                        >
+                          <span>✓ Assignments ({module.assignments.length})</span>
+                          <span className="text-gray-400">{expandedSection === 'assignments' ? '−' : '+'}</span>
+                        </button>
+                        
+                        {expandedSection === 'assignments' && (
+                          <div className="bg-white px-8 py-2">
+                            {module.assignments.map((assignment, idx) => (
+                              <div key={idx} className="py-2 text-sm text-gray-600 truncate">
+                                📋 {assignment.title}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Live Sessions Section */}
+                    {module.live_sessions?.length > 0 && (
+                      <div>
+                        <button
+                          onClick={() => setExpandedSection(expandedSection === 'livesessions' ? '' : 'livesessions')}
+                          className="w-full px-8 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors text-sm font-medium border-t"
+                          style={{ borderColor: 'rgba(0,0,0,0.1)', color: brandColors.blue }}
+                        >
+                          <span>🎥 Live Sessions ({module.live_sessions.length})</span>
+                          <span className="text-gray-400">{expandedSection === 'livesessions' ? '−' : '+'}</span>
+                        </button>
+                        
+                        {expandedSection === 'livesessions' && (
+                          <div className="bg-white px-8 py-2">
+                            {module.live_sessions.map((session, idx) => (
+                              <div key={idx} className="py-2 text-sm text-gray-600 truncate">
+                                🎤 {session.title}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-y-auto">
-        {/* Top Bar (Mobile Toggle) */}
-        {!sidebarOpen && (
-             <div className="p-4 bg-gray-800 md:hidden">
-                 <Button size="xs" onClick={() => setSidebarOpen(true)}>Show Menu</Button>
-             </div>
-        )}
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+        {/* Top Bar */}
+        <div className="px-6 py-4 border-b flex items-center justify-between bg-white">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              {showSidebar ? <HiX className="w-5 h-5" style={{ color: brandColors.blue }} /> : <HiMenu className="w-5 h-5" style={{ color: brandColors.blue }} />}
+            </button>
+            <div className="hidden md:block">
+              <p className="text-sm" style={{ color: brandColors.green }}>{currentModule?.title}</p>
+              <p className="font-medium" style={{ color: brandColors.blue }}>{currentLesson?.title}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500">
+              {currentLessonIndex + 1} / {allLessons.length}
+            </span>
+          </div>
+        </div>
 
-        {/* Video Player Area */}
-        <div className="bg-black aspect-video w-full max-h-[70vh] relative shadow-2xl">
-            {currentLesson?.video_url ? (
-                <ReactPlayer
+        {/* Lesson Content Area - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-6 py-8">
+            {/* Lesson Header */}
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold mb-2" style={{ color: brandColors.blue }}>
+                {currentLesson?.title}
+              </h1>
+            </div>
+
+            {/* Lesson Description / Introduction — read first */}
+            <div className="prose max-w-none mb-12">
+              {currentLesson?.content ? (
+                <div 
+                  dangerouslySetInnerHTML={{ __html: currentLesson.content }}
+                  style={{ color: '#374151' }}
+                />
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <HiOutlineBookOpen className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                  <p>No additional content for this lesson.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Video Player — watch after reading */}
+            <div className="mb-12">
+              <h2 className="text-xl font-semibold mb-4" style={{ color: brandColors.blue }}>Watch the Video</h2>
+              <div className="bg-black relative w-full" style={{ height: 'min(56.25vw, 405px)', aspectRatio: '16/9' }}>
+                {currentLesson?.video_url ? (
+                  <ReactPlayer
                     url={currentLesson.video_url}
                     width="100%"
                     height="100%"
                     controls={true}
                     playing={false}
+                    onProgress={({ played }) => setVideoProgress(played * 100)}
                     onEnded={markComplete}
                     config={{
-                        youtube: { playerVars: { showinfo: 1 } },
-                        vimeo: { playerOptions: { byline: false, portrait: false } }
+                      youtube: { 
+                        playerVars: { 
+                          modestbranding: 1,
+                          rel: 0,
+                          showinfo: 0
+                        } 
+                      }
                     }}
-                />
-            ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
-                    <div className="text-center">
-                        <HiOutlineDocumentText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                        <p className="text-xl">Text / Reading Lesson</p>
-                    </div>
-                </div>
-            )}
-        </div>
-
-        {/* Lesson Content & Controls */}
-        <div className="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full">
-            <div className="flex justify-between items-start mb-6 border-b border-gray-700 pb-6">
-                <div>
-                   <h1 className="text-2xl font-bold mb-2">{currentLesson?.title}</h1>
-                   <div className="flex items-center space-x-4 text-sm text-gray-400">
-                       <span>{currentLesson?.duration ? `${Math.floor(currentLesson.duration / 60)} mins` : ''}</span>
-                   </div>
-                </div>
-                <Button 
-                    color={completedLessons.includes(currentLesson?.id) ? "success" : "light"} 
-                    onClick={markComplete}
-                >
-                    {completedLessons.includes(currentLesson?.id) ? "Completed" : "Mark as Complete"}
-                </Button>
-            </div>
-
-            <div className="prose prose-invert max-w-none">
-                {currentLesson?.content ? (
-                    <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
+                  />
                 ) : (
-                    <p className="text-gray-500 italic">No description provided for this lesson.</p>
+                  <div className="flex items-center justify-center h-full" style={{ backgroundColor: brandColors.blue }}>
+                    <div className="text-center text-white">
+                      <HiOutlineBookOpen className="w-20 h-20 mx-auto mb-4 opacity-50" />
+                      <p className="text-2xl font-light mb-2">Reading Material Only</p>
+                      <p className="text-sm opacity-75">This lesson does not have a video</p>
+                    </div>
+                  </div>
                 )}
+              </div>
+              
+              {/* Space after video */}
             </div>
-            
-            <div className="mt-12 flex justify-between">
-                 <Button color="gray" outline disabled>Previous Lesson</Button>
-                 <Button gradientDuoTone="tealToLime" onClick={autoAdvance}>Next Lesson</Button>
+
+            {/* Navigation */}
+            <div className="mt-12 pt-6 border-t" style={{ borderColor: '#E5E7EB' }}>
+              <div className="flex flex-col sm:flex-row justify-between gap-4">
+                <button
+                  onClick={goToPreviousLesson}
+                  disabled={currentLessonIndex <= 0}
+                  className={`px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-all
+                    ${currentLessonIndex <= 0 
+                      ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' 
+                      : 'border hover:bg-gray-50'}`}
+                  style={{ borderColor: '#E5E7EB', color: brandColors.blue }}
+                >
+                  <HiOutlineChevronLeft className="w-5 h-5" />
+                  Previous Lesson
+                </button>
+
+                <button
+                  onClick={markComplete}
+                  className={`px-8 py-3 rounded-lg flex items-center justify-center gap-2 transition-all
+                    ${isLessonCompleted(currentLesson?.id) 
+                      ? 'bg-green-100 text-green-700 cursor-default' 
+                      : 'text-white hover:opacity-90'}`}
+                  style={{ backgroundColor: isLessonCompleted(currentLesson?.id) ? undefined : brandColors.green }}
+                  disabled={isLessonCompleted(currentLesson?.id)}
+                >
+                  <HiOutlineCheckCircle className="w-5 h-5" />
+                  {isLessonCompleted(currentLesson?.id) ? 'Completed' : 'Mark as Complete & Next'}
+                </button>
+              </div>
             </div>
+          </div>
         </div>
+
+        <style jsx>{`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 3px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.25);
+          }
+        `}</style>
       </div>
-      
-      {/* Floating Toggle for Desktop */}
-      <button 
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed bottom-6 right-6 z-50 p-3 bg-gray-800 rounded-full shadow-lg border border-gray-600 hover:bg-gray-700 hidden md:block"
-      >
-          {sidebarOpen ? <HiOutlineChevronLeft className="w-6 h-6" /> : "Menu"}
-      </button>
     </div>
   );
 }
