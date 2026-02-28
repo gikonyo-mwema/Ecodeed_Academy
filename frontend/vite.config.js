@@ -4,10 +4,30 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
   base: '/',
+  // Optimize dependency pre-bundling for faster startup
   optimizeDeps: {
-    exclude: ['flowbite-react'],
-    include: ['flowbite']
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@reduxjs/toolkit',
+      'react-redux',
+      'axios',
+      'flowbite',
+      'flowbite-react',
+      'framer-motion',
+      'react-icons',
+      'react-toastify'
+    ],
+    // Force pre-bundling to avoid on-demand compilation
+    force: false,
+    // Increase esbuild threads for faster bundling
+    esbuildOptions: {
+      target: 'esnext'
+    }
   },
+  // Enable caching for faster subsequent loads
+  cacheDir: 'node_modules/.vite',
   // Production build configuration
   build: {
     outDir: 'dist',
@@ -27,10 +47,26 @@ export default defineConfig(({ mode }) => ({
   },
   server: {
     port: 5173,
-    host: true,
+    host: '0.0.0.0',
+    // Optimized HMR for Docker
     hmr: {
       port: 5173,
-      host: 'localhost'
+      clientPort: 5173,
+      host: 'localhost',
+      protocol: 'ws'
+    },
+    // Watch configuration for Docker volumes
+    watch: {
+      usePolling: true,
+      interval: 1000
+    },
+    // Warm up frequently used files
+    warmup: {
+      clientFiles: [
+        './src/App.jsx',
+        './src/main.jsx',
+        './src/index.css'
+      ]
     },
     // Only use proxy in development mode
     ...(mode === 'development' && {

@@ -178,6 +178,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # In production, set via SITE_URL environment variable
 SITE_URL = env('SITE_URL', default='http://localhost:8000')
 
+# ------------------------------------------------------------------
+# Payment provider secrets
+# the secret key is used server-side only; public key goes to frontend
+# set these in the root .env file or your environment management system
+PAYSTACK_SECRET_KEY = env('PAYSTACK_SECRET_KEY', default='')
+PAYSTACK_PUBLIC_KEY = env('PAYSTACK_PUBLIC_KEY', default='')
+# secret used to verify incoming webhook payloads
+PAYSTACK_WEBHOOK_SECRET = env('PAYSTACK_WEBHOOK_SECRET', default='')
+# ------------------------------------------------------------------
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

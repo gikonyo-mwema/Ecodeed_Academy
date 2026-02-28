@@ -48,9 +48,11 @@ services:
     volumes:
       - ./frontend:/app  # Mount frontend code for hot module replacement
       - frontend_node_modules:/app/node_modules  # Persist node_modules (prevents overwrite)
+      - vite_cache:/app/node_modules/.vite  # Persist Vite prebundle cache
     environment:
       - VITE_API_BASE_URL=${VITE_API_BASE_URL}  # Backend API URL from .env
       - VITE_PROXY_TARGET=http://backend:8000   # Internal URL for Vite Proxy
+      - NODE_ENV=development
     depends_on:
       - backend  # Wait for backend before starting
 
@@ -60,3 +62,4 @@ services:
 volumes:
   mysql_data:  # Persistent storage for MySQL data
   frontend_node_modules:  # Cached node_modules for faster rebuilds
+  vite_cache:  # Cached Vite prebundled dependencies for faster startup
