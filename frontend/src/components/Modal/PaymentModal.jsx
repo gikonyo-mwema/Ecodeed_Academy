@@ -1,11 +1,8 @@
 import { useState } from 'react';
-import { Modal, Button, Select, TextInput, Alert, Spinner } from 'flowbite-react';
-import { HiOutlinePhone } from 'react-icons/hi';
+import { Modal, Button, TextInput, Alert, Spinner } from 'flowbite-react';
 import PaystackPop from '@paystack/inline-js';
 
 export default function PaymentModal({ course, show, onClose, user, onSuccess }) {
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -45,46 +42,36 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
   const handlePayment = () => {
     setError(null);
     
-    // Validate inputs
+    // Validate email
     if (!email) {
       setError('Please enter your email');
       return;
     }
 
-    if (paymentMethod === 'mpesa' && !phoneNumber) {
-      setError('Please enter your M-Pesa phone number');
-      return;
-    }
-
     setLoading(true);
 
-    // Initialize Paystack payment
+    // Initialize Paystack payment - let Paystack handle payment method selection
     const paystack = new PaystackPop();
     paystack.newTransaction({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_KEY,
+      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
       email: email,
       amount: course?.price * 100, // Paystack uses kobo (multiply by 100)
       currency: 'KES',
-      channels: paymentMethod === 'mpesa' ? ['mobile_money'] : ['card'],
+      // Allow all available payment channels - Paystack UI lets user choose
+      channels: ['card', 'mobile_money', 'bank'],
       metadata: {
-        courseId: course?._id,
-        userId: user?._id,
+        // backend expects the Django PK which is exposed as `id`
+        courseId: course?.id || course?._id,
+        userId: user?.id || user?._id,
         courseTitle: course?.title,
       },
-      ...(paymentMethod === 'mpesa' && { 
-        mobile_money: { 
-          phone: phoneNumber.startsWith('254') ? phoneNumber : `254${phoneNumber.slice(-9)}` 
-        } 
-      }),
-      ref: `COURSE-${course?._id.slice(-6)}-${Date.now()}`,
+      ref: `COURSE-${(course?.id || course?._id)?.toString().slice(-6)}-${Date.now()}`,
       onSuccess: (response) => onPaymentSuccess(response),
       onCancel: () => onPaymentClose(),
     });
   };
 
   const resetModal = () => {
-    setPaymentMethod('card');
-    setPhoneNumber('');
     setError(null);
     setSuccess(false);
   };
@@ -108,9 +95,22 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
           </div>
         ) : (
           <div className="space-y-4">
+            {/* Course Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Course Price
+                Course
+              </label>
+              <TextInput
+                value={course?.title || ''}
+                disabled
+                className="font-semibold"
+              />
+            </div>
+
+            {/* Course Price */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Price
               </label>
               <TextInput
                 value={`KES ${course?.price?.toLocaleString() || '0'}`}
@@ -119,6 +119,7 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
               />
             </div>
 
+            {/* Email Address */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
@@ -130,39 +131,10 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
                 placeholder="your@email.com"
                 required
               />
+              <p className="mt-1 text-xs text-gray-500">
+                Payment receipt will be sent to this email
+              </p>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Payment Method
-              </label>
-              <Select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
-                <option value="card">Credit/Debit Card</option>
-                <option value="mpesa">M-Pesa</option>
-              </Select>
-            </div>
-
-            {paymentMethod === 'mpesa' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  M-Pesa Phone Number
-                </label>
-                <TextInput
-                  icon={HiOutlinePhone}
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                  placeholder="e.g. 254712345678 or 0712345678"
-                  required
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  You'll receive an STK Push notification
-                </p>
-              </div>
-            )}
 
             {error && (
               <Alert color="failure" className="mt-2">

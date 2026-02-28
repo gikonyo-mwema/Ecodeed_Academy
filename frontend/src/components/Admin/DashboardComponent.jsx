@@ -52,7 +52,9 @@ export default function DashboardComponent() {
     comments: [], 
     posts: [], 
     services: [], 
-    courses: [] 
+    courses: [],
+    payments: [], // payment records for admin view
+    enrollments: [] // all student enrollments
   });
   
   /**
@@ -64,7 +66,9 @@ export default function DashboardComponent() {
     posts: true, 
     comments: true, 
     services: true, 
-    courses: true
+    courses: true,
+    payments: true,
+    enrollments: true
   });
 
   /**
@@ -76,7 +80,9 @@ export default function DashboardComponent() {
     posts: null, 
     comments: null, 
     services: null, 
-    courses: null
+    courses: null,
+    payments: null,
+    enrollments: null
   });
 
   /**
@@ -88,7 +94,9 @@ export default function DashboardComponent() {
     posts: { limit: 5, page: 1 },
     comments: { limit: 5, page: 1 },
     services: { limit: 5, page: 1 },
-    courses: { limit: 5, page: 1 }
+    courses: { limit: 5, page: 1 },
+    payments: { limit: 5, page: 1 },
+    enrollments: { limit: 5, page: 1 }
   });
 
   // Redux state for user authentication
@@ -118,7 +126,9 @@ export default function DashboardComponent() {
         fetchData('posts', '/api/post'),
         fetchData('comments', '/api/comments/getComments'), // Updated endpoint
         fetchData('services', '/api/services'),
-        fetchData('courses', '/api/courses')
+        fetchData('courses', '/api/courses'),
+        fetchData('payments', '/api/payments/history'),
+        fetchData('enrollments', '/api/enrollments')
       ]);
     } catch (error) {
       console.error("Dashboard data fetch error:", error);
@@ -168,9 +178,10 @@ export default function DashboardComponent() {
       }
 
       // Extract data from response (handles different response structures)
+      // DRF paginated responses usually return { count, next, previous, results: [...] }
       const responseData = response[type] || response.users || response.posts || 
                          response.comments || response.services || response.courses || 
-                         response.data || [];
+                         response.payments || response.data || response.results || [];
 
       // Update state with fetched data
       setData(prev => ({

@@ -17,11 +17,11 @@ def seed_program():
     print("Clearing existing courses...")
     Course.objects.all().delete()
     
-    print("Creating new course: PROGRAM STRUCTURE OVERVIEW...")
+    print("Creating new course: EIA Masterclass...")
     instructor = User.objects.first() # Assign to first user or create a superuser if needed
     
     program = Course.objects.create(
-        title="PROGRAM STRUCTURE OVERVIEW",
+        title="EIA Masterclass",
         short_description="A 10-week comprehensive program on EIA Consulting.",
         full_description="Master the art and business of Environmental Impact Assessment (EIA) Consulting.",
         instructor=instructor,

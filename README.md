@@ -197,7 +197,7 @@ API documentation is available at:
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/auth/register/` | POST | User registration |
+| `/api/auth/register/` | POST | User registration — returns access & refresh tokens; new users are automatically logged in by frontend on success |
 | `/api/auth/login/` | POST | User login |
 | `/api/auth/logout/` | POST | User logout |
 | `/api/auth/profile/` | GET | Get user profile |

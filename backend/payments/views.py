@@ -86,3 +86,70 @@ class PaymentViewSet(viewsets.ReadOnlyModelViewSet):
         if user.is_staff or user.is_superuser:
             return Payment.objects.all().order_by('-created_at')
         return Payment.objects.filter(user=user).order_by('-created_at')
+
+
+# ------------------------------------------------------------------
+# Paystack webhook endpoint
+# ------------------------------------------------------------------
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import hmac
+import hashlib
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PaystackWebhookView(views.APIView):
+    """Receives asynchronous notifications from Paystack.
+
+    This view does **not** require authentication and must verify the
+    X-Paystack-Signature header using the webhook secret. The payload
+    is parsed for events like `charge.success`, and the corresponding
+    Payment record is created/updated. Enrollment logic is similar to
+    verification.
+    """
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        secret = getattr(settings, 'PAYSTACK_WEBHOOK_SECRET', '')
+        header_sig = request.META.get('HTTP_X_PAYSTACK_SIGNATURE', '')
+        computed = hmac.new(secret.encode(), request.body, hashlib.sha512).hexdigest()
+        if not hmac.compare_digest(computed, header_sig):
+            return Response({'detail': 'invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
+
+        event = request.data.get('event')
+        data = request.data.get('data', {})
+        reference = data.get('reference')
+
+        # update or create payment record based on webhook data
+        payment, created = Payment.objects.get_or_create(
+            reference=reference,
+            defaults={
+                'user': None,
+                'amount': data.get('amount', 0) / 100,
+                'email': data.get('customer', {}).get('email', ''),
+                'status': 'success' if event == 'charge.success' else 'pending',
+                'provider': 'paystack',
+            }
+        )
+
+        if not created and event == 'charge.success':
+            payment.status = 'success'
+            payment.verified_at = timezone.now()
+            payment.save()
+
+        # enroll user if courseId present and payment just succeeded
+        if event == 'charge.success':
+            metadata = data.get('metadata', {})
+            course_id = metadata.get('courseId')
+            if course_id and payment.user:
+                try:
+                    course = Course.objects.get(pk=course_id)
+                    Enrollment.objects.get_or_create(
+                        user=payment.user,
+                        course=course,
+                        defaults={'status': 'active'}
+                    )
+                except Course.DoesNotExist:
+                    pass
+
+        return Response({'received': True})

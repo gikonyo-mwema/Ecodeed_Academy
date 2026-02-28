@@ -249,6 +249,29 @@ const DashboardTables = ({
           render: (course) => `$${course.price}`
         }
       ]
+    },
+    {
+      title: "Recent Payments",
+      type: "payments",
+      link: "payments",
+      columns: [
+        { key: "user", label: "User", render: (p) => p.user?.email || p.user?._id },
+        { key: "course", label: "Course", render: (p) => p.course?.title || p.course },
+        { key: "amount", label: "Amount", render: (p) => `KES ${p.amount}` },
+        { key: "status", label: "Status" },
+        { key: "created_at", label: "Date" }
+      ]
+    },
+    {
+      title: "Recent Enrollments",
+      type: "enrollments",
+      link: "enrollments",
+      columns: [
+        { key: "user", label: "User", render: (e) => e.user?.email || e.user?._id },
+        { key: "course", label: "Course", render: (e) => e.course?.title || e.course },
+        { key: "status", label: "Status" },
+        { key: "enrolled_at", label: "Date" }
+      ]
     }
   ];
 

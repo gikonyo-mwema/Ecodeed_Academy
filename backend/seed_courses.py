@@ -24,6 +24,38 @@ def seed_courses():
             "target_audience": ["Environmental Graduates", "Junior Consultants", "Project Managers"],
             "modules": [
                 {
+                    "title": "Preview & Weeks",
+                    "description": "Course preview and weekly video lessons.",
+                    "lessons": [
+                        {
+                            "title": "Course Preview",
+                            "content": "Preview video.",
+                            "video_url": "https://youtu.be/iu-4PC6I6jw?si=I9hYjxo1rqKy7zVY",
+                            "is_free_preview": True
+                        },
+                        {
+                            "title": "Week 1: Introduction",
+                            "content": "Week 1 video.",
+                            "video_url": "https://youtu.be/Cf2svVwVFzo?si=uBIgNsKNaWHz_6WQ"
+                        },
+                        {
+                            "title": "Week 2: Foundations",
+                            "content": "Week 2 video.",
+                            "video_url": "https://youtu.be/Nm8e6KnHAco?si=h3h0Um3dSkA7nz9z"
+                        },
+                        {
+                            "title": "Week 3",
+                            "content": "Week 3 video.",
+                            "video_url": "https://youtu.be/XI-TxMFa81I?si=MK84KoCAUUck7p6a"
+                        },
+                        {
+                            "title": "Week 4",
+                            "content": "Week 4 video.",
+                            "video_url": "https://youtu.be/wp2jGhmkZdo?si=D2nes7-5jTSSNCw6"
+                        }
+                    ]
+                },
+                {
                     "title": "Introduction to EIA Frameworks",
                     "description": "Understanding the legal and regulatory landscape.",
                     "lessons": [
