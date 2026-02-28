@@ -1,8 +1,9 @@
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import OAuth from "../components/OAuth";
-import { apiFetch } from '../utils/api';
+import { signUp } from "../redux/user/userSlice";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -12,9 +13,13 @@ export default function SignUp() {
     password: "",
     confirmPassword: "",
   });
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setLoading] = useState(false);
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // use redux state for loading/errors so we can show backend messages
+  const { loading, error: errorMessage, currentUser } = useSelector((state) => state.user);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -23,47 +28,46 @@ export default function SignUp() {
     }));
   };
 
+  // if user is already logged in, send them home
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { firstName, lastName, email, password, confirmPassword } = formData;
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      return setErrorMessage("Please fill out all fields.");
+      return alert("Please fill out all fields.");
     }
     
     if (password !== confirmPassword) {
-       return setErrorMessage("Passwords do not match.");
+       return alert("Passwords do not match.");
     }
 
     if (password.length < 8) {
-      return setErrorMessage("Password must be at least 8 characters.");
+      return alert("Password must be at least 8 characters.");
     }
 
     try {
-      setLoading(true);
-      setErrorMessage(null);
+      const resultAction = await dispatch(
+        signUp({
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          password,
+          confirm_password: confirmPassword,
+        })
+      );
 
-      const data = await apiFetch("/api/auth/register/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // Backend expects snake_case for fields
-        body: JSON.stringify({ 
-            first_name: firstName, 
-            last_name: lastName, 
-            email, 
-            password,
-            confirm_password: confirmPassword
-        }),
-      });
-
-      setLoading(false);
-      navigate("/sign-in");
+      if (signUp.fulfilled.match(resultAction)) {
+        // Automatically logged in by redux slice; redirect to home/dashboard
+        navigate("/", { state: { newUser: true } });
+      }
     } catch (err) {
-      console.error("Signup error:", err);
-      // Try to extract useful error message from API response text if possible
-      // Assuming apiFetch throws an error with message property
-      setErrorMessage(err.message || "Something went wrong. Please try again.");
-      setLoading(false);
+      console.error("Signup dispatch error:", err);
     }
   };
 

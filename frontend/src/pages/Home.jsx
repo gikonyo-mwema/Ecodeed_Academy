@@ -30,7 +30,7 @@
 
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import PostCard from '../components/PostCard';
 import RightSidebar from '../components/RightSidebar';
 import Pagination from '../components/Pagination';
@@ -45,6 +45,8 @@ import { apiFetch } from '../utils/api';
 export default function Home() {
   // Posts and pagination state
   const [posts, setPosts] = useState([]);
+  const location = useLocation();
+  const [showWelcome, setShowWelcome] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   
@@ -65,6 +67,13 @@ export default function Home() {
    * Handles API calls, pagination, and error states
    */
   useEffect(() => {
+    // if we were redirected after sign-up, show a welcome toast/modal
+    if (location.state && location.state.newUser) {
+      setShowWelcome(true);
+      // clear the flag so refreshing doesn't keep showing it
+      window.history.replaceState({}, document.title);
+    }
+
     /**
      * Fetches posts from the API with pagination and error handling
      * @async
@@ -231,6 +240,17 @@ export default function Home() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
         <main className="lg:w-3/4">
+          {showWelcome && (
+            <div className="mb-6 p-4 bg-green-100 dark:bg-green-900 rounded-lg">
+              <h3 className="text-green-800 dark:text-green-200 font-semibold">
+                🎉 Welcome to Ecodeed!
+              </h3>
+              <p className="text-green-700 dark:text-green-300">
+                Your account has been created and you're now logged in. Explore
+                the dashboard or start by browsing our latest posts below.
+              </p>
+            </div>
+          )}
           <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Latest Articles</h1>
           
           {renderPostGrid()}
