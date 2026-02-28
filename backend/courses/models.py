@@ -14,6 +14,11 @@ class Course(models.Model):
         ('licensing', 'Licensing'),
     ]
 
+    PACING_CHOICES = [
+        ('self_paced', 'Self-Paced'),
+        ('scheduled', 'Scheduled'),
+    ]
+
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
     short_description = models.TextField(max_length=500)
@@ -38,6 +43,7 @@ class Course(models.Model):
     is_popular = models.BooleanField(default=False)
     is_live = models.BooleanField(default=False)
     has_certificate = models.BooleanField(default=False, help_text="Whether this course offers a certificate upon completion")
+    pacing_type = models.CharField(max_length=20, choices=PACING_CHOICES, default='self_paced', help_text="How weekly content is unlocked")
     
     instructor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses_taught')
 
