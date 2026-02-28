@@ -39,6 +39,7 @@ export const EditCourse = () => {
     isPopular: false,
     isFree: false,
     hasCertificate: false,
+    pacingType: 'self_paced',
     category: 'specialized',
     features: [''],
     faqs: [{ question: '', answer: '' }],
@@ -64,6 +65,7 @@ export const EditCourse = () => {
           isPopular: data.is_popular !== undefined ? data.is_popular : (data.isPopular || false),
           isFree: data.is_free !== undefined ? data.is_free : (data.isFree || false),
           hasCertificate: data.has_certificate !== undefined ? data.has_certificate : (data.hasCertificate || false),
+          pacingType: data.pacing_type || data.pacingType || 'self_paced',
           category: data.category || 'specialized',
           features: Array.isArray(data.features) && data.features.length > 0 ? data.features : [''],
           faqs: Array.isArray(data.faqs) && data.faqs.length > 0 ? data.faqs : [{ question: '', answer: '' }],
@@ -102,6 +104,7 @@ export const EditCourse = () => {
         is_popular: formData.isPopular,
         is_free: formData.isFree,
         has_certificate: formData.hasCertificate,
+        pacing_type: formData.pacingType || 'self_paced',
         price: Number(formData.price) || 0
       };
 

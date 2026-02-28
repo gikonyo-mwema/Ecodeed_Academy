@@ -35,7 +35,9 @@ export const CreateCourse = () => {
     description: '',
     externalUrl: '',
     isPopular: false,
+    isFree: false,
     hasCertificate: false,
+    pacingType: 'self_paced',
     category: 'specialized',
     features: [''],
     faqs: [{ question: '', answer: '' }],
@@ -72,7 +74,9 @@ export const CreateCourse = () => {
         full_description: formData.description,
         external_url: formData.externalUrl,
         is_popular: formData.isPopular,
+        is_free: formData.isFree,
         has_certificate: formData.hasCertificate,
+        pacing_type: formData.pacingType || 'self_paced',
         price: Number(formData.price) || 0
       };
 

@@ -124,6 +124,7 @@ export const CourseForm = ({
                   <option value="webinar">Webinar</option>
                   <option value="coaching">Coaching</option>
                   <option value="compliance">Compliance</option>
+                  <option value="licensing">Licensing</option>
                 </Select>
               </div>
             </div>
@@ -241,7 +242,16 @@ export const CourseForm = ({
               </div>
 
               <div>
-                <Label htmlFor="cta" value="Call to Action Text" />
+                <Label htmlFor="pacingType" value="Pacing Type" />
+                <Select
+                  id="pacingType"
+                  value={formData.pacingType || 'self_paced'}
+                  onChange={handleChange}
+                >
+                  <option value="self_paced">Self-Paced (unlock by completing previous week)</option>
+                  <option value="scheduled">Scheduled (unlock by calendar date)</option>
+                </Select>
+              </div>
                 <TextInput
                   id="cta"
                   type="text"
