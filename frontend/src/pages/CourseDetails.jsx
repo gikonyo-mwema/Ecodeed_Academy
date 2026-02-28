@@ -235,8 +235,8 @@ export default function CourseDetails() {
       // Refresh user data to update hasEnrollments flag (for header dropdown)
       dispatch(refreshUser());
       
-      // Navigate to the learning page after successful enrollment
-      navigate(`/learn/${course.slug}`);
+      // Navigate to the student dashboard after successful enrollment
+      navigate(`/dashboard?tab=course-${course.id || course._id}-overview`);
     } catch (err) {
       setError(err.message || 'Failed to enroll. Please try again.');
     } finally {
@@ -391,7 +391,7 @@ export default function CourseDetails() {
                     <Button 
                       gradientDuoTone="tealToLime" 
                       className="w-full"
-                      onClick={() => navigate(`/learn/${course.slug}`)}
+                      onClick={() => navigate(`/dashboard?tab=course-${course.id || course._id}-weeks`)}
                     >
                       Continue Learning
                     </Button>
@@ -585,7 +585,7 @@ export default function CourseDetails() {
                     <Button 
                       gradientDuoTone="tealToLime" 
                       className="w-full"
-                      onClick={() => navigate(`/learn/${course.slug}`)}
+                      onClick={() => navigate(`/dashboard?tab=course-${course.id || course._id}-weeks`)}
                     >
                       Continue Learning
                     </Button>
@@ -692,7 +692,11 @@ export default function CourseDetails() {
         onClose={() => setShowPaymentModal(false)}
         course={course}
         user={currentUser}
-        onSuccess={() => setIsEnrolled(true)}
+        onSuccess={() => {
+          setIsEnrolled(true);
+          // ensure header and other components know user now has enrollments
+          dispatch(refreshUser());
+        }}
       />
     </div>
   );

@@ -71,7 +71,7 @@ const UserCourses = ({ purchasedCourses: propCourses }) => {
                         {new Date(enrollment.enrolled_at || enrollment.purchasedAt).toLocaleDateString()}
                     </Table.Cell>
                     <Table.Cell>
-                        <Link to={`/learn/${course.slug}`}>
+                        <Link to={`/dashboard?tab=course-${course.id || course._id}-weeks`}>
                             <Button 
                             gradientDuoTone="tealToLime" 
                             size="sm"

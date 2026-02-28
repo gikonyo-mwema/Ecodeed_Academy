@@ -154,116 +154,46 @@ export default function Courses() {
         <div className="absolute inset-0 bg-grid-white/[0.2] bg-grid"></div>
         <div className="relative max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 animate-fade-in">
-            Elevate Your Environmental
-            <span className="block text-yellow-300">Expertise</span>
+            Expand Your Environmental
+            <span className="block text-yellow-300">Knowledge</span>
           </h1>
           <p className="text-xl text-teal-50 max-w-3xl mx-auto mb-10">
-            Discover industry-leading courses designed to transform your career and make a lasting impact
+            Discover our carefully curated courses designed to advance your environmental expertise
           </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Button 
-              color="light"
-              size="md"
-              className="bg-white text-teal-600 hover:bg-teal-50 font-medium px-5 py-2 rounded-full shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
-            >
-              Explore Courses
-            </Button>
-            <Button 
-              color="light"
-              size="md"
-              className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-teal-600 font-medium px-5 py-2 rounded-full transition-all transform hover:-translate-y-0.5"
-            >
-              View Calendar
-            </Button>
-          </div>
-        </div>
-        
-      </div>
-
-      {/* Category Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-12">
-        <div className="flex flex-wrap gap-3 justify-center">
-          {['all', ...Object.keys(sectionConfigs)].map((category) => {
-            const config = category !== 'all' ? sectionConfigs[category] : null;
-            const IconComponent = config?.icon || HiOutlineAcademicCap;
-            return (
-              <button
-                key={category}
-                onClick={() => setActiveFilter(category)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-medium transition-all transform hover:-translate-y-0.5 ${
-                  activeFilter === category
-                    ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-md border border-gray-100 dark:border-gray-700'
-                }`}
-              >
-                <IconComponent className={`w-5 h-5 ${
-                  activeFilter === category 
-                    ? 'text-white' 
-                    : 'text-teal-600 dark:text-teal-400'
-                }`} />
-                {category === 'all' ? 'All Courses' : sectionConfigs[category].title}
-              </button>
-            );
-          })}
         </div>
       </div>
 
       {/* Course Sections */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 space-y-20">
-        {Object.entries(sectionConfigs).map(([key, config]) => {
-          const sectionCourses = courses[key];
-          if (!sectionCourses || (Array.isArray(sectionCourses) && sectionCourses.length === 0)) return null;
-          
-          return (
-            <section key={key} className="relative">
-              {/* Section Header */}
-              <div className="text-center mb-12">
-                <div className={`inline-block p-3 rounded-2xl bg-gradient-to-r ${config.gradient} mb-4`}>
-                  <config.icon className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-4xl font-bold text-gray-800 dark:text-white mb-3">
-                  {config.title}
-                </h2>
-                <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                  {config.subtitle}
-                </p>
+        {/* Show only Masterclass Section */}
+        {courses.masterclass && courses.masterclass.length > 0 && (
+          <section className="relative">
+            {/* Section Header */}
+            <div className="text-center mb-12">
+              <div className={`inline-block p-3 rounded-2xl bg-gradient-to-r ${sectionConfigs.masterclass.gradient} mb-4`}>
+                <sectionConfigs.masterclass.icon className="w-8 h-8 text-white" />
               </div>
+              <h2 className="text-4xl font-bold text-gray-800 dark:text-white mb-3">
+                {sectionConfigs.masterclass.title}
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                {sectionConfigs.masterclass.subtitle}
+              </p>
+            </div>
 
-              {/* Course Grid */}
-              <div className={`grid md:grid-cols-2 ${key === 'webinar' ? 'lg:grid-cols-1' : 'lg:grid-cols-3'} gap-8`}>
-                {(Array.isArray(sectionCourses) ? sectionCourses : [sectionCourses]).map((course, index) => (
-                  <CourseCard 
-                    key={course.id || index} 
-                    course={course} 
-                    category={key}
-                    index={index}
-                  />
-                ))}
-              </div>
-            </section>
-          );
-        })}
-      </div>
-
-      {/* CTA Section */}
-      <div className="bg-gradient-to-r from-teal-600 to-emerald-600 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to advance your career?
-          </h2>
-          <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of professionals who have transformed their expertise with our courses
-          </p>
-          <div className="flex justify-center">
-            <Button 
-              color="light"
-              size="md"
-              className="bg-white text-teal-600 hover:bg-teal-50 font-medium px-5 py-2 rounded-full shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
-            >
-              Get Started Today
-            </Button>
-          </div>
-        </div>
+            {/* Course Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {courses.masterclass.map((course, index) => (
+                <CourseCard 
+                  key={course.id || index} 
+                  course={course} 
+                  category="masterclass"
+                  index={index}
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
@@ -369,7 +299,7 @@ function CourseCard({ course, category, index }) {
               className={`bg-gradient-to-r ${config.color} text-white hover:shadow-lg transition-all transform hover:-translate-y-0.5 px-6`}
               size="md"
             >
-              Enroll Now →
+              View More →
             </Button>
           </Link>
         </div>

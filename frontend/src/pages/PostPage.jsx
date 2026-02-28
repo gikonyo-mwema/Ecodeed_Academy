@@ -42,9 +42,11 @@ export default function PostPage() {
         setLoading(true);
         const data = await apiFetch(`/api/posts/getPosts?slug=${postSlug}`);
         
-        // Handle the correct response format: { success: true, data: { posts: [post] } }
-        if (data.data && data.data.posts && data.data.posts.length > 0) {
-          setPost(data.data.posts[0]);
+        // Handle the correct response format: { posts: [post] } (direct response) or { data: { posts: [post] } } (wrapped)
+        const posts = data.posts || (data.data && data.data.posts);
+        
+        if (posts && posts.length > 0) {
+          setPost(posts[0]);
         } else {
           console.error('No post found or unexpected response format:', data);
           setError(true);
@@ -69,14 +71,14 @@ export default function PostPage() {
       try {
         const data = await apiFetch(`/api/posts/getPosts?limit=3`);
         
-        // Handle response format: { success: true, data: { posts: [...] } }
-        const posts = data.data?.posts || [];
+        // Handle response format: { posts: [...] } or wrapped
+        const posts = data.posts || (data.data && data.data.posts) || [];
         // Filter out the current post if it's in the results
         const filtered = posts.filter(p => p._id !== post?._id);
         // If we filtered out the current post and have less than 3, fetch more
         if (filtered.length < 3) {
           const additionalData = await apiFetch(`/api/posts/getPosts?limit=${3 - filtered.length + 1}`);
-          const additionalPosts = additionalData.data?.posts || [];
+          const additionalPosts = additionalData.posts || (additionalData.data && additionalData.data.posts) || [];
           const additionalFiltered = additionalPosts.filter(p => p._id !== post?._id);
           
           // Combine and remove duplicates
