@@ -31,8 +31,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Initialize environment variables
 env = environ.Env()
-# Read .env file from backend root
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# Read .env file — check backend root first, fall back to project root (parent of backend/)
+_env_file = os.path.join(BASE_DIR, '.env')
+if not os.path.isfile(_env_file):
+    _env_file = os.path.join(BASE_DIR.parent, '.env')
+environ.Env.read_env(_env_file)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY', default='e1lgcfh_9keys_z@u2ng!r4m-*(j23g@+rer3jwx!w%=v@t#&y')
