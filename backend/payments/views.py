@@ -83,9 +83,10 @@ class PaymentViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        qs = Payment.objects.select_related('user', 'course')
         if user.is_staff or user.is_superuser:
-            return Payment.objects.all().order_by('-created_at')
-        return Payment.objects.filter(user=user).order_by('-created_at')
+            return qs.order_by('-created_at')
+        return qs.filter(user=user).order_by('-created_at')
 
 
 # ------------------------------------------------------------------

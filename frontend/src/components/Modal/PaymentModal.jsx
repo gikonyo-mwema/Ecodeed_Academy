@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal, Button, TextInput, Alert, Spinner } from 'flowbite-react';
 import PaystackPop from '@paystack/inline-js';
+import { apiFetch } from '../../utils/api';
 
 export default function PaymentModal({ course, show, onClose, user, onSuccess }) {
   const [email, setEmail] = useState(user?.email || '');
@@ -11,14 +12,11 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
   const onPaymentSuccess = async (response) => {
     setLoading(true);
     try {
-      // Verify payment with backend
-      const res = await fetch('/api/payments/verify', {
+      // Verify payment with backend (apiFetch adds auth token + correct base URL)
+      const data = await apiFetch('/api/payments/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reference: response.reference }),
       });
-
-      if (!res.ok) throw new Error('Payment verification failed');
 
       setSuccess(true);
       setTimeout(() => {
