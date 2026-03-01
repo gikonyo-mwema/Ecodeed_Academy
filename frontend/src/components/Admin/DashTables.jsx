@@ -95,10 +95,10 @@ const DataTable = ({
           </Table.Head>
           <Table.Body>
             {data.length > 0 ? (
-              data.map((item) => (
-                <Table.Row key={item._id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+              data.map((item, idx) => (
+                <Table.Row key={item.id || item._id || idx} className="bg-white dark:border-gray-700 dark:bg-gray-800">
                   {columns.map((column) => (
-                    <Table.Cell key={`${item._id}-${column.key}`}>
+                    <Table.Cell key={`${item.id || item._id || idx}-${column.key}`}>
                       {/* Use custom render function if provided, otherwise display property directly */}
                       {column.render ? column.render(item) : item[column.key]}
                     </Table.Cell>
@@ -267,8 +267,8 @@ const DashboardTables = ({
       type: "enrollments",
       link: "enrollments",
       columns: [
-        { key: "user", label: "User", render: (e) => e.user?.email || e.user?._id },
-        { key: "course", label: "Course", render: (e) => e.course?.title || e.course },
+        { key: "student_email", label: "Student", render: (e) => e.student_email || e.student_username || 'N/A' },
+        { key: "course", label: "Course", render: (e) => e.course_details?.title || 'N/A' },
         { key: "status", label: "Status" },
         { key: "enrolled_at", label: "Date" }
       ]

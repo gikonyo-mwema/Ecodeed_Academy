@@ -35,6 +35,7 @@ import { useSelector } from "react-redux";
 import DashboardTables from "./DashTables";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../../utils/api";
 
 /**
  * DashboardComponent
@@ -127,8 +128,8 @@ export default function DashboardComponent() {
         fetchData('comments', '/api/comments/getComments'), // Updated endpoint
         fetchData('services', '/api/services'),
         fetchData('courses', '/api/courses'),
-        fetchData('payments', '/api/payments/history'),
-        fetchData('enrollments', '/api/enrollments')
+        fetchData('payments', '/api/payments/history/'),
+        fetchData('enrollments', '/api/enrollments/')
       ]);
     } catch (error) {
       console.error("Dashboard data fetch error:", error);
@@ -152,30 +153,8 @@ export default function DashboardComponent() {
       // Get pagination parameters for this data type
       const { limit, page } = pagination[type];
       
-      // Make API request with credentials for authentication
-      const res = await fetch(`${endpoint}?limit=${limit}&page=${page}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      // Handle session expiry
-      if (res.status === 401) {
-        handleSessionExpired();
-        return;
-      }
-      
-      if (res.status === 404) {
-        throw new Error(`Endpoint not found: ${endpoint}`);
-      }
-      
-      const response = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(response.message || `Failed to fetch ${type}`);
-      }
+      // Make API request – apiFetch adds JWT Authorization header + correct base URL
+      const response = await apiFetch(`${endpoint}?limit=${limit}&page=${page}`);
 
       // Extract data from response (handles different response structures)
       // DRF paginated responses usually return { count, next, previous, results: [...] }

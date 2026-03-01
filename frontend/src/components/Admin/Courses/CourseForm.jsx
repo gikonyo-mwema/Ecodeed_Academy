@@ -252,6 +252,7 @@ export const CourseForm = ({
                   <option value="scheduled">Scheduled (unlock by calendar date)</option>
                 </Select>
               </div>
+              <div>
                 <TextInput
                   id="cta"
                   type="text"
