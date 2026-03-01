@@ -25,6 +25,8 @@ import {
   HiBookOpen,
   HiClock,
   HiAcademicCap,
+  HiOutlineCalendar,
+  HiOutlineChartBar,
 } from 'react-icons/hi';
 import { apiFetch } from '../../utils/api';
 
@@ -99,10 +101,10 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <Spinner size="xl" className="mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">Loading course content...</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Spinner size="xl" className="text-blue-600" />
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Loading your learning journey...</p>
         </div>
       </div>
     );
@@ -111,77 +113,104 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
   if (error) {
     return (
       <div className="text-center py-16">
-        <p className="text-red-500 mb-4">{error}</p>
-        <button
-          onClick={onBack}
-          className="text-blue-600 hover:underline"
-        >
-          Back to My Courses
-        </button>
+        <div className="max-w-md mx-auto space-y-4">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+          >
+            <HiArrowLeft className="w-4 h-4" />
+            Back to My Courses
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
       {/* Back Button */}
       {onBack && (
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors group"
         >
-          <HiArrowLeft className="w-5 h-5" />
+          <HiArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to My Courses</span>
         </button>
       )}
 
       {/* Course Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 md:p-8 text-white">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">
-          {weeksData?.course_title}
-        </h1>
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-3xl p-8 text-white shadow-xl">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+        
+        <div className="relative">
+          <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
+            {weeksData?.course_title}
+          </h1>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-blue-100 mb-5">
-          <span className="flex items-center gap-1.5">
-            <HiBookOpen className="w-4 h-4" />
-            {weeksData?.total_weeks} Weeks
-          </span>
-          <span className="flex items-center gap-1.5">
-            <HiAcademicCap className="w-4 h-4" />
-            {weeksData?.pacing_type === 'self_paced' ? 'Self-Paced' : 'Scheduled'}
-          </span>
-        </div>
-
-        {/* Overall Progress */}
-        <div>
-          <div className="flex items-center justify-between text-sm mb-2">
-            <span>Overall Progress</span>
-            <span className="font-bold">{overallProgress}%</span>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-blue-100 mb-6">
+            <span className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+              <HiBookOpen className="w-4 h-4" />
+              {weeksData?.total_weeks} {weeksData?.total_weeks === 1 ? 'Week' : 'Weeks'}
+            </span>
+            <span className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+              {weeksData?.pacing_type === 'self_paced' ? (
+                <HiOutlineChartBar className="w-4 h-4" />
+              ) : (
+                <HiOutlineCalendar className="w-4 h-4" />
+              )}
+              {weeksData?.pacing_type === 'self_paced' ? 'Self-Paced' : 'Scheduled'}
+            </span>
           </div>
-          <div className="w-full bg-white/20 rounded-full h-2.5">
-            <div
-              className="bg-white rounded-full h-2.5 transition-all duration-500"
-              style={{ width: `${overallProgress}%` }}
-            />
+
+          {/* Overall Progress */}
+          <div className="max-w-md">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="text-blue-100">Overall Progress</span>
+              <span className="font-semibold bg-white/20 px-2.5 py-1 rounded-full text-xs">
+                {overallProgress}%
+              </span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
+              <div
+                className="bg-white rounded-full h-2.5 transition-all duration-700 ease-out"
+                style={{ width: `${overallProgress}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Pacing hint */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 text-sm text-blue-700 dark:text-blue-300">
-        {weeksData?.pacing_type === 'self_paced' ? (
-          <>
-            <strong>Self-Paced Course:</strong> Complete all lessons in a week to unlock the next one.
-          </>
-        ) : (
-          <>
-            <strong>Scheduled Course:</strong> A new week of content unlocks every week after your enrollment date.
-          </>
-        )}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl px-5 py-4 text-sm text-blue-700 dark:text-blue-300">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5">
+            {weeksData?.pacing_type === 'self_paced' ? (
+              <HiOutlineChartBar className="w-5 h-5 text-blue-500" />
+            ) : (
+              <HiOutlineCalendar className="w-5 h-5 text-blue-500" />
+            )}
+          </div>
+          <div>
+            <span className="font-semibold block mb-1">
+              {weeksData?.pacing_type === 'self_paced' ? 'Self-Paced Learning' : 'Scheduled Learning'}
+            </span>
+            <span className="text-blue-600/80 dark:text-blue-300/80">
+              {weeksData?.pacing_type === 'self_paced' ? (
+                <>Complete all lessons in a week to unlock the next one. Learn at your own pace.</>
+              ) : (
+                <>A new week of content unlocks every week after your enrollment date. Stay on track!</>
+              )}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Weeks List */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {weeksData?.weeks?.map((week) => {
           const isExpanded = expandedWeek === week.id;
           const progressPercent =
@@ -192,11 +221,11 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
           return (
             <div
               key={week.id}
-              className={`bg-white dark:bg-gray-800 rounded-xl border transition-all duration-200 overflow-hidden
+              className={`group bg-white dark:bg-gray-800 rounded-2xl border transition-all duration-300 overflow-hidden
                 ${week.is_current
-                  ? 'border-blue-500 shadow-md shadow-blue-100 dark:shadow-blue-900/20'
+                  ? 'border-blue-300 dark:border-blue-700 shadow-lg shadow-blue-100/50 dark:shadow-blue-900/20'
                   : week.is_unlocked
-                    ? 'border-gray-200 dark:border-gray-700 hover:shadow-md'
+                    ? 'border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-lg'
                     : 'border-gray-200 dark:border-gray-700 opacity-70'
                 }
               `}
@@ -204,15 +233,15 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
               {/* Week Header — Always clickable to toggle */}
               <button
                 onClick={() => toggleWeek(week.id)}
-                className="w-full flex items-center gap-4 p-4 md:p-5 text-left"
+                className="w-full flex items-center gap-4 p-5 md:p-6 text-left transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/50"
               >
                 {/* Week Number / Status Circle */}
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-lg
+                  className={`relative w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 font-semibold text-lg transition-all duration-300
                     ${week.all_completed
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-600'
+                      ? 'bg-gradient-to-br from-green-400 to-green-500 text-white shadow-md shadow-green-200 dark:shadow-green-900/30'
                       : week.is_current
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
+                        ? 'bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/30'
                         : week.is_unlocked
                           ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-400'
@@ -220,19 +249,19 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                   `}
                 >
                   {week.all_completed ? (
-                    <HiCheckCircle className="w-7 h-7 text-green-500" />
+                    <HiCheckCircle className="w-7 h-7" />
                   ) : week.is_unlocked ? (
                     <span>{week.week_number}</span>
                   ) : (
-                    <HiLockClosed className="w-5 h-5 text-gray-400" />
+                    <HiLockClosed className="w-5 h-5" />
                   )}
                 </div>
 
                 {/* Week Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
                     <h3
-                      className={`font-semibold text-base
+                      className={`font-semibold text-lg tracking-tight
                         ${!week.is_unlocked
                           ? 'text-gray-400 dark:text-gray-500'
                           : 'text-gray-800 dark:text-white'
@@ -243,60 +272,86 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                     </h3>
 
                     {/* Badges */}
-                    {week.all_completed && (
-                      <Badge color="success" size="xs">Completed</Badge>
-                    )}
-                    {week.is_current && !week.all_completed && (
-                      <Badge color="info" size="xs">Current Week</Badge>
-                    )}
-                    {!week.is_unlocked && (
-                      <Badge color="gray" size="xs">
-                        <HiLockClosed className="w-3 h-3 mr-1 inline" />
-                        Locked
-                      </Badge>
-                    )}
+                    <div className="flex gap-1.5">
+                      {week.all_completed && (
+                        <Badge color="success" size="sm" className="rounded-full px-3 py-0.5 text-xs font-medium">
+                          Completed
+                        </Badge>
+                      )}
+                      {week.is_current && !week.all_completed && (
+                        <Badge color="info" size="sm" className="rounded-full px-3 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                          Current
+                        </Badge>
+                      )}
+                      {!week.is_unlocked && (
+                        <Badge color="gray" size="sm" className="rounded-full px-3 py-0.5 text-xs font-medium">
+                          <HiLockClosed className="w-3 h-3 mr-1 inline" />
+                          Locked
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   {/* Meta info */}
-                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                    <span className="flex items-center gap-1">
+                  <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                    <span className="flex items-center gap-1.5">
                       <HiBookOpen className="w-3.5 h-3.5" />
-                      {week.total_count} lesson{week.total_count !== 1 ? 's' : ''}
+                      {week.total_count} {week.total_count === 1 ? 'lesson' : 'lessons'}
                     </span>
                     {week.is_unlocked && (
-                      <span>
+                      <span className="flex items-center gap-1.5">
+                        <HiCheckCircle className="w-3.5 h-3.5" />
                         {week.completed_count}/{week.total_count} completed
                       </span>
                     )}
                   </div>
 
-                  {/* Mini Progress */}
-                  {week.is_unlocked && week.total_count > 0 && (
-                    <div className="mt-2 w-full max-w-xs bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  {/* Mini Progress - only when not expanded */}
+                  {!isExpanded && week.is_unlocked && week.total_count > 0 && (
+                    <div className="mt-3 w-full max-w-xs bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className={`rounded-full h-1.5 transition-all duration-300
-                          ${week.all_completed ? 'bg-green-500' : 'bg-blue-500'}`}
+                        className={`rounded-full h-1.5 transition-all duration-500 ease-out
+                          ${week.all_completed ? 'bg-green-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500'}`}
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
                   )}
                 </div>
 
-                {/* Expand Icon */}
-                <div className="flex-shrink-0 text-gray-400">
-                  {isExpanded ? (
-                    <HiChevronDown className="w-5 h-5" />
-                  ) : (
-                    <HiChevronRight className="w-5 h-5" />
+                {/* Action Buttons - Right side */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {week.is_unlocked && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleWeekClick(week);
+                      }}
+                      className={`
+                        px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5
+                        transition-all hover:scale-105
+                        ${week.all_completed
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400'}
+                      `}
+                    >
+                      <HiPlay className="w-3 h-3" />
+                      {week.all_completed ? 'Review' :
+                       (week.completed_count > 0 || visitedWeeks.has(week.id)) ? 'Continue' : 'Start'}
+                    </button>
                   )}
+
+                  {/* Expand Icon */}
+                  <div className={`text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                    <HiChevronDown className="w-5 h-5" />
+                  </div>
                 </div>
               </button>
 
               {/* Expanded Lessons List */}
               {isExpanded && (
-                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 md:px-5 py-3">
+                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/50 px-5 md:px-6 py-4 animate-slideDown">
                   {week.lessons.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-2">
+                    <p className="text-sm text-gray-400 py-3 text-center">
                       No lessons in this week yet.
                     </p>
                   ) : (
@@ -305,65 +360,56 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                         <div
                           key={lesson.id}
                           onClick={() => handleLessonClick(lesson, week)}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                          className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
                             ${lesson.is_accessible
                               ? 'cursor-pointer hover:bg-white dark:hover:bg-gray-700 group'
-                              : 'cursor-not-allowed'
+                              : 'cursor-not-allowed opacity-60'
                             }
                           `}
                         >
                           {/* Lesson Status Icon */}
                           <div className="flex-shrink-0">
                             {lesson.is_completed ? (
-                              <HiCheckCircle className="w-5 h-5 text-green-500" />
+                              <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                <HiCheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              </div>
                             ) : lesson.is_accessible ? (
-                              <HiPlay className="w-5 h-5 text-blue-500 group-hover:text-blue-600" />
+                              <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50 transition-colors">
+                                <HiPlay className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                              </div>
                             ) : (
-                              <HiLockClosed className="w-4 h-4 text-gray-300 dark:text-gray-600" />
+                              <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                <HiLockClosed className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                              </div>
                             )}
                           </div>
 
                           {/* Lesson Title */}
                           <div className="flex-1 min-w-0">
                             <span
-                              className={`text-sm
+                              className={`text-sm font-medium
                                 ${lesson.is_accessible
                                   ? 'text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                                   : 'text-gray-400 dark:text-gray-500'
                                 }
                               `}
                             >
-                              {lIdx + 1}. {lesson.title}
+                              {lesson.title}
                             </span>
                           </div>
 
                           {/* Duration */}
                           {lesson.duration > 0 && (
-                            <span className="text-xs text-gray-400 flex items-center gap-1 flex-shrink-0">
+                            <span className="text-xs text-gray-400 flex items-center gap-1.5 flex-shrink-0 bg-white dark:bg-gray-700 px-2 py-1 rounded-full">
                               <HiClock className="w-3 h-3" />
                               {Math.ceil(lesson.duration / 60)} min
                             </span>
-                          )}
-
-                          {/* Arrow for accessible, incomplete lessons */}
-                          {lesson.is_accessible && !lesson.is_completed && (
-                            <HiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
                           )}
                         </div>
                       ))}
                     </div>
                   )}
 
-                  {/* Enter Week button for unlocked weeks */}
-                  {week.is_unlocked && (
-                    <button
-                      onClick={() => handleWeekClick(week)}
-                      className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      <HiPlay className="w-4 h-4" />
-                      {week.all_completed ? 'Review Week' : (week.completed_count > 0 || visitedWeeks.has(week.id)) ? 'Continue Week' : 'Start Week'}
-                    </button>
-                  )}
                 </div>
               )}
             </div>

@@ -173,24 +173,27 @@ export default function StudentDashboard() {
     const currentIdx = weeksData.weeks.findIndex(w => w.id === activeWeek.id);
     const nextWeek = weeksData.weeks[currentIdx + 1];
 
-    if (nextWeek) {
-      // Re-fetch weeks to get fresh unlock status (we just completed the current week)
-      try {
-        const freshData = await apiFetch(`/api/courses/${activeCourse.id}/weeks/`);
-        setWeeksData(freshData);
+    // Re-fetch weeks to get fresh unlock status after backend registered the completion
+    try {
+      const freshData = await apiFetch(`/api/courses/${activeCourse.id}/weeks/`);
+      setWeeksData(freshData);
+
+      if (nextWeek) {
         const freshNext = freshData.weeks?.find(w => w.id === nextWeek.id);
         if (freshNext && freshNext.is_unlocked) {
+          // Navigate directly into the next week's first lesson
+          const firstLesson = freshNext.lessons?.[0];
           setActiveWeek(freshNext);
-          setActiveLessonId(null);
+          setActiveLessonId(firstLesson?.id || null);
           setWeekSection('lessons');
           return;
         }
-      } catch (err) {
-        console.error('Error refreshing weeks:', err);
       }
+    } catch (err) {
+      console.error('Error refreshing weeks:', err);
     }
 
-    // No next week or it's still locked — go back to weeks list
+    // No next week or it's still locked — go back to weeks list (which will re-fetch)
     setActiveWeek(null);
     setActiveLessonId(null);
     setWeekSection('lessons');

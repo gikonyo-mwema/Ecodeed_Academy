@@ -150,7 +150,8 @@ class CourseViewSet(viewsets.ModelViewSet):
             else:  # scheduled
                 enroll_date = enrollment.enrolled_at if enrollment else timezone.now()
                 unlock_date = enroll_date + timedelta(weeks=idx)
-                is_unlocked = timezone.now() >= unlock_date
+                # Unlock if: calendar date has passed OR previous week is fully completed
+                is_unlocked = timezone.now() >= unlock_date or prev_week_complete
 
             lessons_data = []
             for lesson in lessons:

@@ -106,28 +106,34 @@ export default function WeekLessonView({
     if (!currentLesson) return;
     try {
       setMarkingComplete(true);
-      // Optimistically update local state first
-      const newCompleted = new Set([...completedSet, currentLesson.id]);
-      setCompletedSet(newCompleted);
-      // Persist to backend if enrollmentId is available
+      // Persist to backend FIRST so unlock logic has correct data
       if (enrollmentId) {
         await apiFetch(`/api/enrollments/${enrollmentId}/complete-lesson/`, {
           method: 'POST',
           body: JSON.stringify({ lesson_id: currentLesson.id }),
         });
       }
+      // Update local state after backend confirms
+      const newCompleted = new Set([...completedSet, currentLesson.id]);
+      setCompletedSet(newCompleted);
+
       // Check if ALL lessons in this week are now complete
       const allDone = lessons.every((l) => newCompleted.has(l.id));
       if (allDone) {
-        // Navigate to the next week
+        // Week complete — tell parent to navigate to next week
+        setMarkingComplete(false);
         onWeekComplete?.();
-      } else if (currentIndex < lessons.length - 1) {
-        // Auto-advance to next lesson in this week
+        return;
+      }
+      // Auto-advance to next lesson in this week
+      if (currentIndex < lessons.length - 1) {
         goNext();
       }
     } catch (err) {
       console.error('Error marking lesson complete:', err);
-      // Still keep the local state update so the UI responds
+      // Still update local state so UI responds
+      const newCompleted = new Set([...completedSet, currentLesson.id]);
+      setCompletedSet(newCompleted);
     } finally {
       setMarkingComplete(false);
     }
@@ -199,9 +205,30 @@ export default function WeekLessonView({
           </button>
 
           {completedSet.has(currentLesson.id) ? (
-            <Badge color="success" size="sm" className="px-3 py-1.5">
-              <HiCheckCircle className="w-4 h-4 mr-1.5 inline" /> Completed
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge color="success" size="sm" className="px-3 py-1.5">
+                <HiCheckCircle className="w-4 h-4 mr-1.5 inline" /> Completed
+              </Badge>
+              {currentIndex < lessons.length - 1 ? (
+                <button
+                  onClick={goNext}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                    bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Next Lesson <HiChevronRight className="w-4 h-4" />
+                </button>
+              ) : (
+                lessons.every((l) => completedSet.has(l.id)) && (
+                  <button
+                    onClick={() => onWeekComplete?.()}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                      bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                  >
+                    Next Week <HiChevronRight className="w-4 h-4" />
+                  </button>
+                )
+              )}
+            </div>
           ) : (
             <button
               onClick={markComplete}
