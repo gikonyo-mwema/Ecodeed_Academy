@@ -450,16 +450,6 @@ export default function CourseDetails() {
                         </Badge>
                       ))}
                     </div>
-
-                    <h3 className="text-xl font-bold text-gray-800 mt-8 mb-4">Course Resources</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {course.resources?.map((resource, index) => (
-                        <div key={index} className="flex items-center p-3 bg-teal-50 rounded-lg">
-                          <HiOutlineDocumentText className="h-5 w-5 text-teal-500 mr-2" />
-                          <span className="text-gray-700 text-sm">{resource}</span>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 </Tabs.Item>
 

@@ -71,16 +71,9 @@ const sectionConfigs = {
 };
 
 export default function Courses() {
-  const [courses, setCourses] = useState({
-    specialized: [],
-    masterclass: [],
-    webinar: null,
-    coaching: [],
-    compliance: []
-  });
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -103,20 +96,11 @@ export default function Courses() {
           students: c.students || '1.2k+ enrolled'
         });
 
-        const coursesData = courseList.map(normalize);
-        
-        const transformedData = {
-          specialized: coursesData.filter(c => c.category === 'specialized'),
-          masterclass: coursesData.filter(c => c.category === 'masterclass'),
-          webinar: coursesData.find(c => c.category === 'webinar') || null,
-          coaching: coursesData.filter(c => c.category === 'coaching'),
-          compliance: coursesData.filter(c => c.category === 'compliance'),
-        };
-        setCourses(transformedData);
+        setCourses(courseList.map(normalize));
       } catch (err) {
         console.error('Fetch error:', err);
         setError(err.message);
-        setCourses(getLocalCourses());
+        setCourses([]);
       } finally {
         setLoading(false);
       }
@@ -124,16 +108,6 @@ export default function Courses() {
 
     fetchCourses();
   }, []);
-
-  const getLocalCourses = () => {
-    return {
-      specialized: [],
-      masterclass: [],
-      webinar: null,
-      coaching: [],
-      compliance: []
-    };
-  };
 
   if (loading) return <LoadingSpinner fullScreen />;
   if (error) return (
@@ -163,36 +137,23 @@ export default function Courses() {
         </div>
       </div>
 
-      {/* Course Sections */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 space-y-20">
-        {/* Show only Masterclass Section */}
-        {courses.masterclass && courses.masterclass.length > 0 && (
-          <section className="relative">
-            {/* Section Header */}
-            <div className="text-center mb-12">
-              <div className={`inline-block p-3 rounded-2xl bg-gradient-to-r ${sectionConfigs.masterclass.gradient} mb-4`}>
-                <sectionConfigs.masterclass.icon className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-4xl font-bold text-gray-800 dark:text-white mb-3">
-                {sectionConfigs.masterclass.title}
-              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                {sectionConfigs.masterclass.subtitle}
-              </p>
-            </div>
-
-            {/* Course Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {courses.masterclass.map((course, index) => (
-                <CourseCard 
-                  key={course.id || index} 
-                  course={course} 
-                  category="masterclass"
-                  index={index}
-                />
-              ))}
-            </div>
-          </section>
+      {/* All Courses */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pb-20">
+        {courses.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {courses.map((course, index) => (
+              <CourseCard 
+                key={course.id || index} 
+                course={course} 
+                category={course.category}
+                index={index}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <p className="text-xl text-gray-500 dark:text-gray-400">No courses available yet. Check back soon!</p>
+          </div>
         )}
       </div>
     </div>
