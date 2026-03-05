@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
         last_name (str): User's last name.
         lastName (str): Alias for last_name.
         user_type (str): Type/role of the user.
-        profile_picture (str): URL to user's profile picture.
+        profile_picture (str): Cloudinary URL for the user's profile picture.
         profilePicture (str): Alias for profile_picture.
         bio (str): User's biography/description.
         phone_number (str): User's phone number.
@@ -49,7 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='email', read_only=True)
     firstName = serializers.CharField(source='first_name', read_only=True)
     lastName = serializers.CharField(source='last_name', read_only=True)
-    profilePicture = serializers.ImageField(source='profile_picture', read_only=True)
+    profilePicture = serializers.URLField(source='profile_picture', read_only=True)
     phoneNumber = serializers.CharField(source='phone_number', read_only=True)
     createdAt = serializers.DateTimeField(source='date_joined', read_only=True)
 
@@ -198,10 +198,13 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
     Fields:
         first_name (str): User's first name.
         last_name (str): User's last name.
-        profile_picture (str): URL to user's profile picture.
+        profile_picture (str): Cloudinary URL for the user's profile picture.
         bio (str): User's biography/description.
         phone_number (str): User's phone number.
     """
+
+    # Accept either a URL string or a file upload (handled in the view)
+    profile_picture = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = User

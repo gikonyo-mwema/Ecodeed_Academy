@@ -160,11 +160,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     # ==================== Profile Fields ====================
     # Optional profile customization fields
-    profile_picture = models.ImageField(
-        upload_to='profile_pics/',
-        null=True,
+    profile_picture = models.URLField(
+        max_length=1000,
         blank=True,
-        help_text='Optional profile picture. Uploaded to profile_pics/ directory.'
+        default='',
+        help_text='Cloudinary URL for the user profile picture.',
     )
     bio = models.TextField(
         max_length=500,

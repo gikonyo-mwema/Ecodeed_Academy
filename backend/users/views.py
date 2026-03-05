@@ -1,16 +1,26 @@
-from rest_framework import viewsets, permissions, status, generics
+import uuid
+
+import cloudinary.uploader
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import get_user_model
+from datetime import datetime
+
 from .serializers import (
     UserSerializer, UserRegistrationSerializer,
     UserLoginSerializer, UserProfileUpdateSerializer
 )
-from datetime import datetime
 
 User = get_user_model()
+
+# Profile picture constraints
+MAX_PROFILE_PIC_SIZE = getattr(settings, "MAX_PROFILE_PICTURE_SIZE", 5 * 1024 * 1024)
+ALLOWED_PROFILE_PIC_TYPES = {"jpeg", "png", "gif", "webp"}
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
@@ -48,10 +58,101 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 class UserProfileUpdateView(generics.UpdateAPIView):
+    """
+    Update the authenticated user's profile.
+
+    Accepts multipart/form-data. If a ``profile_picture`` file is included,
+    it is validated (size, MIME content) and uploaded to Cloudinary.  The
+    resulting secure URL is saved on the user model.
+    """
+
     serializer_class = UserProfileUpdateSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
     def get_object(self):
         return self.request.user
+
+    # ------------------------------------------------------------------
+    def _upload_profile_picture(self, file_obj):
+        """Validate and upload a profile picture to Cloudinary.
+
+        Returns the Cloudinary secure URL on success.
+        Raises ``ValueError`` with a user-facing message on failure.
+        """
+        # Size
+        if file_obj.size > MAX_PROFILE_PIC_SIZE:
+            raise ValueError(
+                f"Profile picture too large. Maximum is "
+                f"{MAX_PROFILE_PIC_SIZE // (1024 * 1024)} MB."
+            )
+
+        # MIME content check via Pillow
+        try:
+            from PIL import Image as PILImage
+            file_obj.seek(0)
+            img = PILImage.open(file_obj)
+            img.verify()
+            detected = (img.format or "").lower()
+            file_obj.seek(0)
+        except Exception:
+            raise ValueError(
+                "File content is not a valid image. "
+                "Allowed: JPEG, PNG, GIF, WebP."
+            )
+        if detected not in ALLOWED_PROFILE_PIC_TYPES:
+            raise ValueError(
+                f"Unsupported image type (detected: {detected or 'unknown'}). "
+                "Allowed: JPEG, PNG, GIF, WebP."
+            )
+
+        result = cloudinary.uploader.upload(
+            file_obj,
+            folder="ecodeed/profiles",
+            resource_type="image",
+            transformation=[
+                {"width": 400, "height": 400, "crop": "fill", "gravity": "face"},
+                {"quality": "auto:good", "fetch_format": "auto"},
+            ],
+            public_id=f"user_{self.request.user.pk}_{uuid.uuid4().hex[:8]}",
+            overwrite=True,
+        )
+        return result["secure_url"]
+
+    # ------------------------------------------------------------------
+    def update(self, request, *args, **kwargs):
+        # If the frontend sent a file in the 'profile_picture' field,
+        # upload it to Cloudinary first, then swap the value in request.data.
+        mutable_data = request.data.copy()  # QueryDict is immutable by default
+
+        if "profile_picture" in request.FILES:
+            file_obj = request.FILES["profile_picture"]
+            try:
+                url = self._upload_profile_picture(file_obj)
+            except ValueError as exc:
+                return Response(
+                    {"profile_picture": [str(exc)]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            except Exception as exc:
+                return Response(
+                    {"profile_picture": [f"Upload failed: {exc}"]},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
+            mutable_data["profile_picture"] = url
+
+        # Remove file entries so the serializer sees a plain string
+        if "profile_picture" in request.FILES:
+            del request.FILES["profile_picture"]
+
+        partial = kwargs.pop("partial", True)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=mutable_data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Return full user profile so the frontend can update Redux state
+        return Response(UserSerializer(instance).data)
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
