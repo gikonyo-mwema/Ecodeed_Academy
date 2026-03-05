@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { Button } from 'flowbite-react';
 import PostCategorySelect from './PostCategorySelect';
-import PostEditor from './PostEditor';
+import TipTapEditor from '../../../Editor/TipTapEditor';
 import PostImageUpload from './PostImageUpload';
 import usePostForm from '../hooks/usePostForm';
 import { apiFetch } from '../../../../utils/api';
@@ -195,10 +195,10 @@ export default function PostForm({ post, isEdit, onCancel, onSuccess, currentUse
           <strong>Content Images:</strong> Use the image button in the toolbar to add images 
           within your article content. These will be embedded in the text flow.
         </p>
-        <PostEditor
+        <TipTapEditor
           content={formData.content}
           onChange={handleContentChange}
-          currentUser={currentUser}
+          placeholder="Write your post content here…"
         />
       </div>
       

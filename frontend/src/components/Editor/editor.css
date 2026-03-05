@@ -1,0 +1,195 @@
+/*
+ * TipTap Editor Styles
+ *
+ * Covers the editor chrome, placeholder, and node-specific styling.
+ * Dark-mode is handled via Tailwind's `dark:` variant on the parent.
+ */
+
+/* ── Placeholder ─────────────────────────────────────────────── */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+  font-style: normal;
+}
+
+/* ── Focus ring (entire editor area) ─────────────────────────── */
+.tiptap:focus {
+  outline: none;
+}
+
+/* ── Image ───────────────────────────────────────────────────── */
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  cursor: default;
+}
+.tiptap img.ProseMirror-selectednode {
+  outline: 3px solid #14b8a6;
+  outline-offset: 2px;
+}
+
+/* ── Horizontal rule ─────────────────────────────────────────── */
+.tiptap hr {
+  border: none;
+  border-top: 2px solid #e5e7eb;
+  margin: 2rem 0;
+}
+.dark .tiptap hr {
+  border-top-color: #374151;
+}
+
+/* ── Blockquote ──────────────────────────────────────────────── */
+.tiptap blockquote {
+  border-left: 4px solid #14b8a6;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: #6b7280;
+}
+.dark .tiptap blockquote {
+  color: #9ca3af;
+  border-left-color: #0d9488;
+}
+
+/* ── Code blocks ─────────────────────────────────────────────── */
+.tiptap pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 1rem 0;
+}
+.tiptap pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+}
+
+/* Inline code */
+.tiptap code {
+  background: #f1f5f9;
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  color: #dc2626;
+}
+.dark .tiptap code {
+  background: #1e293b;
+  color: #f87171;
+}
+
+/* ── Tables ──────────────────────────────────────────────────── */
+.tiptap table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+  table-layout: fixed;
+}
+.tiptap th,
+.tiptap td {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  min-width: 80px;
+  vertical-align: top;
+  position: relative;
+}
+.dark .tiptap th,
+.dark .tiptap td {
+  border-color: #4b5563;
+}
+.tiptap th {
+  background: #f9fafb;
+  font-weight: 600;
+  text-align: left;
+}
+.dark .tiptap th {
+  background: #1f2937;
+}
+.tiptap .selectedCell {
+  background: rgba(20, 184, 166, 0.1);
+}
+/* Column resize handle */
+.tiptap .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background: #14b8a6;
+  cursor: col-resize;
+  pointer-events: auto;
+}
+.tiptap.resize-cursor {
+  cursor: col-resize;
+}
+
+/* ── Callout blocks ──────────────────────────────────────────── */
+.tiptap .callout {
+  border-left-width: 4px;
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+.tiptap .callout-icon {
+  user-select: none;
+}
+
+/* ── YouTube / iframe embeds ─────────────────────────────────── */
+.tiptap iframe {
+  border: 0;
+  border-radius: 0.5rem;
+}
+.tiptap div[data-youtube-video] {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+.tiptap div[data-youtube-video] iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Link styling ────────────────────────────────────────────── */
+.tiptap a {
+  color: #0d9488;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.tiptap a:hover {
+  color: #14b8a6;
+}
+
+/* ── Lists ───────────────────────────────────────────────────── */
+.tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+.tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+}
+.tiptap li {
+  margin: 0.25rem 0;
+}
+
+/* ── Drop cursor ─────────────────────────────────────────────── */
+.ProseMirror-focused .ProseMirror-gapcursor::after {
+  border-top-color: #14b8a6;
+}
