@@ -1,185 +1,87 @@
 /**
- * Cloudinary Integration Utility
- * 
- * This module provides comprehensive Cloudinary integration for the client-side application.
- * It handles image transformations, optimization, and URL generation for various use cases.
- * 
- * Features:
- * - Automatic image optimization based on device and context
- * - Responsive image generation
- * - Multiple transformation presets for different use cases
- * - Error handling and fallback images
- * - Configuration validation
- * - Performance optimization for web delivery
- * 
- * Transformations Provided:
- * - Thumbnail generation
- * - Quality optimization
- * - Format conversion (WebP, AVIF)
- * - Responsive sizing
- * - SEO-friendly URLs
- * 
+ * Cloudinary URL Utilities
+ *
+ * Provides helpers for generating optimized Cloudinary image URLs and
+ * fallback/default images. All actual uploads go through the Django
+ * backend (POST /api/upload/upload) which handles validation and
+ * server-side Cloudinary upload securely.
+ *
  * @module CloudinaryUtils
- * @version 2.0.0
- * @author Gikonyo Mwema
+ * @version 3.0.0
  */
 
-import { Cloudinary as CoreCloudinary, Util } from 'cloudinary-core';
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dcrubaesi';
 
 /**
- * Cloudinary Configuration
- * Environment-based configuration for Cloudinary service
+ * Base Cloudinary delivery URL.
+ * All generated URLs use HTTPS for secure delivery.
  */
-const cloudinaryConfig = {
-  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dcrubaesi',
-  uploadPreset: import.meta.env.VITE_UPLOAD_PRESET || 'ml_default',
-  defaultImage: 'v1745060667/uploads/zsowafnaoebrvrivbca8', // Fallback image public ID
-  defaultFolder: 'blog_uploads' // Default upload folder
+const BASE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload`;
+
+/**
+ * Default fallback image public ID (hosted on Cloudinary).
+ */
+const DEFAULT_IMAGE_ID = 'v1745060667/uploads/zsowafnaoebrvrivbca8';
+
+/**
+ * Build a Cloudinary transformation string from options.
+ *
+ * @param {object} options
+ * @param {number} [options.width]  - Resize width
+ * @param {number} [options.height] - Resize height
+ * @param {string} [options.crop]   - Crop mode (limit, fill, scale, etc.)
+ * @param {string} [options.quality] - Quality (auto:good, auto:best, etc.)
+ * @param {string} [options.gravity] - Gravity (face, center, etc.)
+ * @returns {string} e.g. "w_1200,c_limit,q_auto:good,f_auto"
+ */
+const buildTransformationString = (options = {}) => {
+  const parts = [];
+  if (options.width) parts.push(`w_${options.width}`);
+  if (options.height) parts.push(`h_${options.height}`);
+  if (options.crop) parts.push(`c_${options.crop}`);
+  else if (options.width || options.height) parts.push('c_limit');
+  if (options.gravity) parts.push(`g_${options.gravity}`);
+  parts.push(`q_${options.quality || 'auto:good'}`);
+  parts.push('f_auto');
+  return parts.join(',');
 };
 
-// Initialize Cloudinary core instance with secure delivery
-const cld = new CoreCloudinary({
-  cloud_name: cloudinaryConfig.cloudName,
-  secure: true // Always use HTTPS
-});
-
-// Validate configuration on module load (with fallbacks)
-if (!cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
-  console.warn('Missing Cloudinary configuration. Using fallback values:');
-  console.warn('VITE_CLOUDINARY_CLOUD_NAME, VITE_UPLOAD_PRESET');
-  console.warn('Set these environment variables in Vercel dashboard for full functionality');
-  
-  // Use fallback values instead of throwing error
-  cloudinaryConfig.cloudName = cloudinaryConfig.cloudName || 'dcrubaesi';
-  cloudinaryConfig.uploadPreset = cloudinaryConfig.uploadPreset || 'ml_default';
-}
-
 /**
- * Generates optimized Cloudinary URL with transformations
- * 
- * Creates optimized image URLs with various transformations for web delivery.
- * Supports automatic format detection, quality optimization, and responsive sizing.
- * 
- * @param {string} publicId - Cloudinary public ID or URL
+ * Generate an optimized Cloudinary URL.
+ *
+ * Accepts either a full Cloudinary URL or a public ID. Inserts
+ * transformation parameters for automatic format & quality optimization.
+ *
+ * @param {string} publicIdOrUrl - Cloudinary public_id or full URL
  * @param {object} [options] - Transformation options
- * @returns {string} Optimized URL
+ * @returns {string} Optimized HTTPS URL
  */
-export const getCloudinaryUrl = (publicId, options = {}) => {
-  if (!publicId) {
-    return cld.url(cloudinaryConfig.defaultImage, {
-      transformation: buildTransformations(options)
-    });
+export const getCloudinaryUrl = (publicIdOrUrl, options = {}) => {
+  if (!publicIdOrUrl) {
+    return `${BASE_URL}/${buildTransformationString(options)}/${DEFAULT_IMAGE_ID}`;
   }
 
-  if (publicId.includes('res.cloudinary.com')) {
-    const urlParts = publicId.split('/upload/');
-    return `${urlParts[0]}/upload/${buildTransformationString(options)}/${urlParts[1]}`;
-  }
-
-  const finalPublicId = publicId.startsWith('uploads/') 
-    ? publicId 
-    : `${cloudinaryConfig.defaultFolder}/${publicId}`;
-
-  return cld.url(finalPublicId, {
-    transformation: buildTransformations(options)
-  });
-};
-
-/**
- * Uploads image to Cloudinary (client-side)
- * @param {File} file - Image file to upload
- * @param {object} [options] - Upload options
- * @returns {Promise<CloudinaryUploadResponse>}
- */
-export const uploadToCloudinary = async (file, options = {}) => {
-  validateFile(file);
-
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', cloudinaryConfig.uploadPreset);
-  formData.append('folder', options.folder || cloudinaryConfig.defaultFolder);
-
-  if (options.tags) {
-    formData.append('tags', options.tags.join(','));
-  }
-
-  try {
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/upload`,
-      { method: 'POST', body: formData }
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Upload failed');
+  // If it's already a full Cloudinary URL, insert transformations
+  if (publicIdOrUrl.includes('res.cloudinary.com')) {
+    const parts = publicIdOrUrl.split('/upload/');
+    if (parts.length === 2) {
+      return `${parts[0]}/upload/${buildTransformationString(options)}/${parts[1]}`;
     }
-
-    return processUploadResponse(await response.json());
-  } catch (error) {
-    console.error('Cloudinary upload error:', error);
-    throw new Error(`Upload failed: ${error.message}`);
+    return publicIdOrUrl; // Can't parse — return as-is
   }
+
+  // Treat as a public_id
+  return `${BASE_URL}/${buildTransformationString(options)}/${publicIdOrUrl}`;
 };
 
 /**
- * Gets default image URL with transformations
+ * Get the default/fallback image URL with optional transformations.
+ *
  * @param {object} [options] - Transformation options
  * @returns {string} URL
  */
 export const getDefaultImageUrl = (options = {}) => {
-  return getCloudinaryUrl(cloudinaryConfig.defaultImage, options);
+  return getCloudinaryUrl(DEFAULT_IMAGE_ID, options);
 };
 
-// Helper functions
-const buildTransformations = (options) => {
-  return [
-    { width: options.width || 1200, crop: options.crop || 'limit' },
-    { quality: 'auto:best' },
-    { fetch_format: 'auto' }
-  ].filter(t => t);
-};
-
-const validateFile = (file) => {
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-  const maxSize = 5 * 1024 * 1024; // 5MB
-
-  if (!validTypes.includes(file.type)) {
-    throw new Error('Invalid file type. Allowed: JPEG, PNG, WEBP, GIF');
-  }
-
-  if (file.size > maxSize) {
-    throw new Error(`File exceeds ${maxSize/1024/1024}MB limit`);
-  }
-};
-
-const processUploadResponse = (data) => ({
-  url: data.secure_url,
-  publicId: data.public_id,
-  width: data.width,
-  height: data.height,
-  format: data.format,
-  bytes: data.bytes,
-  createdAt: data.created_at
-});
-
-// Modern named exports
-export const Cloudinary = {
-  getUrl: getCloudinaryUrl,
-  upload: uploadToCloudinary,
-  getDefault: getDefaultImageUrl,
-  // Note: Remove client-side delete as it requires auth credentials
-  config: cloudinaryConfig
-};
-
-export default Cloudinary;
-// Add this function to handle responsive image URLs
-export const getResponsiveImageUrl = (publicId, options = {}) => {
-  const transforms = [
-    { width: options.width || 'auto', crop: 'scale' },
-    { quality: 'auto:good' },
-    { dpr: 'auto' },
-    { fetch_format: 'auto' }
-  ];
-  
-  return getCloudinaryUrl(publicId, { transformation: transforms });
-};
+export default { getCloudinaryUrl, getDefaultImageUrl };

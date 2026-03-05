@@ -18,11 +18,6 @@ const fixProfileUrl = (user) => {
     user._id = user.id;
   }
 
-  if (user.profile_picture && typeof user.profile_picture === 'string') {
-    // Replace internal docker hostname with localhost for browser access
-    user.profile_picture = user.profile_picture.replace('http://backend:8000', 'http://localhost:8000');
-    user.profile_picture = user.profile_picture.replace('http://backend', 'http://localhost:8000');
-  }
   return user;
 };
 
@@ -74,6 +69,36 @@ export const googleSignIn = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await apiFetch('/api/auth/google', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+      });
+      return response;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+);
+
+export const facebookSignIn = createAsyncThunk(
+  'user/facebookSignin',
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await apiFetch('/api/auth/facebook/', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+      });
+      return response;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error));
+    }
+  }
+);
+
+export const twitterComplete = createAsyncThunk(
+  'user/twitterComplete',
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await apiFetch('/api/auth/twitter/complete/', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -161,6 +186,18 @@ const userSlice = createSlice({
     setCurrentUser: (state, action) => {
       if (validateUser(action.payload)) {
         state.currentUser = action.payload;
+      }
+    },
+    // Used by the X / Twitter popup callback (postMessage flow)
+    socialAuthSuccess: (state, action) => {
+      const userData = action.payload.user || action.payload;
+      const token = action.payload.token || action.payload.access || action.payload.key;
+      if (validateUser(userData)) {
+        state.loading = false;
+        state.currentUser = fixProfileUrl(userData);
+        state.token = token;
+        state.error = null;
+        try { if (token) localStorage.setItem('token', token); } catch {}
       }
     },
   },
@@ -264,6 +301,44 @@ const userSlice = createSlice({
       })
       .addCase(googleSignIn.rejected, rejectedState)
 
+      .addCase(facebookSignIn.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(facebookSignIn.fulfilled, (state, action) => {
+        const userData = action.payload.user || action.payload;
+        const token = action.payload.token || action.payload.access || action.payload.key;
+        
+        state.loading = false;
+        state.currentUser = fixProfileUrl(userData);
+        state.token = token;
+        state.error = null;
+        
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+      })
+      .addCase(facebookSignIn.rejected, rejectedState)
+
+      .addCase(twitterComplete.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(twitterComplete.fulfilled, (state, action) => {
+        const userData = action.payload.user || action.payload;
+        const token = action.payload.token || action.payload.access || action.payload.key;
+        
+        state.loading = false;
+        state.currentUser = fixProfileUrl(userData);
+        state.token = token;
+        state.error = null;
+        
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+      })
+      .addCase(twitterComplete.rejected, rejectedState)
+
       .addCase(updateUser.pending, pendingState)
       .addCase(updateUser.fulfilled, (state, action) => {
         console.log('Update payload:', action.payload);
@@ -278,11 +353,6 @@ const userSlice = createSlice({
         if (state.currentUser && typeof updatedFields === 'object') {
             // Create a new object for currentUser to ensure immutability
             const newCurrentUser = { ...state.currentUser, ...updatedFields };
-            
-            // Fix profile URL if present and starts with internal backend URL
-            if (newCurrentUser.profile_picture && typeof newCurrentUser.profile_picture === 'string') {
-               newCurrentUser.profile_picture = newCurrentUser.profile_picture.replace('http://backend:8000', 'http://localhost:8000').replace('http://backend', 'http://localhost:8000');
-            }
             
             state.currentUser = newCurrentUser;
         } else if (validateUser(updatedFields)) {
@@ -320,5 +390,5 @@ const userSlice = createSlice({
 });
 
 // Export actions and reducer
-export const { clearError, setCurrentUser } = userSlice.actions;
+export const { clearError, setCurrentUser, socialAuthSuccess } = userSlice.actions;
 export default userSlice.reducer;

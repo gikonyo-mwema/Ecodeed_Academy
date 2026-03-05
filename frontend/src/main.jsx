@@ -21,6 +21,7 @@ import App from './App.jsx';
 import { store, persistor } from './redux/store.js';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
+import { HelmetProvider } from 'react-helmet-async';
 import ThemeProvider from './components/ThemeProvider.jsx';
 import React from 'react';
 import axios from 'axios';
@@ -86,10 +87,13 @@ createRoot(document.getElementById('root')).render(
     <PersistGate loading={null} persistor={persistor}>
       {/* Redux Provider - provides store to all components */}
       <Provider store={store}>
-        {/* Theme Provider - manages dark/light theme throughout app */}
-        <ThemeProvider>     
-          <App />        
-        </ThemeProvider>
+        {/* HelmetProvider - enables async <head> management for SEO */}
+        <HelmetProvider>
+          {/* Theme Provider - manages dark/light theme throughout app */}
+          <ThemeProvider>     
+            <App />        
+          </ThemeProvider>
+        </HelmetProvider>
       </Provider>
     </PersistGate>
   </React.StrictMode>

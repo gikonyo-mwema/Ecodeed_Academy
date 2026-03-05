@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-
+    'django.contrib.sitemaps',
 
     # Third-party apps
     'rest_framework',
@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'courses',
     'services',
     'payments',
+    'messages_app',
     # 'blog.apps.BlogConfig',  # TODO: Create blog app
     # 'services.apps.ServicesConfig',  # TODO: Create services app
 ]
@@ -96,6 +97,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',  # ETag / Last-Modified support
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -103,7 +105,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates', BASE_DIR / 'messages_app' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -144,6 +146,17 @@ if 'test' in sys.argv:
         }
     }
 
+# ── Cache backend ──
+# Local-memory cache for development.  Switch to Redis/Memcached in production.
+# Used by @cache_page decorators in posts views.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'ecodeed-cache',
+        'TIMEOUT': 300,  # 5 minutes default
+    }
+}
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -181,6 +194,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # In production, set via SITE_URL environment variable
 SITE_URL = env('SITE_URL', default='http://localhost:8000')
 
+# Frontend URL — used by social auth callbacks to postMessage back to the SPA
+FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
+
 # ------------------------------------------------------------------
 # Payment provider secrets
 # the secret key is used server-side only; public key goes to frontend
@@ -215,6 +231,27 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    # ── Throttling ──
+    'DEFAULT_THROTTLE_CLASSES': [],  # Per-view throttling set in viewsets
+    'DEFAULT_THROTTLE_RATES': {
+        'image_upload': '30/hour',
+        'view_count': '60/min',
+        'post_write': '20/hour',
+        'anon': '100/hour',
+        'user': '1000/hour',
+    },
+    # ── Content negotiation / versioning ──
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
+    'DEFAULT_VERSION': 'v1',
+    'ALLOWED_VERSIONS': ['v1'],
+    # ── Filtering ──
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
+        'rest_framework.filters.SearchFilter',
+    ],
+    # ── Performance ──
+    'COERCE_DECIMAL_TO_STRING': False,
 }
 
 # JWT Settings
@@ -236,13 +273,27 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Tell allauth we don't use username
 
-# Email Settings (Production)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = env.int('EMAIL_PORT', default=587)
-EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+# Email Settings
+# In development, emails are printed to the console.
+# In production, emails are sent via Brevo (formerly Sendinblue) HTTP API,
+# which works on DigitalOcean where SMTP ports are blocked.
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp-relay.brevo.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = env('BREVO_SMTP_LOGIN', default='')
+    EMAIL_HOST_PASSWORD = env('BREVO_SMTP_KEY', default='')
+
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='Ecodeed Academy <noreply@ecodeedacademy.com>')
+
+# Brevo (Sendinblue) API Settings — used for transactional & marketing emails
+BREVO_API_KEY = env('BREVO_API_KEY', default='')
+BREVO_NEWSLETTER_LIST_ID = env.int('BREVO_NEWSLETTER_LIST_ID', default=0)
+BREVO_SENDER_EMAIL = env('BREVO_SENDER_EMAIL', default='noreply@ecodeedacademy.com')
+BREVO_SENDER_NAME = env('BREVO_SENDER_NAME', default='Ecodeed Academy')
 
 # Social Auth Settings
 SOCIALACCOUNT_PROVIDERS = {
@@ -274,4 +325,24 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+# ─── Cloudinary (image CDN & upload) ─────────────────────────────
+import cloudinary
+import cloudinary.uploader
+
+CLOUDINARY_CLOUD_NAME = env('CLOUDINARY_CLOUD_NAME', default='')
+CLOUDINARY_API_KEY = env('CLOUDINARY_API_KEY', default='')
+CLOUDINARY_API_SECRET = env('CLOUDINARY_API_SECRET', default='')
+
+cloudinary.config(
+    cloud_name=CLOUDINARY_CLOUD_NAME,
+    api_key=CLOUDINARY_API_KEY,
+    api_secret=CLOUDINARY_API_SECRET,
+    secure=True,
+)
+
+# Max upload sizes
+MAX_POST_IMAGE_SIZE = 5 * 1024 * 1024       # 5 MB for post images
+MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024   # 5 MB for profile pictures
+
 

@@ -17,8 +17,8 @@ import {
 } from 'react-icons/hi';
 import { useState } from 'react';
 
-// Rich text editor reused from Posts
-import PostEditor from '../../Posts/PostForm/PostEditor.jsx';
+// Rich text editor (TipTap)
+import TipTapEditor from '../../../Editor/TipTapEditor';
 
 const ServiceFormTabs = ({
   formData,
@@ -364,10 +364,11 @@ const ServiceFormTabs = ({
       {/* Full Description (Rich Text) */}
       <div className="md:col-span-2">
         <Label htmlFor="description" value="Full Description*" />
-        <PostEditor
+        <TipTapEditor
           content={formData.description || ''}
           onChange={handleRichTextChange}
-          currentUser={currentUser}
+          placeholder="Describe your service in detail…"
+          minHeight="200px"
         />
         {errors.description && (
           <p className="text-xs text-red-600 mt-1">{errors.description}</p>

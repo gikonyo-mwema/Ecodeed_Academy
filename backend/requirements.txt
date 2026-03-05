@@ -14,3 +14,6 @@ django-cleanup
 requests
 cryptography
 oauthlib
+nh3
+sib-api-v3-sdk
+cloudinary>=1.40,<2.0

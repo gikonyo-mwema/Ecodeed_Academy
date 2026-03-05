@@ -31,8 +31,7 @@ import Dashboard from './pages/Dashboard';
 import InstructorDashboard from './pages/InstructorDashboard';
 import Projects from './pages/Projects';
 import SignUp from './pages/SignUp';
-import CreatePost from './pages/CreatePost';
-import UpdatePost from './pages/UpdatePost';
+import PostEditorPage from './pages/PostEditorPage';
 import PostPage from './pages/PostPage';
 import Search from './pages/Search';
 import Services from './pages/Services';
@@ -106,8 +105,8 @@ export default function App() {
           {/* ===== ADMIN-ONLY ROUTES ===== */}
           {/* These routes require admin privileges */}
           <Route element={<OnlyAdminPrivateRoute />}>
-            <Route path='/create-post' element={<CreatePost />} />
-            <Route path='/update-post/:postId' element={<UpdatePost />} />
+            <Route path='/create-post' element={<PostEditorPage />} />
+            <Route path='/update-post/:postId' element={<PostEditorPage />} />
             <Route path='/dashboard/services' element={<DashServices />} />
             <Route path='/create-course' element={<CreateCourse />} />
             <Route path='/edit-course/:courseId' element={<EditCourse />} />

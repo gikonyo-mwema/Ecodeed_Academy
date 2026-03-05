@@ -19,7 +19,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Sidebar } from 'flowbite-react';
+import { Sidebar, Button, TextInput, Alert, Spinner, Modal } from 'flowbite-react';
 import {
   HiOutlineAcademicCap,
   HiOutlineUsers,
@@ -30,9 +30,13 @@ import {
   HiOutlineUser,
   HiArrowSmRight,
   HiOutlineClipboardList,
+  HiOutlineMail,
+  HiCheckCircle,
+  HiExclamationCircle,
 } from 'react-icons/hi';
 import DashProfile from '../components/Admin/Users/DashProfile';
 import { apiFetch } from '../utils/api';
+import TipTapEditor from '../components/Editor/TipTapEditor';
 
 /**
  * InstructorDashboard Component
@@ -52,6 +56,7 @@ export default function InstructorDashboard() {
   });
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [overviewNotifyCourse, setOverviewNotifyCourse] = useState(null);
 
   // Redirect non-instructors
   useEffect(() => {
@@ -129,7 +134,7 @@ export default function InstructorDashboard() {
       case 'sessions':
         return <InstructorSessions />;
       default:
-        return <InstructorOverview stats={stats} courses={courses} loading={loading} />;
+        return <InstructorOverview stats={stats} courses={courses} loading={loading} onNotify={setOverviewNotifyCourse} />;
     }
   };
 
@@ -209,6 +214,12 @@ export default function InstructorDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 p-6">{renderContent()}</div>
+
+      {/* Shared Notify Modal for Overview tab */}
+      <NotifyStudentsModal
+        course={overviewNotifyCourse}
+        onClose={() => setOverviewNotifyCourse(null)}
+      />
     </div>
   );
 }
@@ -216,7 +227,7 @@ export default function InstructorDashboard() {
 /**
  * Overview Component - Shows instructor stats and quick actions
  */
-function InstructorOverview({ stats, courses, loading }) {
+function InstructorOverview({ stats, courses, loading, onNotify }) {
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
@@ -262,12 +273,22 @@ function InstructorOverview({ stats, courses, loading }) {
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {course.enrollmentCount || 0} students enrolled
                 </p>
-                <Link
-                  to={`/edit-course/${course.id}`}
-                  className="mt-2 inline-block text-sm text-blue-600 hover:underline"
-                >
-                  Edit Course →
-                </Link>
+                <div className="mt-2 flex items-center gap-3">
+                  <Link
+                    to={`/edit-course/${course.id}`}
+                    className="inline-block text-sm text-blue-600 hover:underline"
+                  >
+                    Edit Course →
+                  </Link>
+                  <button
+                    onClick={() => onNotify(course)}
+                    className="inline-flex items-center gap-1 text-sm text-green-600 hover:underline"
+                    title="Email all enrolled students"
+                  >
+                    <HiOutlineMail className="h-4 w-4" />
+                    Notify
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -339,6 +360,8 @@ function QuickAction({ icon: Icon, label, to }) {
  * Instructor Courses Component
  */
 function InstructorCourses({ courses, loading }) {
+  const [notifyCourse, setNotifyCourse] = useState(null);
+
   if (loading) {
     return <div className="animate-pulse h-64 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>;
   }
@@ -372,16 +395,24 @@ function InstructorCourses({ courses, loading }) {
                 <div className="flex gap-2">
                   <Link
                     to={`/edit-course/${course.id}`}
-                    className="flex-1 text-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    className="flex-1 text-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
                   >
                     Edit
                   </Link>
                   <Link
                     to={`/courses/${course.slug}`}
-                    className="flex-1 text-center bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition-colors"
+                    className="flex-1 text-center bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition-colors text-sm"
                   >
                     View
                   </Link>
+                  <button
+                    onClick={() => setNotifyCourse(course)}
+                    className="flex items-center justify-center gap-1 flex-1 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition-colors text-sm"
+                    title="Email all enrolled students"
+                  >
+                    <HiOutlineMail className="h-4 w-4" />
+                    Notify
+                  </button>
                 </div>
               </div>
             </div>
@@ -400,7 +431,140 @@ function InstructorCourses({ courses, loading }) {
           </Link>
         </div>
       )}
+
+      {/* Notify Students Modal */}
+      <NotifyStudentsModal
+        course={notifyCourse}
+        onClose={() => setNotifyCourse(null)}
+      />
     </div>
+  );
+}
+
+/**
+ * Notify Students Modal — Instructor sends an email to all enrolled students of a course.
+ * Calls POST /api/courses/<id>/notify/
+ */
+function NotifyStudentsModal({ course, onClose }) {
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState(null); // { type, message }
+
+  // Reset form when a new course is selected
+  useEffect(() => {
+    if (course) {
+      setSubject('');
+      setBody('');
+      setResult(null);
+    }
+  }, [course]);
+
+  const isValid = subject.trim() && body.trim() && body !== '<p><br></p>';
+
+  const handleSend = async () => {
+    if (!isValid || !course) return;
+    setSending(true);
+    setResult(null);
+
+    try {
+      const data = await apiFetch(`/api/courses/${course.id}/notify/`, {
+        method: 'POST',
+        body: JSON.stringify({ subject: subject.trim(), body }),
+      });
+
+      setResult({
+        type: 'success',
+        message: data.message || `Notification sent to ${data.sent} students.`,
+      });
+      // Clear form on success
+      setSubject('');
+      setBody('');
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to send notification. Please try again.';
+      setResult({ type: 'failure', message: msg });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Modal show={!!course} onClose={onClose} size="xl">
+      <Modal.Header>
+        <span className="flex items-center gap-2">
+          <HiOutlineMail className="h-5 w-5 text-green-600" />
+          Notify Students — {course?.title}
+        </span>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            This will send an email to <strong>all active students</strong> enrolled in{' '}
+            <strong>{course?.title}</strong>.
+          </p>
+
+          {result && (
+            <Alert
+              color={result.type === 'success' ? 'success' : 'failure'}
+              icon={result.type === 'success' ? HiCheckCircle : HiExclamationCircle}
+              onDismiss={() => setResult(null)}
+            >
+              {result.message}
+            </Alert>
+          )}
+
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Subject *
+            </label>
+            <TextInput
+              type="text"
+              placeholder="e.g. Live Session Time Change — Wednesday 3 PM"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Message *
+            </label>
+            <TipTapEditor
+              content={body}
+              onChange={setBody}
+              placeholder="Write your message to students…"
+              minHeight="160px"
+            />
+          </div>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button
+          gradientDuoTone="greenToBlue"
+          disabled={!isValid || sending}
+          onClick={handleSend}
+        >
+          {sending ? (
+            <>
+              <Spinner size="sm" className="mr-2" />
+              Sending...
+            </>
+          ) : (
+            <>
+              <HiOutlineMail className="mr-2 h-5 w-5" />
+              Send to All Students
+            </>
+          )}
+        </Button>
+        <Button color="gray" onClick={onClose}>
+          Cancel
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
 

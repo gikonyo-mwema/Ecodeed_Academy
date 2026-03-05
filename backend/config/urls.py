@@ -18,12 +18,17 @@ Note:
 """
 
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
+from django.http import HttpResponse
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+from posts.feeds import LatestPostsFeed, LatestPostsAtomFeed, CategoryPostsFeed
+from posts.sitemaps import SITEMAPS
 
 # Configure Swagger/OpenAPI documentation schema
 schema_view = get_schema_view(
@@ -39,7 +44,31 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+def robots_txt(request):
+    """Serve robots.txt with sitemap reference."""
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "",
+        "# Disallow API and admin",
+        "Disallow: /api/",
+        "Disallow: /admin/",
+        "Disallow: /swagger/",
+        "Disallow: /redoc/",
+        "",
+        f"Sitemap: {request.scheme}://{request.get_host()}/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
 urlpatterns = [
+    # SEO: feeds, sitemap, robots
+    path('feed/rss/', LatestPostsFeed(), name='rss-feed'),
+    path('feed/atom/', LatestPostsAtomFeed(), name='atom-feed'),
+    path('feed/rss/category/<slug:slug>/', CategoryPostsFeed(), name='rss-feed-category'),
+    path('sitemap.xml', sitemap, {'sitemaps': SITEMAPS}, name='django.contrib.sitemaps.views.sitemap'),
+    path('robots.txt', robots_txt, name='robots-txt'),
+
     # Admin interface
     path('admin/', admin.site.urls),
 
@@ -54,6 +83,7 @@ urlpatterns = [
     path('api/', include('courses.urls')),
     path('api/', include('services.urls')),
     path('api/payments/', include('payments.urls')),
+    path('api/messages/', include('messages_app.urls')),
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('api/auth/social/', include('allauth.socialaccount.urls')),
