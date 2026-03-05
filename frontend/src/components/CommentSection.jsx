@@ -28,26 +28,22 @@ export default function CommentSection({ postId }) {
     }
 
     try {
-      const res = await fetch('/api/comments/create', {
+      const data = await apiFetch('/api/comments/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Include authentication cookies
         body: JSON.stringify({
           content: comment,
           postId,
           userId: currentUser._id,
         }),
       });
-      const data = await res.json();
-      if (res.ok && data) {
-        setComment('');
-        setCommentError(null);
-        setComments([data, ...comments]);
-      } else {
-        setCommentError(data.message || 'Failed to create comment.');
-      }
+      // apiFetch returns parsed JSON directly, throws on error
+      setComment('');
+      setCommentError(null);
+      setComments([data, ...comments]);
     } catch (error) {
-      setCommentError('An error occurred. Please try again.');
+      console.error('Comment creation error:', error);
+      setCommentError(error.message || 'An error occurred. Please try again.');
     }
   };
 

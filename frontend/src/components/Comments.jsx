@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import moment from 'moment';
 import { FaThumbsUp } from 'react-icons/fa';
@@ -8,23 +8,11 @@ import { Button, Textarea } from 'flowbite-react';
 import { apiFetch } from '../utils/api';
 
 export default function Comment({ comment, onLike, onEdit, onDelete }) {
-  const [user, setUser] = useState({});
+  // User data is already embedded in the comment from the backend serializer
+  const user = comment.user || {};
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
   const { currentUser } = useSelector((state) => state.user);
-
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        const data = await apiFetch(`/api/users/${comment.userId}`);
-        setUser(data);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        setUser({ username: 'unknown user' }); // Fallback for network errors
-      }
-    };
-    getUser();
-  }, [comment]);
 
   const handleSave = async () => {
     try {
