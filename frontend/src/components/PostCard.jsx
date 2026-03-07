@@ -88,19 +88,19 @@ function formatDate(dateStr) {
 // PostCard
 // ---------------------------------------------------------------------------
 export default function PostCard({ post, isCompact = false, isLoading = false, className = '' }) {
-  // If parent tells us it's loading, or there's no post yet, show skeleton
-  if (isLoading || !post) {
-    return <PostCardSkeleton className={className} />;
-  }
-
-  // ---- Image state ----
+  // ---- Image state (must be called before any early return — Rules of Hooks) ----
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [imgSrc, setImgSrc] = useState(post.image || getDefaultImageUrl());
+  const [imgSrc, setImgSrc] = useState(post?.image || getDefaultImageUrl());
 
   const handleImgError = useCallback(() => {
     setImgSrc(getDefaultImageUrl());
     setImgLoaded(true);
   }, []);
+
+  // If parent tells us it's loading, or there's no post yet, show skeleton
+  if (isLoading || !post) {
+    return <PostCardSkeleton className={className} />;
+  }
 
   // ---- Derived data (cheap — no DOM parsing) ----
   const postUrl = `/post/${post.slug || '#'}`;

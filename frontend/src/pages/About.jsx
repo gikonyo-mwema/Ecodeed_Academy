@@ -87,10 +87,10 @@ export default function About() {
               </p>
               <div className="mt-6">
                 <Link
-                  to="/team"
+                  to="/contact"
                   className="inline-flex items-center text-brand-green hover:text-green-700 font-medium transition duration-300"
                 >
-                  Meet the full team
+                  Get in touch
                   <svg
                     className="w-4 h-4 ml-2"
                     fill="none"

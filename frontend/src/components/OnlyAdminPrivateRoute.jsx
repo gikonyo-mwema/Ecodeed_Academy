@@ -41,12 +41,13 @@ export default function OnlyAdminPrivateRoute() {
     return <Navigate to='/sign-in' state={{ from: location }} replace />;
   }
 
-  // Redirect non-admin users to unauthorized page
-  // Admin users have isAdmin flag set to true
-  if (!currentUser.isAdmin) {
+  // Allow admins and instructors through.
+  // Instructors only access course-related routes; sidebar gating
+  // hides non-course admin tabs from them.
+  if (!currentUser.isAdmin && !currentUser.isInstructor) {
     return <Navigate to='/unauthorized' replace />;
   }
 
-  // Render the protected admin route content
+  // Render the protected route content
   return <Outlet />;
 }

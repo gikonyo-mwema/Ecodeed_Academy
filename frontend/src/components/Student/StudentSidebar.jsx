@@ -155,7 +155,7 @@ export default function StudentSidebar({
 
                 {/* Current week title */}
                 <div className="px-4 pt-2 pb-3 border-b border-gray-200 dark:border-gray-700">
-                  <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider">
+                  <p className="text-xs text-brand-green dark:text-brand-green/80 font-semibold uppercase tracking-wider">
                     Week {activeWeek.week_number}
                   </p>
                   <p className="text-sm font-bold text-gray-800 dark:text-white truncate">
@@ -175,7 +175,7 @@ export default function StudentSidebar({
                     }}
                     className={`w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors
                       ${weekSection === 'lessons'
-                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                        ? 'bg-brand-green/5 dark:bg-brand-green/10 text-brand-green dark:text-brand-green/80'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }
                     `}
@@ -200,13 +200,13 @@ export default function StudentSidebar({
                             }}
                             className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs rounded transition-colors
                               ${isActive
-                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium'
+                                ? 'bg-brand-green/10 dark:bg-brand-green/10 text-brand-green dark:text-brand-green/80 font-medium'
                                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                               }
                             `}
                           >
                             {lesson.is_completed ? (
-                              <HiCheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                              <HiCheckCircle className="w-3.5 h-3.5 text-brand-green flex-shrink-0" />
                             ) : (
                               <HiPlay className="w-3.5 h-3.5 flex-shrink-0" />
                             )}
@@ -226,7 +226,7 @@ export default function StudentSidebar({
                   }}
                   className={`w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors
                     ${weekSection === 'assignments'
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      ? 'bg-brand-green/5 dark:bg-brand-green/10 text-brand-green dark:text-brand-green/80'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }
                   `}
@@ -246,7 +246,7 @@ export default function StudentSidebar({
                   }}
                   className={`w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors
                     ${weekSection === 'resources'
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      ? 'bg-brand-green/5 dark:bg-brand-green/10 text-brand-green dark:text-brand-green/80'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }
                   `}
@@ -266,7 +266,7 @@ export default function StudentSidebar({
                   }}
                   className={`w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors
                     ${weekSection === 'live-session'
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      ? 'bg-brand-green/5 dark:bg-brand-green/10 text-brand-green dark:text-brand-green/80'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }
                   `}
@@ -301,7 +301,7 @@ export default function StudentSidebar({
                           `}
                         >
                           {w.all_completed ? (
-                            <HiCheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                            <HiCheckCircle className="w-3.5 h-3.5 text-brand-green flex-shrink-0" />
                           ) : w.is_unlocked ? (
                             <span className="w-3.5 h-3.5 text-center font-bold text-[10px] flex-shrink-0">{w.week_number}</span>
                           ) : (
@@ -341,9 +341,13 @@ export default function StudentSidebar({
                     as="div"
                     className="cursor-pointer"
                   >
-                    {!collapsed && "My Courses"}
-                    {!collapsed && enrolledCourses.length > 0 && (
-                      <Badge color="info" className="ml-2">{enrolledCourses.length}</Badge>
+                    {!collapsed && (
+                      <span className="flex items-center gap-2">
+                        My Courses
+                        {enrolledCourses.length > 0 && (
+                          <Badge color="info">{enrolledCourses.length}</Badge>
+                        )}
+                      </span>
                     )}
                   </Sidebar.Item>
                 </Tooltip>
@@ -364,7 +368,7 @@ export default function StudentSidebar({
                           }}
                           className={`w-full flex items-center justify-between px-4 py-2 text-sm rounded-lg transition-colors
                             ${activeCourse?.id === course.id 
-                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
+                              ? 'bg-brand-green/5 dark:bg-brand-green/10 text-brand-green dark:text-brand-green/80' 
                               : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                             }
                           `}
@@ -392,7 +396,7 @@ export default function StudentSidebar({
                                 }}
                                 className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs rounded transition-colors
                                   ${tab === `course-${course.id}-${contentTab.id}`
-                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                    ? 'bg-brand-green/10 dark:bg-brand-green/10 text-brand-green dark:text-brand-green/80'
                                     : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
                                   }
                                 `}

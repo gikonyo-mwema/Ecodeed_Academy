@@ -14,6 +14,7 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
+  const [validationError, setValidationError] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,18 +38,19 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setValidationError(null);
     const { firstName, lastName, email, password, confirmPassword } = formData;
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      return alert("Please fill out all fields.");
+      return setValidationError("Please fill out all fields.");
     }
     
     if (password !== confirmPassword) {
-       return alert("Passwords do not match.");
+       return setValidationError("Passwords do not match.");
     }
 
     if (password.length < 8) {
-      return alert("Password must be at least 8 characters.");
+      return setValidationError("Password must be at least 8 characters.");
     }
 
     try {
@@ -66,8 +68,8 @@ export default function SignUp() {
         // Automatically logged in by redux slice; redirect to home/dashboard
         navigate("/", { state: { newUser: true } });
       }
-    } catch (err) {
-      console.error("Signup dispatch error:", err);
+    } catch {
+      // Handled by Redux error state
     }
   };
 
@@ -249,9 +251,9 @@ export default function SignUp() {
             </Link>
           </div>
 
-          {errorMessage && (
+          {(validationError || errorMessage) && (
             <Alert className="mt-5" color="failure">
-              {errorMessage}
+              {validationError || errorMessage}
             </Alert>
           )}
         </div>

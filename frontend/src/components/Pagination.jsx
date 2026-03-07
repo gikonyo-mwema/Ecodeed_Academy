@@ -46,10 +46,11 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
 
   return (
     <div className="flex justify-center mt-8">
-      <nav className="flex items-center gap-1">
+      <nav aria-label="Pagination" className="flex items-center gap-1">
         <button
           onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
+          aria-label="Go to previous page"
           className="px-3 py-2 rounded-md border text-brand-green border-brand-green hover:bg-brand-green hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:border-gray-200 transition-colors"
         >
           Previous
@@ -57,11 +58,13 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
         
         {getPageNumbers().map((number, index) => (
           number === '...' ? (
-            <span key={index} className="px-3 py-1">...</span>
+            <span key={index} aria-hidden="true" className="px-3 py-1">...</span>
           ) : (
             <button
               key={index}
               onClick={() => handlePageChange(number)}
+              aria-label={`Go to page ${number}`}
+              aria-current={currentPage === number ? 'page' : undefined}
               className={`px-3 py-2 rounded-md border transition-colors ${
                 currentPage === number
                   ? 'bg-brand-green text-white border-brand-green'
@@ -76,6 +79,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
         <button
           onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
+          aria-label="Go to next page"
           className="px-3 py-2 rounded-md border text-brand-green border-brand-green hover:bg-brand-green hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:border-gray-200 transition-colors"
         >
           Next

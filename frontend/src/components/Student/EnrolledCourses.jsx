@@ -48,7 +48,7 @@ export default function EnrolledCourses({ courses = [], onCourseSelect, loading 
         </p>
         <Link
           to="/courses"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-brand-green text-white rounded-lg hover:bg-brand-green/90 transition-colors"
         >
           Browse Courses
           <HiArrowRight className="w-5 h-5" />
@@ -63,7 +63,7 @@ export default function EnrolledCourses({ courses = [], onCourseSelect, loading 
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">My Courses</h2>
         <Link
           to="/courses"
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+          className="text-brand-green hover:text-brand-green/80 text-sm font-medium flex items-center gap-1"
         >
           Browse More <HiArrowRight className="w-4 h-4" />
         </Link>
@@ -93,7 +93,7 @@ export default function EnrolledCourses({ courses = [], onCourseSelect, loading 
                 </div>
                 <Progress
                   progress={course.progress || 0}
-                  color="blue"
+                  color="green"
                   size="sm"
                   className="bg-white/30"
                 />
@@ -117,7 +117,7 @@ export default function EnrolledCourses({ courses = [], onCourseSelect, loading 
             </div>
 
             {/* Course Info */}
-            <h3 className="font-bold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+            <h3 className="font-bold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-brand-green transition-colors">
               {course.title}
             </h3>
             
@@ -139,7 +139,7 @@ export default function EnrolledCourses({ courses = [], onCourseSelect, loading 
 
             {/* Action Button */}
             <button
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand-green text-white rounded-lg hover:bg-brand-green/90 transition-colors"
             >
               <HiPlay className="w-5 h-5" />
               {course.progress > 0 ? 'Continue Learning' : 'Start Course'}

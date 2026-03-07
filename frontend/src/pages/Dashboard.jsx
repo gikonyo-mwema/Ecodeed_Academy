@@ -14,10 +14,8 @@ export default function Dashboard() {
       );
   }
 
-  // Check if user is admin
-  // Based on the user model, we might use isAdmin or is_staff or role.
-  // Assuming 'isAdmin' is the standard field on frontend model.
-  if (currentUser.isAdmin) {
+  // Admins and instructors share the same dashboard with role-based sidebar gating
+  if (currentUser.isAdmin || currentUser.isInstructor) {
       return <AdminDashboard />;
   }
 

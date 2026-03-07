@@ -7,6 +7,7 @@ import OAuth from "../components/OAuth";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [validationError, setValidationError] = useState(null);
   const { loading, error: errorMessage, currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -26,20 +27,21 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setValidationError(null);
     const { email, password } = formData;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!email || !password) {
-      return alert("Please fill in all fields.");
+      return setValidationError("Please fill in all fields.");
     }
 
     if (!emailRegex.test(email)) {
-      return alert("Please enter a valid email address.");
+      return setValidationError("Please enter a valid email address.");
     }
 
     if (password.length < 6) {
-      return alert("Password must be at least 6 characters.");
+      return setValidationError("Password must be at least 6 characters.");
     }
 
     try {
@@ -47,8 +49,8 @@ export default function SignIn() {
       if (signIn.fulfilled.match(resultAction)) {
         navigate("/");
       }
-    } catch (err) {
-      console.error("Sign-in error:", err);
+    } catch {
+      // Handled by Redux error state
     }
   };
 
@@ -175,9 +177,9 @@ export default function SignIn() {
             </Link>
           </div>
 
-          {errorMessage && (
+          {(validationError || errorMessage) && (
             <Alert className="mt-5" color="failure">
-              {errorMessage}
+              {validationError || errorMessage}
             </Alert>
           )}
         </div>
