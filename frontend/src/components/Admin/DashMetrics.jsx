@@ -21,7 +21,7 @@ const MetricCard = ({ title, value, lastMonthValue, icon: Icon, iconColor, link 
         <Icon className={`${iconColor} text-white rounded-full text-5xl p-3 shadow-lg`} />
       </div>
       <div className="flex gap-2 text-sm">
-        <span className="text-green-500 flex items-center">
+        <span className="text-brand-green flex items-center">
           <HiArrowNarrowUp />
           {lastMonthValue}
         </span>
@@ -46,7 +46,7 @@ export default function DashboardMetrics({ totals, lastMonth }) {
       value: totals.comments,
       lastMonthValue: lastMonth.comments,
       icon: HiAnnotation,
-      iconColor: "bg-indigo-600",
+      iconColor: "bg-brand-blue",
       link: "comments"
     },
     {
@@ -62,7 +62,7 @@ export default function DashboardMetrics({ totals, lastMonth }) {
       value: totals.services,
       lastMonthValue: lastMonth.services,
       icon: HiOutlineClipboardCheck,
-      iconColor: "bg-blue-600",
+      iconColor: "bg-brand-green",
       link: "services"
     },
     {
@@ -78,7 +78,7 @@ export default function DashboardMetrics({ totals, lastMonth }) {
       value: `$${totals.revenue.toFixed(2)}`,
       lastMonthValue: `$${lastMonth.revenue.toFixed(2)}`,
       icon: HiCurrencyDollar,
-      iconColor: "bg-green-600",
+      iconColor: "bg-brand-green",
       link: "payments"
     }
   ];

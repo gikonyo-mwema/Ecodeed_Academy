@@ -30,7 +30,7 @@
  * @author Gikonyo Mwema
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import DashboardTables from "./DashTables";
 import { toast } from "react-toastify";
@@ -105,110 +105,73 @@ export default function DashboardComponent() {
   const navigate = useNavigate();
 
   /**
-   * Effect to fetch dashboard data when component mounts or pagination changes
-   * Only runs if user has admin privileges
+   * Generic data fetching function for a single entity type.
+   * Handles loading states, error handling, and data transformation.
    */
-  useEffect(() => {
-    if (!currentUser?.isAdmin) return;
-    fetchDashboardData();
-  }, [currentUser, pagination]);
-
-  /**
-   * Fetches all dashboard data concurrently
-   * Uses Promise.all for efficient parallel data loading
-   * 
-   * @async
-   * @function fetchDashboardData
-   */
-  const fetchDashboardData = async () => {
+  const fetchData = useCallback(async (type, endpoint, limit, page) => {
     try {
-      await Promise.all([
-        fetchData('users', '/api/users/getUsers'),
-        fetchData('posts', '/api/post'),
-        fetchData('comments', '/api/comments/getComments'), // Updated endpoint
-        fetchData('services', '/api/services'),
-        fetchData('courses', '/api/courses'),
-        fetchData('payments', '/api/payments/history/'),
-        fetchData('enrollments', '/api/enrollments/')
-      ]);
-    } catch (error) {
-      console.error("Dashboard data fetch error:", error);
-    }
-  };
-
-  /**
-   * Generic data fetching function for all entity types
-   * Handles loading states, error handling, and data transformation
-   * 
-   * @async
-   * @param {string} type - The data type being fetched (users, posts, etc.)
-   * @param {string} endpoint - The API endpoint to fetch from
-   */
-  const fetchData = async (type, endpoint) => {
-    try {
-      // Clear previous error and set loading
       setError(prev => ({...prev, [type]: null}));
       setLoading(prev => ({...prev, [type]: true}));
-      
-      // Get pagination parameters for this data type
-      const { limit, page } = pagination[type];
-      
-      // Make API request – apiFetch adds JWT Authorization header + correct base URL
+
       const response = await apiFetch(`${endpoint}?limit=${limit}&page=${page}`);
 
-      // Extract data from response (handles different response structures)
-      // DRF paginated responses usually return { count, next, previous, results: [...] }
+      // Extract data from response (handles different DRF/custom response structures)
       const responseData = response[type] || response.users || response.posts || 
                          response.comments || response.services || response.courses || 
                          response.payments || response.data || response.results || [];
 
-      // Update state with fetched data
       setData(prev => ({
         ...prev,
         [type]: Array.isArray(responseData) ? responseData : []
       }));
-    } catch (error) {
-      // Set error message for this data type
+    } catch (err) {
       setError(prev => ({
         ...prev, 
-        [type]: error.message.includes('Session expired') 
-          ? error.message 
-          : `Failed to load ${type}. ${error.message}`
+        [type]: err.message.includes('Session expired') 
+          ? err.message 
+          : `Failed to load ${type}. ${err.message}`
       }));
-      console.error(`${type} fetch error:`, error.message);
     } finally {
-      // Always clear loading state
       setLoading(prev => ({...prev, [type]: false}));
     }
+  }, []);
+
+  /** Endpoint map — keeps the route list in one place */
+  const endpoints = {
+    users: '/api/v1/auth/users/getUsers',
+    posts: '/api/v1/posts/',
+    comments: '/api/v1/comments/getComments',
+    services: '/api/v1/services/',
+    courses: '/api/v1/courses/',
+    payments: '/api/v1/payments/history/',
+    enrollments: '/api/v1/enrollments/',
   };
 
   /**
-   * Handles session expiration by clearing storage and redirecting
-   * Shows toast notification to inform user of session expiry
+   * Initial fetch — runs once on mount (admin only).
+   * Fetches all 7 entity types in parallel with their default pagination.
    */
-  const handleSessionExpired = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    toast.error('Session expired. Please login again.', {
-      autoClose: 5000,
-      onClose: () => {
-        window.location.href = '/sign-in';
-      }
+  useEffect(() => {
+    if (!currentUser?.isAdmin) return;
+
+    Object.entries(endpoints).forEach(([type, endpoint]) => {
+      const { limit, page } = pagination[type];
+      fetchData(type, endpoint, limit, page);
     });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
 
   /**
-   * Handles loading more items for a specific data type
-   * Increases the limit to show more items in the table
-   * 
-   * @param {string} type - The data type to load more items for
+   * Handles loading more items for a specific data type.
+   * Increases the limit and refetches ONLY that type.
    */
   const handleLoadMore = (type) => {
-    setPagination(prev => ({
-      ...prev,
-      [type]: { ...prev[type], limit: prev[type].limit + 5 }
-    }));
+    setPagination(prev => {
+      const updated = { ...prev[type], limit: prev[type].limit + 5 };
+      // Fetch only the affected type with the new limit
+      fetchData(type, endpoints[type], updated.limit, updated.page);
+      return { ...prev, [type]: updated };
+    });
   };
 
   // Render access denied message for non-admin users

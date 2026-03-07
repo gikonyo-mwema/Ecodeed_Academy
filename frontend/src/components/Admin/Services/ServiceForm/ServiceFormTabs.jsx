@@ -89,31 +89,31 @@ const ServiceFormTabs = ({
   ];
 
   const envConsultingCategories = [
-    { _id: 'env1', name: 'Environmental Impact Assessment' },
-    { _id: 'env2', name: 'Air Quality Monitoring' },
-    { _id: 'env3', name: 'Water Resource Management' },
-    { _id: 'env4', name: 'Waste Management Consulting' },
-    { _id: 'env5', name: 'Sustainability Planning' },
-    { _id: 'env6', name: 'Environmental Compliance' },
-    { _id: 'env7', name: 'Ecological Surveys' },
-    { _id: 'env8', name: 'Carbon Footprint Analysis' },
-    { _id: 'env9', name: 'Soil Contamination Studies' },
-    { _id: 'env10', name: 'Environmental Auditing' },
+    { id: 'env1', name: 'Environmental Impact Assessment' },
+    { id: 'env2', name: 'Air Quality Monitoring' },
+    { id: 'env3', name: 'Water Resource Management' },
+    { id: 'env4', name: 'Waste Management Consulting' },
+    { id: 'env5', name: 'Sustainability Planning' },
+    { id: 'env6', name: 'Environmental Compliance' },
+    { id: 'env7', name: 'Ecological Surveys' },
+    { id: 'env8', name: 'Carbon Footprint Analysis' },
+    { id: 'env9', name: 'Soil Contamination Studies' },
+    { id: 'env10', name: 'Environmental Auditing' },
     // New environmental consulting categories
-    { _id: 'env11', name: 'Environmental Training & Capacity Building' },
-    { _id: 'env12', name: 'Regulatory Compliance & Policy Advisory' },
-    { _id: 'env13', name: 'Climate Change & Adaptation Consulting' },
-    { _id: 'env14', name: 'Environmental Risk Assessment' },
-    { _id: 'env15', name: 'Green Building & LEED Certification' },
-    { _id: 'env16', name: 'Environmental Management Systems (ISO 14001)' },
-    { _id: 'env17', name: 'Biodiversity & Conservation Planning' }
+    { id: 'env11', name: 'Environmental Training & Capacity Building' },
+    { id: 'env12', name: 'Regulatory Compliance & Policy Advisory' },
+    { id: 'env13', name: 'Climate Change & Adaptation Consulting' },
+    { id: 'env14', name: 'Environmental Risk Assessment' },
+    { id: 'env15', name: 'Green Building & LEED Certification' },
+    { id: 'env16', name: 'Environmental Management Systems (ISO 14001)' },
+    { id: 'env17', name: 'Biodiversity & Conservation Planning' }
   ];
 
   // Combine dynamic and static categories
   const allCategories = [
     ...new Map([
-      ...envConsultingCategories.map(item => [item._id, item]),
-      ...categories.map(item => [item._id, item])
+      ...envConsultingCategories.map(item => [item.id, item]),
+      ...categories.map(item => [item.id, item])
     ]).values()
   ];
 

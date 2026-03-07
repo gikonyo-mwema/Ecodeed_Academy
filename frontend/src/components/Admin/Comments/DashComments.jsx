@@ -71,6 +71,16 @@ export default function DashComments() {
     const [comment, setcomment] = useState([]);
     
     /**
+     * Loading state for initial fetch
+     */
+    const [loading, setLoading] = useState(true);
+
+    /**
+     * Error state for fetch failures
+     */
+    const [error, setError] = useState(null);
+    
+    /**
      * Pagination control state
      * Determines if more comments can be loaded
      */
@@ -101,16 +111,18 @@ export default function DashComments() {
          */
         const fetchComments = async () => {
             try {
-                const data = await apiFetch(`/api/comments/getComments`);
-                console.log(data); // Log the API response for debugging
+                setLoading(true);
+                setError(null);
+                const data = await apiFetch(`/api/v1/comments/getComments`);
                 
                 setcomment(data.comments);
-                // Control pagination based on returned data
                 if (data.comments.length < 9) {
                     setShowMore(false);
                 }
-            } catch (error) {
-                console.log(error.message);
+            } catch (err) {
+                setError(err.message || 'Failed to load comments');
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -128,32 +140,46 @@ export default function DashComments() {
     const handleShowMore = async () => {
         const startIndex = comment.length;
         try {
-            const data = await apiFetch(`/api/comments/getComments?startIndex=${startIndex}`);
+            const data = await apiFetch(`/api/v1/comments/getComments?startIndex=${startIndex}`);
             setcomment((prev) => [...prev, ...data.comments]);
             if (data.comments.length < 9) {
                 setShowMore(false);
             }
-        } catch (error) {
-            console.log(error.message);
+        } catch {
+            // Silently handle — user can retry via "Show more"
         }
     };
 
     const handleDeleteComments = async () => {
         setShowModal(false);
         try {
-            await apiFetch(`/api/comments/deleteComment/${commentIdToDelete}`, {
+            await apiFetch(`/api/v1/comments/deleteComment/${commentIdToDelete}`, {
                 method: 'DELETE',
             });
-            setcomment((prev) => prev.filter((comment) => comment._id !== commentIdToDelete));
+            setcomment((prev) => prev.filter((comment) => comment.id !== commentIdToDelete));
             setShowModal(false);
-        } catch (error) {
-            console.log(error.message);
+        } catch {
+            // Delete failed — modal already closed
         }
     };
 
     return (
         <div className='table-auto overflow-x-scroll md:mx-auto p-3 scrollbar scrollbar-track-slate-100 scrollbar-thumb-slate-300 dark:scrollbar-track-slate-700 dark:scrollbar-thumb-slate-500'>
-            {currentUser.isAdmin && comment.length > 0 ? (
+            {loading ? (
+                <div className="flex justify-center items-center py-12">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-green" />
+                </div>
+            ) : error ? (
+                <div className="text-center py-12">
+                    <p className="text-red-500 font-medium mb-4">{error}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-brand-green text-white rounded-md hover:bg-brand-green/90 transition-colors"
+                    >
+                        Retry
+                    </button>
+                </div>
+            ) : currentUser.isAdmin && comment.length > 0 ? (
                 <>
                     <Table hoverable className='shadow-md'>
                         <Table.Head>
@@ -166,7 +192,7 @@ export default function DashComments() {
                         </Table.Head>
                         <Table.Body className='divide-y'>
                             {comment.map((comment) => (
-                                <Table.Row key={comment._id} className='bg-white dark:border-gray-700 dark:bg-gray-800'>
+                                <Table.Row key={comment.id} className='bg-white dark:border-gray-700 dark:bg-gray-800'>
                                     <Table.Cell>
                                         {new Date(comment.updatedAt).toLocaleDateString()}
                                     </Table.Cell>
@@ -176,7 +202,7 @@ export default function DashComments() {
                                     <Table.Cell>{comment.numberOfLikes}</Table.Cell>
                                     <Table.Cell>{comment.postId}</Table.Cell>
                                     <Table.Cell>
-                                        {comment.user?._id ? ( // Check if comment.user exists
+                                        {comment.user?.id ? ( // Check if comment.user exists
                                             <FaCheck className="text-green-500" />
                                         ) : (
                                             <FaTimes className="text-red-500" />
@@ -185,7 +211,7 @@ export default function DashComments() {
                                     <Table.Cell>
                                         <span onClick={() => {
                                             setShowModal(true);
-                                            setCommentIdToDelete(comment._id);
+                                            setCommentIdToDelete(comment.id);
                                         }} className='font-medium text-red-500 hover:underline cursor-pointer'>Delete</span>
                                     </Table.Cell>
                                 </Table.Row>

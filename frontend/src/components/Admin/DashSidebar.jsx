@@ -179,7 +179,7 @@ export default function DashSidebar() {
               <Sidebar.Item
                 active={tab === "profile"}
                 icon={HiUser}
-                label={currentUser?.isAdmin ? "Admin" : "User"}
+                label={currentUser?.isAdmin ? "Admin" : currentUser?.isInstructor ? "Instructor" : "User"}
                 labelColor="dark"
                 onClick={() => handleTabClick("profile")}
                 as="div"
@@ -204,43 +204,42 @@ export default function DashSidebar() {
               </Tooltip>
             )}
 
-            {/* Admin navigation tabs - Course Management & Content Management */}
-            {currentUser?.isAdmin && (
-              <>
-                <Sidebar.Collapse 
-                  icon={HiAcademicCap} 
-                  label="Courses" 
-                  open={courseTabs.some(t => t.id === tab)}
-                >
-                  {courseTabs.map((item) => (
-                    <Sidebar.Item
-                      key={item.id}
-                      active={tab === item.id}
-                      icon={item.icon}
-                      onClick={() => handleTabClick(item.id)}
-                      as="div"
-                      className="cursor-pointer"
-                    >
-                      {item.name}
-                    </Sidebar.Item>
-                  ))}
-                </Sidebar.Collapse>
-
-                {adminTabs.map((item) => (
-                  <Tooltip key={item.id} content={item.name} placement="right" trigger={collapsed ? "hover" : null}>
-                    <Sidebar.Item
-                      active={tab === item.id}
-                      icon={item.icon}
-                      onClick={() => handleTabClick(item.id)}
-                      as="div"
-                      className="cursor-pointer"
-                    >
-                      {!collapsed && item.name}
-                    </Sidebar.Item>
-                  </Tooltip>
+            {/* Course Management — visible to admins AND instructors */}
+            {(currentUser?.isAdmin || currentUser?.isInstructor) && (
+              <Sidebar.Collapse 
+                icon={HiAcademicCap} 
+                label="Courses" 
+                open={courseTabs.some(t => t.id === tab)}
+              >
+                {courseTabs.map((item) => (
+                  <Sidebar.Item
+                    key={item.id}
+                    active={tab === item.id}
+                    icon={item.icon}
+                    onClick={() => handleTabClick(item.id)}
+                    as="div"
+                    className="cursor-pointer"
+                  >
+                    {item.name}
+                  </Sidebar.Item>
                 ))}
-              </>
+              </Sidebar.Collapse>
             )}
+
+            {/* Admin-only tabs — hidden from instructors */}
+            {currentUser?.isAdmin && adminTabs.map((item) => (
+              <Tooltip key={item.id} content={item.name} placement="right" trigger={collapsed ? "hover" : null}>
+                <Sidebar.Item
+                  active={tab === item.id}
+                  icon={item.icon}
+                  onClick={() => handleTabClick(item.id)}
+                  as="div"
+                  className="cursor-pointer"
+                >
+                  {!collapsed && item.name}
+                </Sidebar.Item>
+              </Tooltip>
+            ))}
 
             {/* Sign out option */}
             <Tooltip content="Sign Out" placement="right" trigger={collapsed ? "hover" : null}>

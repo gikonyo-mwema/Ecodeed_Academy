@@ -69,7 +69,7 @@ const DataTable = ({
     <div className="flex justify-between p-3 text-sm font-semibold">
       <h1 className="text-center p-2">{title}</h1>
       {link && (
-        <Button outline gradientDuoTone="purpleToPink">
+        <Button outline color="green">
           <Link to={`/dashboard?tab=${link}`}>See all</Link>
         </Button>
       )}
@@ -96,9 +96,9 @@ const DataTable = ({
           <Table.Body>
             {data.length > 0 ? (
               data.map((item, idx) => (
-                <Table.Row key={item.id || item._id || idx} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                <Table.Row key={item.id || idx} className="bg-white dark:border-gray-700 dark:bg-gray-800">
                   {columns.map((column) => (
-                    <Table.Cell key={`${item.id || item._id || idx}-${column.key}`}>
+                    <Table.Cell key={`${item.id || idx}-${column.key}`}>
                       {/* Use custom render function if provided, otherwise display property directly */}
                       {column.render ? column.render(item) : item[column.key]}
                     </Table.Cell>
@@ -121,7 +121,7 @@ const DataTable = ({
           <div className="flex justify-center mt-2">
             <Button 
               outline 
-              gradientDuoTone="greenToBlue"
+              color="green"
               onClick={onLoadMore}
             >
               Load More {title.replace('Recent ', '')}
@@ -219,7 +219,7 @@ const DashboardTables = ({
           key: "category", 
           label: "Category", 
           render: (service) => (
-            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            <span className="bg-brand-green/10 text-brand-green text-xs font-medium px-2.5 py-0.5 rounded">
               {service.category}
             </span>
           )
@@ -255,7 +255,7 @@ const DashboardTables = ({
       type: "payments",
       link: "payments",
       columns: [
-        { key: "user", label: "User", render: (p) => p.user?.email || p.user?._id },
+        { key: "user", label: "User", render: (p) => p.user?.email || p.user?.id },
         { key: "course", label: "Course", render: (p) => p.course?.title || p.course },
         { key: "amount", label: "Amount", render: (p) => `KES ${p.amount}` },
         { key: "status", label: "Status" },
@@ -267,7 +267,7 @@ const DashboardTables = ({
       type: "enrollments",
       link: "enrollments",
       columns: [
-        { key: "student_email", label: "Student", render: (e) => e.student_email || e.student_username || 'N/A' },
+        { key: "student_email", label: "Student", render: (e) => e.student_email || 'N/A' },
         { key: "course", label: "Course", render: (e) => e.course_details?.title || 'N/A' },
         { key: "status", label: "Status" },
         { key: "enrolled_at", label: "Date" }

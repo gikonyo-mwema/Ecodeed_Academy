@@ -1,14 +1,11 @@
 import { useState, useCallback } from 'react';
-import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { apiFetch } from '../../../../utils/api';
 
 /**
  * Custom hook for managing services in the admin panel.
  * Handles CRUD, bulk operations, version history, alerts, and retry mechanisms.
  */
 export const useServices = () => {
-  const { currentUser } = useSelector((state) => state.user);
-  
   // State for the list of services
   const [services, setServices] = useState([]);
   // Loading states for different operations
@@ -45,20 +42,6 @@ export const useServices = () => {
   }, []);
 
   /**
-   * Get axios config with proper authentication headers
-   */
-  const getAxiosConfig = useCallback(() => {
-    const token = currentUser?.token || localStorage.getItem('token');
-    return {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        // Let axios set Content-Type for FormData; default to JSON for objects in calls below
-      },
-      withCredentials: true,
-    };
-  }, [currentUser]);
-
-  /**
    * Show alert with message, type, and duration.
    * Automatically hides after duration.
    * @param {string} message - Alert message to display
@@ -81,26 +64,23 @@ export const useServices = () => {
     async (params = {}) => {
       try {
         setLoading(prev => ({ ...prev, table: true }));
-        const { data } = await axios.get('/api/services/', {
-          params,
-          ...getAxiosConfig(),
-        });
+        const query = new URLSearchParams(params).toString();
+        const data = await apiFetch(`/api/v1/services/${query ? `?${query}` : ''}`);
         
         // Extract services array from API response format
         // Handle DRF paginated response (results), or other common formats
         const servicesArray = data?.results || data?.data?.services || data?.services || data || [];
         setServices(Array.isArray(servicesArray) ? servicesArray : []);
       } catch (err) {
-        console.error('Error fetching services:', err);
         showAlert(
-          `Failed to load services: ${err.response?.data?.message || err.message}`,
+          `Failed to load services: ${err.message}`,
           'failure'
         );
       } finally {
         setLoading(prev => ({ ...prev, table: false }));
       }
     },
-    [showAlert, getAxiosConfig]
+    [showAlert]
   );
 
   /**
@@ -132,29 +112,22 @@ export const useServices = () => {
           icon: serviceData.icon || null,
         };
         
-        console.log('Creating service with data:', backendData);
-        
-        const { data } = await axios.post('/api/services/', backendData, {
-          ...getAxiosConfig(),
-          headers: { 'Content-Type': 'application/json', ...(getAxiosConfig().headers || {}) }
+        const data = await apiFetch('/api/v1/services/', {
+          method: 'POST',
+          body: JSON.stringify(backendData),
         });
         const newService = data?.data?.service || data?.service || data;
         setServices(prev => [newService, ...prev]);
         showAlert('Service created successfully');
         return newService;
       } catch (error) {
-        console.error('Create failed:', error);
-        console.error('Error response:', error.response?.data);
-        const errorMsg = error.response?.data 
-          ? JSON.stringify(error.response.data) 
-          : error.message;
-        showAlert(`Create failed: ${errorMsg}`, 'failure');
+        showAlert(`Create failed: ${error.message}`, 'failure');
         throw error;
       } finally {
         setLoading(prev => ({ ...prev, operation: false }));
       }
     });
-  }, [retryOperation, getAxiosConfig, showAlert]);
+  }, [retryOperation, showAlert]);
 
   /**
    * Update an existing service by ID with retry mechanism.
@@ -186,26 +159,22 @@ export const useServices = () => {
           icon: serviceData.icon || null,
         };
         
-        console.log('Updating service with data:', backendData);
-        
-        const { data } = await axios.put(`/api/services/${id}/`, backendData, getAxiosConfig());
+        const data = await apiFetch(`/api/v1/services/${id}/`, {
+          method: 'PUT',
+          body: JSON.stringify(backendData),
+        });
         const updatedService = data?.data?.service || data?.service || data;
-        setServices(prev => prev.map(s => (s._id === id || s.id === id ? updatedService : s)));
+        setServices(prev => prev.map(s => (s.id === id ? updatedService : s)));
         showAlert('Service updated successfully');
         return updatedService;
       } catch (error) {
-        console.error('Update failed:', error);
-        console.error('Error response data:', error.response?.data);
-        const errorMsg = error.response?.data 
-          ? JSON.stringify(error.response.data) 
-          : error.message;
-        showAlert(`Update failed: ${errorMsg}`, 'failure');
+        showAlert(`Update failed: ${error.message}`, 'failure');
         throw error;
       } finally {
         setLoading(prev => ({ ...prev, operation: false }));
       }
     });
-  }, [retryOperation, getAxiosConfig, showAlert]);
+  }, [retryOperation, showAlert]);
 
   /**
    * Delete a service by ID with retry mechanism.
@@ -216,14 +185,13 @@ export const useServices = () => {
     return retryOperation(async () => {
       try {
         setLoading(prev => ({ ...prev, operation: true }));
-        await axios.delete(`/api/services/${id}/`, getAxiosConfig());
-        setServices(prev => prev.filter(s => s._id !== id && s.id !== id));
+        await apiFetch(`/api/v1/services/${id}/`, { method: 'DELETE' });
+        setServices(prev => prev.filter(s => s.id !== id));
         showAlert('Service deleted successfully');
         return true;
       } catch (error) {
-        console.error('Delete failed:', error);
         showAlert(
-          `Delete failed: ${error.response?.data?.message || error.message}`,
+          `Delete failed: ${error.message}`,
           'failure'
         );
         throw error;
@@ -231,7 +199,7 @@ export const useServices = () => {
         setLoading(prev => ({ ...prev, operation: false }));
       }
     });
-  }, [retryOperation, getAxiosConfig, showAlert]);
+  }, [retryOperation, showAlert]);
 
   /**
    * Duplicate a service by ID with retry mechanism.
@@ -242,24 +210,21 @@ export const useServices = () => {
     return retryOperation(async () => {
       try {
         setLoading(prev => ({ ...prev, operation: true }));
-        const { data } = await axios.post(
-          `/api/services/${serviceId}/duplicate`,
-          {},
-          getAxiosConfig()
-        );
+        const data = await apiFetch(`/api/v1/services/${serviceId}/duplicate`, {
+          method: 'POST',
+        });
         const duplicatedService = data?.data?.service || data?.service || data;
         setServices(prev => [...prev, duplicatedService]);
         showAlert(`Service duplicated as "${duplicatedService.title}"`);
         return duplicatedService;
       } catch (error) {
-        console.error('Duplicate failed:', error);
         showAlert('Failed to duplicate service', 'failure');
         throw error;
       } finally {
         setLoading(prev => ({ ...prev, operation: false }));
       }
     });
-  }, [retryOperation, getAxiosConfig, showAlert]);
+  }, [retryOperation, showAlert]);
 
   /**
    * Bulk delete multiple services with retry mechanism.
@@ -275,16 +240,16 @@ export const useServices = () => {
         
         for (const id of ids) {
           try {
-            await axios.delete(`/api/services/${id}`, getAxiosConfig());
+            await apiFetch(`/api/v1/services/${id}`, { method: 'DELETE' });
             results.successful.push(id);
           } catch (error) {
-            results.failed.push({ id, error: error.response?.data?.message || error.message });
+            results.failed.push({ id, error: error.message });
           }
         }
         
         // Update state to remove successfully deleted services
         if (results.successful.length > 0) {
-          setServices(prev => prev.filter(s => !results.successful.includes(s._id)));
+          setServices(prev => prev.filter(s => !results.successful.includes(s.id)));
           showAlert(`Successfully deleted ${results.successful.length} service(s)`);
         }
         
@@ -294,14 +259,13 @@ export const useServices = () => {
         
         return results;
       } catch (error) {
-        console.error('Bulk delete failed:', error);
         showAlert('Bulk delete operation failed', 'failure');
         throw error;
       } finally {
         setLoading(prev => ({ ...prev, operation: false }));
       }
     });
-  }, [retryOperation, getAxiosConfig, showAlert]);
+  }, [retryOperation, showAlert]);
 
   // Expose state and handlers for use in components
   return {

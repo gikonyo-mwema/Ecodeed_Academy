@@ -61,7 +61,7 @@ export default function PostForm({ post, isEdit, onCancel, onSuccess, currentUse
         };
       }
 
-      const result = await apiFetch('/api/upload/upload', uploadOptions);
+      const result = await apiFetch('/api/v1/upload/upload', uploadOptions);
 
       setUploadProgress(70);
 

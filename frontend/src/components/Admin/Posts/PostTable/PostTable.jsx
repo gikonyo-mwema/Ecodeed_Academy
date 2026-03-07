@@ -16,7 +16,7 @@ export default function PostTable({ posts, loading, showMore, onShowMore, onEdit
             <Table.Body className="divide-y">
               {posts.map((post) => (
                 <PostTableRow 
-                  key={post._id} 
+                  key={post.id} 
                   post={post} 
                   onEdit={onEdit} 
                   onDelete={onDelete} 

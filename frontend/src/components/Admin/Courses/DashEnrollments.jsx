@@ -15,7 +15,7 @@ export default function DashEnrollments() {
     const fetchEnrollments = async () => {
       try {
         if (currentUser.isAdmin) {
-          const data = await apiFetch('/api/enrollments/');
+          const data = await apiFetch('/api/v1/enrollments/');
           setEnrollments(data);
           setLoading(false);
         }
@@ -29,7 +29,7 @@ export default function DashEnrollments() {
 
   const handleDeleteEnrollment = async () => {
     try {
-        await apiFetch(`/api/enrollments/${enrollmentIdToDelete}/`, {
+        await apiFetch(`/api/v1/enrollments/${enrollmentIdToDelete}/`, {
             method: 'DELETE',
         });
         setEnrollments((prev) =>

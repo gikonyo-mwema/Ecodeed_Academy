@@ -34,7 +34,7 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
     try {
       console.log('Submitting post data:', {
         formData,
-        currentUserId: currentUser._id,
+        currentUserId: currentUser.id,
         isEdit
       });
 
@@ -46,8 +46,8 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
 
       // Prepare API request (trailing slash required by Django)
       const url = isEdit 
-        ? `/api/posts/update/${initialPost._id}/${currentUser._id}/`
-        : '/api/posts/create/';
+        ? `/api/v1/posts/${initialPost.id}/`
+        : '/api/v1/posts/';
       
       const method = isEdit ? 'PUT' : 'POST';
       

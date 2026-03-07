@@ -15,7 +15,7 @@ export default function usePostActions(currentUser, setShowEditForm, setCurrentP
     setShowModal(false);
     try {
       await apiFetch(
-        `/api/posts/delete/${postIdToDelete}/${currentUser._id}/`,
+        `/api/v1/posts/${postIdToDelete}/`,
         { method: 'DELETE' }
       );
       // Refresh the posts list after successful deletion

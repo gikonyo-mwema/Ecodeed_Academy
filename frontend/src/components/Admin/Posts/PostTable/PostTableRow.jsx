@@ -27,7 +27,7 @@ export default function PostTableRow({ post, onEdit, onDelete }) {
       </Table.Cell>
       <Table.Cell>
         <button
-          onClick={() => onDelete(post._id)}
+          onClick={() => onDelete(post.id)}
           className="font-medium text-red-500 hover:underline"
         >
           Delete

@@ -14,8 +14,7 @@ import DashAssignments from './Assignments/DashAssignments';
 import DashLiveSessions from './LiveSessions/DashLiveSessions';
 import DashResources from './Resources/DashResources';
 import { useSelector } from 'react-redux';
-import UserCourses from '../UserCourses'; 
-import axios from 'axios';
+import UserCourses from '../UserCourses';
 
 export default function AdminDashboard() {
   const location = useLocation();

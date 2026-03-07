@@ -141,7 +141,7 @@ export default function DashServicesTable() {
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteService(currentService._id);
+      await deleteService(currentService.id);
       setShowDeleteModal(false);
       setCurrentService(null);
       showAlert('Service deleted successfully', 'success');
@@ -205,7 +205,7 @@ export default function DashServicesTable() {
             <Table.Body className="divide-y">
               {filteredServices.map((service) => (
                 <Table.Row 
-                  key={service._id} 
+                  key={service.id} 
                   className="bg-white dark:border-gray-700 dark:bg-gray-800"
                 >
                   <Table.Cell>
@@ -301,7 +301,7 @@ export default function DashServicesTable() {
             const sanitizedData = sanitizeServicePayload(serviceData);
             
             if (editMode && currentService) {
-              await updateService(currentService._id, sanitizedData);
+              await updateService(currentService.id, sanitizedData);
               showAlert('Service updated successfully', 'success');
             } else {
               await createService(sanitizedData);

@@ -6,6 +6,7 @@ import {
   HiPaperAirplane, HiPencilAlt, HiClock, HiCheckCircle,
   HiExclamationCircle, HiEye, HiChevronDown, HiChevronUp,
 } from 'react-icons/hi';
+import DOMPurify from 'dompurify';
 import { apiFetch } from '../../utils/api';
 import TipTapEditor from '../Editor/TipTapEditor';
 
@@ -55,7 +56,7 @@ export default function DashNewsletter() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/messages/newsletter/stats', {
+        const response = await fetch('/api/v1/messages/newsletter/stats', {
           credentials: 'include',
         });
         if (!response.ok) throw new Error('Failed to fetch newsletter statistics');
@@ -75,7 +76,7 @@ export default function DashNewsletter() {
     if (!currentUser?.isAdmin) return;
     const fetchCourses = async () => {
       try {
-        const data = await apiFetch('/api/courses/');
+        const data = await apiFetch('/api/v1/courses/');
         setCourses(data.results || data || []);
       } catch {
         // non-critical
@@ -88,7 +89,7 @@ export default function DashNewsletter() {
   const fetchCampaigns = async () => {
     try {
       setCampaignsLoading(true);
-      const data = await apiFetch('/api/messages/broadcast/');
+      const data = await apiFetch('/api/v1/messages/broadcast/');
       setCampaigns(Array.isArray(data) ? data : data.results || []);
     } catch {
       // non-critical
@@ -145,7 +146,7 @@ export default function DashNewsletter() {
         payload.course = parseInt(courseId, 10);
       }
 
-      const data = await apiFetch('/api/messages/broadcast/', {
+      const data = await apiFetch('/api/v1/messages/broadcast/', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
@@ -235,7 +236,7 @@ export default function DashNewsletter() {
           </p>
         </div>
         <Button
-          gradientDuoTone="greenToBlue"
+          color="green"
           onClick={() => setShowCompose((v) => !v)}
         >
           <HiPaperAirplane className="mr-2 h-5 w-5" />
@@ -329,7 +330,7 @@ export default function DashNewsletter() {
             {/* Action buttons */}
             <div className="flex items-center gap-3 pt-2">
               <Button
-                gradientDuoTone="greenToBlue"
+                color="green"
                 disabled={!isComposeValid || sending}
                 onClick={handleSendBroadcast}
               >
@@ -446,7 +447,7 @@ export default function DashNewsletter() {
               {stats?.recentSubscribers?.length > 0 ? (
                 stats.recentSubscribers.map((subscriber) => (
                   <Table.Row
-                    key={subscriber._id}
+                    key={subscriber.id}
                     className="bg-white dark:border-gray-700 dark:bg-gray-800"
                   >
                     <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
@@ -614,7 +615,7 @@ export default function DashNewsletter() {
               <hr className="dark:border-gray-600" />
               <div
                 className="prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: previewCampaign.body || '' }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewCampaign.body || '') }}
               />
             </div>
           )}
@@ -627,11 +628,11 @@ export default function DashNewsletter() {
       </Modal>
 
       {/* ── Integration Status ── */}
-      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+      <div className="p-4 bg-brand-green/5 dark:bg-brand-green/10 rounded-lg border border-brand-green/20 dark:border-brand-green/30">
+        <h3 className="text-lg font-semibold text-brand-green dark:text-brand-green/80 mb-2">
           Newsletter Integration Status
         </h3>
-        <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+        <div className="text-sm text-brand-green/80 dark:text-brand-green/70 space-y-1">
           <p>✅ Contact form integration: Active</p>
           <p>✅ Newsletter signup: Active (RightSidebar)</p>
           <p>✅ Email notifications: Configured (Brevo)</p>

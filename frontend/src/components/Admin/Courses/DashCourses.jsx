@@ -120,8 +120,8 @@ export const DashCourses = () => {
       // Use the 'my-taught-courses' endpoint to filter by instructor (or show all for admin)
       // This ensures mentors only see their own courses.
       const url = startIndex > 0 
-        ? `/api/courses/my-taught-courses?startIndex=${startIndex}`
-        : '/api/courses/my-taught-courses/';
+        ? `/api/v1/courses/my-taught-courses?startIndex=${startIndex}`
+        : '/api/v1/courses/my-taught-courses/';
       
       const data = await apiFetch(url);
       
@@ -131,7 +131,6 @@ export const DashCourses = () => {
       // Normalize Django snake_case to Frontend camelCase/Mongo-style _id
       const normalizedCourses = courseList.map(c => ({
         ...c,
-        _id: c.id || c._id,
         isPopular: c.is_popular !== undefined ? c.is_popular : c.isPopular,
         shortDescription: c.short_description || c.shortDescription,
         features: Array.isArray(c.features) ? c.features : []
@@ -159,7 +158,7 @@ export const DashCourses = () => {
    * Only runs if current user has admin privileges
    */
   useEffect(() => {
-    if (currentUser?.isAdmin) fetchCourses();
+    if (currentUser?.isAdmin || currentUser?.isInstructor) fetchCourses();
   }, [currentUser]);
 
   /**
@@ -178,18 +177,18 @@ export const DashCourses = () => {
    */
   const handleDeleteCourse = async () => {
     try {
-      await apiFetch(`/api/courses/${courseIdToDelete}/`, {
+      await apiFetch(`/api/v1/courses/${courseIdToDelete}/`, {
         method: 'DELETE',
       });
       
-      setCourses(prev => prev.filter(course => (course._id || course.id) !== courseIdToDelete));
+      setCourses(prev => prev.filter(course => course.id !== courseIdToDelete));
       setShowModal(false);
     } catch (error) {
       console.error('Error deleting course:', error.message);
     }
   };
 
-  if (!currentUser?.isAdmin) {
+  if (!currentUser?.isAdmin && !currentUser?.isInstructor) {
     return <Unauthorized />;
   }
 
@@ -221,7 +220,7 @@ export const DashCourses = () => {
             </Table.Head>
             <Table.Body className="divide-y">
               {courses.map((course) => (
-                <Table.Row key={course._id} className="hover:bg-gray-50">
+                <Table.Row key={course.id} className="hover:bg-gray-50">
                   <Table.Cell className="font-medium text-gray-900">
                     {course.title}
                   </Table.Cell>
@@ -247,7 +246,7 @@ export const DashCourses = () => {
                   </Table.Cell>
                   <Table.Cell>
                     <div className="flex space-x-2">
-                      <Link to={`/edit-course/${course._id}`}>
+                      <Link to={`/edit-course/${course.id}`}>
                         <Button outline gradientDuoTone="tealToLime" size="xs">
                           <HiOutlinePencilAlt className="mr-1" />
                           Edit
@@ -259,7 +258,7 @@ export const DashCourses = () => {
                         size="xs"
                         onClick={() => {
                           setShowModal(true);
-                          setCourseIdToDelete(course._id);
+                          setCourseIdToDelete(course.id);
                         }}
                       >
                         Delete

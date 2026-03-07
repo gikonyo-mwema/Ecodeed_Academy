@@ -52,7 +52,7 @@ export const EditCourse = () => {
     const fetchCourse = async () => {
       try {
         setLoading(true);
-        const data = await apiFetch(`/api/courses/${courseId}/`);
+        const data = await apiFetch(`/api/v1/courses/${courseId}/`);
 
         setFormData(prev => ({
           ...prev,
@@ -108,7 +108,7 @@ export const EditCourse = () => {
         price: Number(formData.price) || 0
       };
 
-      const data = await apiFetch(`/api/courses/${courseId}/`, {
+      const data = await apiFetch(`/api/v1/courses/${courseId}/`, {
         method: 'PUT',
         body: JSON.stringify(submitData),
       });

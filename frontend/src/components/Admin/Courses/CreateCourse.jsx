@@ -80,7 +80,7 @@ export const CreateCourse = () => {
         price: Number(formData.price) || 0
       };
 
-      await apiFetch('/api/courses/', {
+      await apiFetch('/api/v1/courses/', {
         method: 'POST',
         body: JSON.stringify(submitData),
       });

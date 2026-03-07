@@ -20,7 +20,7 @@ export default function usePostFetch(currentUser) {
         order: 'desc'
       }).toString();
 
-      const data = await apiFetch(`/api/posts/getPosts?${query}`);
+      const data = await apiFetch(`/api/v1/posts/?${query}`);
 
       const newPosts = data.posts || [];
       setUserPosts(prev => {
@@ -28,8 +28,8 @@ export default function usePostFetch(currentUser) {
           return newPosts;
         }
         // Deduplicate posts by _id when appending
-        const existingIds = new Set(prev.map(p => p._id));
-        const uniqueNewPosts = newPosts.filter(p => !existingIds.has(p._id));
+        const existingIds = new Set(prev.map(p => p.id));
+        const uniqueNewPosts = newPosts.filter(p => !existingIds.has(p.id));
         return [...prev, ...uniqueNewPosts];
       });
       // Backend returns totalPosts
