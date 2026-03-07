@@ -12,7 +12,7 @@ const UserCourses = ({ purchasedCourses: propCourses }) => {
     if (!propCourses) {
       const fetchCourses = async () => {
         try {
-          const data = await apiFetch('/api/enrollments/my-courses');
+          const data = await apiFetch('/api/v1/enrollments/my-courses');
           setCourses(data);
         } catch (error) {
           console.error("Failed to fetch courses:", error);

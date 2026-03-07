@@ -6,7 +6,7 @@
  *  - Paste images from clipboard
  *  - File picker via toolbar button
  *  - Upload progress placeholder
- *  - Automatic Cloudinary upload via /api/upload/upload
+ *  - Automatic Cloudinary upload via /api/v1/upload/upload
  *
  * @module ImageUpload
  */
@@ -14,7 +14,7 @@ import Image from '@tiptap/extension-image';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { apiFetch } from '../../../utils/api';
 
-const UPLOAD_ENDPOINT = '/api/upload/upload';
+const UPLOAD_ENDPOINT = '/api/v1/upload/upload';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB (matches backend limit)
 
 /**

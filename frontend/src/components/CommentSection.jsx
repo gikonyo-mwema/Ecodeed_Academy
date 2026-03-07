@@ -28,7 +28,7 @@ export default function CommentSection({ postId }) {
     }
 
     try {
-      const data = await apiFetch('/api/comments/create', {
+      const data = await apiFetch('/api/v1/comments/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -50,9 +50,8 @@ export default function CommentSection({ postId }) {
   useEffect(() => {
     const getComments = async () => {
       try {
-        const res = await apiFetch(`/api/comments/getPostComments/${postId}`);
-        if (res.ok) {
-          const data = await res.json();
+        const data = await apiFetch(`/api/v1/comments/getPostComments/${postId}`);
+        if (Array.isArray(data)) {
           setComments(data);
         }
       } catch (error) {
@@ -69,13 +68,11 @@ export default function CommentSection({ postId }) {
         navigate('/sign-in');
         return;
       }
-      const res = await apiFetch(`/api/comments/deleteComment/${commentId}`, {
+      await apiFetch(`/api/v1/comments/deleteComment/${commentId}`, {
         method: 'DELETE',
-        credentials: 'include', // Include authentication cookies
       });
-      if (res.ok) {
-        setComments(comments.filter((comment) => comment._id !== commentId));
-      }
+      // apiFetch throws on error, so reaching here means success
+      setComments(comments.filter((comment) => comment._id !== commentId));
     } catch (error) {
       console.error('Error deleting comment:', error.message);
     }
@@ -87,12 +84,10 @@ export default function CommentSection({ postId }) {
         navigate('/sign-in');
         return;
       }
-      const res = await apiFetch(`/api/comments/likeComment/${commentId}`, {
+      const data = await apiFetch(`/api/v1/comments/likeComment/${commentId}`, {
         method: 'PUT',
-        credentials: 'include',
       });
-      if (res.ok) {
-        const data = await res.json();
+      if (data) {
         setComments(
           comments.map((comment) =>
             comment._id === commentId ? data : comment

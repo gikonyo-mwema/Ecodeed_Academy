@@ -128,7 +128,7 @@ export default function DashUsers() {
       setLoading(true);
       setError(null);
       
-      const data = await apiFetch(`/api/auth/users/getUsers?startIndex=${startIndex}&limit=9`);
+      const data = await apiFetch(`/api/v1/auth/users/getUsers?startIndex=${startIndex}&limit=9`);
 
       // Handle initial load vs pagination
       if (startIndex === 0) {
@@ -185,16 +185,16 @@ export default function DashUsers() {
    */
   const handleDeleteUser = async () => {
     try {
-      await apiFetch(`/api/auth/users/delete/${userIdToDelete}`, {
+      await apiFetch(`/api/v1/auth/users/delete/${userIdToDelete}`, {
         method: 'DELETE',
       });
 
       // Update local state after successful deletion
-      setUsers(prev => prev.filter(user => (user._id || user.id) !== userIdToDelete));
+      setUsers(prev => prev.filter(user => user.id !== userIdToDelete));
       setStats(prev => ({
         ...prev,
         totalUsers: prev.totalUsers - 1,
-        adminCount: prev.adminCount - (users.find(u => (u._id || u.id) === userIdToDelete)?.isAdmin ? 1 : 0)
+        adminCount: prev.adminCount - (users.find(u => u.id === userIdToDelete)?.isAdmin ? 1 : 0)
       }));
     } catch (error) {
       console.error('Delete error:', error);
@@ -214,21 +214,21 @@ export default function DashUsers() {
   const handleRoleChange = async () => {
     try {
       const { userId, newRole } = roleChangeInfo;
-      const response = await apiFetch(`/api/auth/users/updateRole/${userId}`, {
+      const response = await apiFetch(`/api/v1/auth/users/updateRole/${userId}`, {
         method: 'PATCH',
         body: JSON.stringify({ user_type: newRole }),
       });
 
       // Update local state with new user data
       setUsers(prev => prev.map(user => 
-        (user._id || user.id) === userId ? response.user : user
+        user.id === userId ? response.user : user
       ));
       
       // Recalculate stats
       setStats(prev => ({
         ...prev,
-        adminCount: users.filter(u => u.isAdmin || ((u._id || u.id) === userId && newRole === 'ADMIN')).length,
-        instructorCount: users.filter(u => u.isInstructor || ((u._id || u.id) === userId && newRole === 'MENTOR')).length,
+        adminCount: users.filter(u => u.isAdmin || (u.id === userId && newRole === 'ADMIN')).length,
+        instructorCount: users.filter(u => u.isInstructor || (u.id === userId && newRole === 'MENTOR')).length,
       }));
       
       setShowRoleModal(false);
@@ -246,7 +246,7 @@ export default function DashUsers() {
    */
   const openRoleModal = (user, newRole) => {
     setRoleChangeInfo({
-      userId: user._id || user.id,
+      userId: user.id,
       newRole,
       userName: user.username || user.email
     });
@@ -384,8 +384,8 @@ export default function DashUsers() {
                 {users.map((user) => {
                   const roleBadge = getRoleBadge(user);
                   const RoleIcon = roleBadge.icon;
-                  const userId = user._id || user.id;
-                  const isSelf = userId === (currentUser._id || currentUser.id);
+                  const userId = user.id;
+                  const isSelf = userId === currentUser.id;
                   
                   return (
                     <Table.Row key={userId} className="bg-white dark:border-gray-700 dark:bg-gray-800">

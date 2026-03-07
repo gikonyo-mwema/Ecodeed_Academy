@@ -69,8 +69,8 @@ const friendlyError = (error, provider) => {
 /**
  * Social OAuth Buttons – Google, Facebook, and X (Twitter).
  *
- * • Google  – Firebase popup → backend /api/auth/google
- * • Facebook – FB SDK popup → backend /api/auth/facebook/
+ * • Google  – Firebase popup → backend /api/v1/auth/google/
+ * • Facebook – FB SDK popup → backend /api/v1/auth/facebook/
  * • X        – OAuth 2.0 PKCE popup through backend redirect
  */
 export default function OAuth() {
@@ -166,7 +166,24 @@ export default function OAuth() {
 
   // Listen for postMessage from the Twitter callback popup
   useEffect(() => {
+    // Derive the backend origin once so we can validate incoming messages.
+    // Only messages originating from our own backend are accepted — this
+    // prevents a malicious page from injecting forged auth payloads.
+    const backendOrigin = (() => {
+      try {
+        const base = import.meta.env.VITE_API_URL?.trim();
+        if (base) return new URL(base).origin;
+      } catch {
+        /* fall through */
+      }
+      // Same-origin deployment — accept messages from our own origin
+      return window.location.origin;
+    })();
+
     const handleMessage = (event) => {
+      // ── Origin check — reject messages from untrusted origins ──
+      if (event.origin !== backendOrigin) return;
+
       const msg = event.data;
       if (msg?.type !== 'social-auth-callback' || msg?.provider !== 'twitter')
         return;
@@ -215,7 +232,7 @@ export default function OAuth() {
     const top = window.screenY + (window.outerHeight - h) / 2;
 
     const popup = window.open(
-      buildApiUrl('/api/auth/twitter/login/'),
+      buildApiUrl('/api/v1/auth/twitter/login/'),
       'twitter-auth',
       `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no`,
     );

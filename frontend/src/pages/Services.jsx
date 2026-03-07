@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ServiceCard from '../components/ServiceCard';
-import axios from 'axios';
+import { apiFetch } from '../utils/api';
 
 const Services = () => {
   const [services, setServices] = useState([]);
@@ -13,14 +13,13 @@ const Services = () => {
     const fetchServices = async () => {
       try {
         // Only fetch published services for the public page
-        const res = await axios.get('/api/services?isPublished=true');
+        const data = await apiFetch('/api/v1/services/?isPublished=true');
         
         // Extract services from the nested response format
         // Handle DRF pagination format (results), nested data, or direct array
-        const servicesData = res.data?.results || res.data?.data?.services || res.data?.services || (Array.isArray(res.data) ? res.data : []);
+        const servicesData = data?.results || data?.data?.services || data?.services || (Array.isArray(data) ? data : []);
         setServices(servicesData);
       } catch (err) {
-        console.error('Failed to fetch services:', err);
         setError('Failed to load services. Please try again later.');
       } finally {
         setLoading(false);

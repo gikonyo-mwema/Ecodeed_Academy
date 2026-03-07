@@ -20,7 +20,7 @@ export default function Unsubscribe() {
       }
 
       try {
-        const response = await fetch(`/api/messages/newsletter/unsubscribe?email=${encodeURIComponent(email)}`, {
+        const response = await fetch(`/api/v1/messages/newsletter/unsubscribe?email=${encodeURIComponent(email)}`, {
           method: 'GET',
           credentials: 'include',
         });

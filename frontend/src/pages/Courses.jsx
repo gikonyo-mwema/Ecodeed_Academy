@@ -2,24 +2,13 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { 
   HiOutlineTrendingUp,
-  HiOutlineUserCircle,
   HiOutlineDocumentText,
   HiOutlineShieldCheck,
-  HiOutlineOfficeBuilding,
-  HiOutlineTruck,
-  HiOutlineShoppingBag,
   HiOutlineBadgeCheck,
   HiOutlineGlobe,
-  HiOutlineLightningBolt,
-  HiOutlineScale,
   HiOutlineClock,
-  HiOutlineChartBar,
-  HiOutlineClipboardCheck,
   HiOutlineVideoCamera,
-  HiOutlineCalendar,
-  HiOutlineUsers,
-  HiOutlineAcademicCap,
-  HiOutlineStar
+  HiOutlineUsers
 } from 'react-icons/hi';
 import { Button, Badge } from 'flowbite-react';
 import { Link } from 'react-router-dom';
@@ -78,7 +67,7 @@ export default function Courses() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const data = await apiFetch('/api/courses/by-category');
+        const data = await apiFetch('/api/v1/courses/by-category');
         
         const courseList = Array.isArray(data) ? data : (data.results || []);
 
@@ -98,7 +87,6 @@ export default function Courses() {
 
         setCourses(courseList.map(normalize));
       } catch (err) {
-        console.error('Fetch error:', err);
         setError(err.message);
         setCourses([]);
       } finally {

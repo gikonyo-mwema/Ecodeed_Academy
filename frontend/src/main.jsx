@@ -6,7 +6,6 @@
  * 
  * Features:
  * - Redux state management with persistence
- * - Axios HTTP client configuration with interceptors
  * - Theme provider for dark/light mode
  * - Authentication token management
  * - Error handling and automatic redirects
@@ -24,58 +23,12 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { HelmetProvider } from 'react-helmet-async';
 import ThemeProvider from './components/ThemeProvider.jsx';
 import React from 'react';
-import axios from 'axios';
-import { getApiBaseUrl } from './utils/api.js';
 import { initDevUtils } from './utils/devUtils.js';
 
 // Initialize development utilities for better error handling
 if (import.meta.env.DEV) {
   initDevUtils();
-} 
-
-/**
- * Axios Global Configuration
- * Sets up default configuration for all HTTP requests
- */
-axios.defaults.baseURL = getApiBaseUrl(); // Centralized API base URL
-axios.defaults.withCredentials = true; // Include cookies in requests
-
-/**
- * Enhanced request interceptor
- * Automatically adds authentication token to all requests
- * Checks both localStorage and cookies for token availability
- */
-axios.interceptors.request.use((config) => {
-  // Check both localStorage and cookies for token 
-  const token = localStorage.getItem('token') || 
-                document.cookie.split('; ')
-                  .find(row => row.startsWith('token='))
-                  ?.split('=')[1];
-  
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
-
-/**
- * Enhanced response interceptor
- * Handles authentication errors and automatic redirects
- */
-axios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle 401 Unauthorized errors
-    if (error.response?.status === 401) {
-      // Clear auth state and redirect to sign in
-      localStorage.removeItem('token');
-      window.location.href = '/sign-in';
-    }
-    return Promise.reject(error);
-  }
-);
+}
 
 /**
  * React Application Root Render

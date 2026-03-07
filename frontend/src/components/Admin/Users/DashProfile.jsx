@@ -101,14 +101,7 @@ export default function DashProfile() {
       // If password update is needed, use a separate endpoint or update the serializer
 
       const resultAction = await dispatch(updateUser({
-        userId: currentUser.id,
         formData: formDataToSend,
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setImageFileUploadProgress(progress);
-        }
       }));
 
       if (updateUser.fulfilled.match(resultAction)) {
@@ -127,12 +120,12 @@ export default function DashProfile() {
   const handleDeleteUser = async () => {
     setShowModal(false);
     try {
-      const resultAction = await dispatch(deleteUser(currentUser._id));
+      const resultAction = await dispatch(deleteUser(currentUser.id || currentUser._id));
       if (deleteUser.fulfilled.match(resultAction)) {
         // Successfully deleted
       }
-    } catch (error) {
-      console.error('Delete error:', error);
+    } catch {
+      // Handled by Redux error state
     }
   };
 
@@ -142,8 +135,8 @@ export default function DashProfile() {
       if (signOut.fulfilled.match(resultAction)) {
         // Successfully signed out
       }
-    } catch (error) {
-      console.error('Signout error:', error);
+    } catch {
+      // Handled by Redux error state
     }
   };
 

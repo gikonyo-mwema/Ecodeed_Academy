@@ -12,12 +12,6 @@ const initialState = {
 // Helper functions
 const fixProfileUrl = (user) => {
   if (!user) return user;
-
-  // Normalize ID for frontend compatibility (MongoDB -> SQL transition)
-  if (user.id && !user._id) {
-    user._id = user.id;
-  }
-
   return user;
 };
 
@@ -38,7 +32,7 @@ export const signUp = createAsyncThunk(
   'user/signup',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await apiFetch('/api/auth/register/', {
+      const response = await apiFetch('/api/v1/auth/register/', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -53,7 +47,7 @@ export const signIn = createAsyncThunk(
   'user/signin',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await apiFetch('/api/auth/login/', {
+      const response = await apiFetch('/api/v1/auth/login/', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -68,7 +62,7 @@ export const googleSignIn = createAsyncThunk(
   'user/googleSignin',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await apiFetch('/api/auth/google', {
+      const response = await apiFetch('/api/v1/auth/google/', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -83,7 +77,7 @@ export const facebookSignIn = createAsyncThunk(
   'user/facebookSignin',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await apiFetch('/api/auth/facebook/', {
+      const response = await apiFetch('/api/v1/auth/facebook/', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -98,7 +92,7 @@ export const twitterComplete = createAsyncThunk(
   'user/twitterComplete',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await apiFetch('/api/auth/twitter/complete/', {
+      const response = await apiFetch('/api/v1/auth/twitter/complete/', {
         method: 'POST',
         body: JSON.stringify(userData),
       });
@@ -115,7 +109,7 @@ export const updateUser = createAsyncThunk(
     try {
       // Use the correct endpoint for updating the current user's profile
       // It doesn't require the ID in the URL as it uses the authenticated user from the request
-      const response = await apiFetch('/api/auth/profile/update/', {
+      const response = await apiFetch('/api/v1/auth/profile/update/', {
         method: 'PUT',
         body: formData, // apiFetch will handle FormData properly
       });
@@ -130,7 +124,7 @@ export const deleteUser = createAsyncThunk(
   'user/delete',
   async (userId, { rejectWithValue }) => {
     try {
-      await apiFetch(`/api/users/delete/${userId}`, {
+      await apiFetch(`/api/v1/auth/users/delete/${userId}`, {
         method: 'DELETE',
       });
       return userId;
@@ -144,7 +138,7 @@ export const signOut = createAsyncThunk(
   'user/signout',
   async (_, { rejectWithValue }) => {
     try {
-      await apiFetch('/api/auth/logout/', {
+      await apiFetch('/api/v1/auth/logout/', {
         method: 'POST',
         body: JSON.stringify({}),
       });
@@ -167,7 +161,7 @@ export const refreshUser = createAsyncThunk(
       if (!user.currentUser) {
         throw new Error('No user logged in');
       }
-      const response = await apiFetch('/api/auth/profile/');
+      const response = await apiFetch('/api/v1/auth/profile/');
       return response;
     } catch (error) {
       return rejectWithValue(handleApiError(error));

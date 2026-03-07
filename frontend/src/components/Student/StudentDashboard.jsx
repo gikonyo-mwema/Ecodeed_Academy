@@ -74,7 +74,7 @@ export default function StudentDashboard() {
     const fetchEnrolledCourses = async () => {
       try {
         setLoading(true);
-        const data = await apiFetch('/api/enrollments/my-courses/');
+        const data = await apiFetch('/api/v1/enrollments/my-courses/');
         
         // The API returns an array of enrollments with course_details
         const enrollments = Array.isArray(data) ? data : (data.results || data.enrollments || []);
@@ -175,7 +175,7 @@ export default function StudentDashboard() {
 
     // Re-fetch weeks to get fresh unlock status after backend registered the completion
     try {
-      const freshData = await apiFetch(`/api/courses/${activeCourse.id}/weeks/`);
+      const freshData = await apiFetch(`/api/v1/courses/${activeCourse.id}/weeks/`);
       setWeeksData(freshData);
 
       if (nextWeek) {

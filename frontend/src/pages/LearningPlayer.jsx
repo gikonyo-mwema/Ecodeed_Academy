@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import ReactPlayer from 'react-player';
+import DOMPurify from 'dompurify';
 import { 
   HiOutlineChevronLeft, 
   HiOutlineChevronRight,
@@ -31,9 +33,11 @@ const brandColors = {
 export default function LearningPlayer() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
   
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [enrollmentId, setEnrollmentId] = useState(null);
   const [currentLesson, setCurrentLesson] = useState(null);
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [completedLessons, setCompletedLessons] = useState([]);
@@ -73,8 +77,22 @@ export default function LearningPlayer() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const data = await apiFetch(`/api/courses/${slug}/content`);
+        // Fetch course content and enrollment in parallel
+        const [data, enrollmentData] = await Promise.all([
+          apiFetch(`/api/v1/courses/${slug}/content`),
+          currentUser
+            ? apiFetch(`/api/v1/enrollments/check/?userId=${currentUser.id || currentUser._id}&courseSlug=${slug}`)
+            : Promise.resolve(null),
+        ]);
+
         setCourse(data);
+
+        // Restore persisted progress from enrollment
+        if (enrollmentData?.isEnrolled && enrollmentData.id) {
+          setEnrollmentId(enrollmentData.id);
+          const savedCompleted = enrollmentData.progress?.completed_lessons || [];
+          setCompletedLessons(savedCompleted);
+        }
         
         if (data.modules?.length > 0 && data.modules[0].lessons?.length > 0) {
           setCurrentLesson(data.modules[0].lessons[0]);
@@ -108,10 +126,27 @@ export default function LearningPlayer() {
 
   const markComplete = async () => {
     if (currentLesson && !completedLessons.includes(currentLesson.id)) {
-      setCompletedLessons([...completedLessons, currentLesson.id]);
+      // Optimistic UI update
+      setCompletedLessons(prev => [...prev, currentLesson.id]);
+
+      // Persist to backend
+      if (enrollmentId) {
+        try {
+          await apiFetch(`/api/v1/enrollments/${enrollmentId}/complete-lesson/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lesson_id: currentLesson.id }),
+          });
+        } catch (error) {
+          console.error('Failed to persist lesson completion:', error);
+          // Revert optimistic update on failure
+          setCompletedLessons(prev => prev.filter(id => id !== currentLesson.id));
+          return; // Don't auto-navigate if save failed
+        }
+      }
+
       // Auto-navigate to next lesson
       goToNextLesson();
-      // TODO: Persist to backend
     }
   };
 
@@ -414,7 +449,7 @@ export default function LearningPlayer() {
             <div className="prose max-w-none mb-12">
               {currentLesson?.content ? (
                 <div 
-                  dangerouslySetInnerHTML={{ __html: currentLesson.content }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
                   style={{ color: '#374151' }}
                 />
               ) : (

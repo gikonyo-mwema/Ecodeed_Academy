@@ -32,7 +32,7 @@ function CallToAction({
     setNewsletterStatus('subscribing');
     
     try {
-      const response = await fetch('/api/messages/newsletter/subscribe', {
+      const response = await fetch('/api/v1/messages/newsletter/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ function CallToAction({
       if (response.ok) {
         setNewsletterStatus('success');
         setEmail('');
-        setTimeout(() => setNewsletterStatus(''), 5000);
+        setTimeout(() => setNewsletterStatus(''), 8000);
       } else {
         setNewsletterStatus('error');
         setTimeout(() => setNewsletterStatus(''), 5000);
@@ -203,7 +203,7 @@ function CallToAction({
                     ) : newsletterStatus === 'success' ? (
                       <>
                         <FiCheckCircle className="text-lg" />
-                        Subscribed!
+                        Check your email!
                       </>
                     ) : (
                       'Subscribe Now'

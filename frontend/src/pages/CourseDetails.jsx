@@ -5,8 +5,6 @@ import { refreshUser } from '../redux/user/userSlice';
 import { 
   HiOutlineCheckCircle, 
   HiOutlineClock, 
-  HiOutlineUserCircle,
-  HiOutlineDocumentText,
   HiOutlineShieldCheck,
   HiOutlineAcademicCap,
   HiOutlineVideoCamera,
@@ -15,8 +13,6 @@ import {
   HiOutlineGlobe,
   HiOutlineBookOpen,
   HiOutlineCog,
-  HiOutlineLightningBolt,
-  HiOutlineChartBar,
   HiOutlineDownload,
   HiOutlinePlay,
   HiOutlineChevronRight,
@@ -26,93 +22,6 @@ import { Button, Badge, Accordion, Alert, Spinner, Progress, Tabs, Card } from '
 import PaymentModal from '../components/Modal/PaymentModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiFetch } from '../utils/api';
-
-// Fallback course data (can be moved to separate file)
-const fallbackCourses = {
-  'effluent-discharge-license': {
-    title: "How to Apply for Effluent Discharge License by NEMA",
-    shortDescription: "Step-by-step guidance to apply and renew your Effluent Discharge License",
-    fullDescription: "Your business can't afford to ignore this...", // Full description
-    price: 5000,
-    isFree: false,
-    level: ["Business Owners", "Environmental Managers"],
-    format: ["Self-paced", "Practical tools"],
-    features: [
-      "Step-by-step application process",
-      "Document preparation guidance",
-      "Compliance requirements",
-      "NEMA liaison strategies",
-      "Renewal procedures",
-      "Common pitfalls to avoid"
-    ],
-    curriculum: [
-      {
-        title: "Introduction to Effluent Discharge Licensing",
-        items: [
-          { title: "Understanding effluent licensing", duration: "15 min", type: "video" },
-          { title: "Legal requirements and framework", duration: "20 min", type: "video" },
-          { title: "NEMA's role and responsibilities", duration: "10 min", type: "reading" }
-        ]
-      },
-      {
-        title: "Application Process",
-        items: [
-          { title: "Required documents checklist", duration: "25 min", type: "interactive" },
-          { title: "Step-by-step submission procedure", duration: "30 min", type: "video" },
-          { title: "Common mistakes to avoid", duration: "15 min", type: "video" }
-        ]
-      },
-      {
-        title: "Post-Approval & Renewal",
-        items: [
-          { title: "Maintaining compliance", duration: "20 min", type: "video" },
-          { title: "Annual renewal process", duration: "15 min", type: "reading" },
-          { title: "Handling inspections", duration: "20 min", type: "video" }
-        ]
-      }
-    ],
-    faqs: [
-      {
-        question: "How long does approval take?",
-        answer: "Typically 2-4 weeks with complete documentation. However, processing times may vary depending on NEMA's current workload and the complexity of your application. Our course includes tips to expedite the process."
-      },
-      {
-        question: "What documents do I need to prepare?",
-        answer: "You'll need your business registration certificate, site plans, effluent characterization report, environmental management plan, and proof of payment. Our course provides detailed checklists and templates for each document."
-      },
-      {
-        question: "Is this license renewable?",
-        answer: "Yes, the Effluent Discharge License must be renewed annually. The course covers both initial applications and the renewal process to ensure continued compliance."
-      },
-      {
-        question: "What happens if I operate without a license?",
-        answer: "Operating without a valid license can result in significant fines, legal action, and potential closure of your facility. NEMA conducts regular inspections and takes non-compliance seriously."
-      }
-    ],
-    targetAudience: [
-      "Manufacturing businesses",
-      "Environmental consultants",
-      "Factory managers",
-      "Compliance officers"
-    ],
-    resources: [
-      "Application templates",
-      "Document checklists",
-      "Sample reports",
-      "NEMA liaison guide",
-      "Regulatory updates"
-    ],
-    externalUrl: "https://payment-platform.com/enroll",
-    category: "compliance",
-    duration: "4 hours total",
-    students: "1,234 enrolled",
-    rating: 4.8,
-    reviews: 156,
-    lastUpdated: "January 2025",
-    language: "English",
-    certificate: false
-  }
-};
 
 export default function CourseDetails() {
   const { slug } = useParams();
@@ -132,7 +41,7 @@ export default function CourseDetails() {
     const fetchCourseData = async () => {
       try {
         // Fetch course data
-        const courseRes = await fetch(`/api/courses/${slug}/`);
+        const courseRes = await fetch(`/api/v1/courses/${slug}/`);
         
         let courseData;
         
@@ -155,24 +64,23 @@ export default function CourseDetails() {
             price: price,
           };
           
-          // Merge with fallback data for empty fields
-          const fallback = fallbackCourses[slug] || {};
-          courseData.fullDescription = courseData.fullDescription || fallback.fullDescription || 'Course description coming soon.';
-          courseData.features = courseData.features?.length ? courseData.features : fallback.features || [];
-          courseData.faqs = courseData.faqs?.length ? courseData.faqs : fallback.faqs || [];
-          courseData.targetAudience = courseData.targetAudience?.length ? courseData.targetAudience : fallback.targetAudience || [];
-          courseData.resources = courseData.resources?.length ? courseData.resources : fallback.resources || [];
-          courseData.curriculum = courseData.curriculum?.length ? courseData.curriculum : fallback.curriculum || [];
-          courseData.duration = courseData.duration || fallback.duration || 'Self-paced';
-          courseData.students = courseData.students || fallback.students || 'New course';
-          courseData.rating = courseData.rating || fallback.rating || 4.5;
-          courseData.reviews = courseData.reviews || fallback.reviews || 0;
-          courseData.language = courseData.language || fallback.language || 'English';
+          // Apply sensible defaults for any missing fields
+          courseData.fullDescription = courseData.fullDescription || 'Course description coming soon.';
+          courseData.features = courseData.features?.length ? courseData.features : [];
+          courseData.faqs = courseData.faqs?.length ? courseData.faqs : [];
+          courseData.targetAudience = courseData.targetAudience?.length ? courseData.targetAudience : [];
+          courseData.resources = courseData.resources?.length ? courseData.resources : [];
+          courseData.curriculum = courseData.curriculum?.length ? courseData.curriculum : [];
+          courseData.duration = courseData.duration || 'Self-paced';
+          courseData.students = courseData.students || 'New course';
+          courseData.rating = courseData.rating || 0;
+          courseData.reviews = courseData.reviews || 0;
+          courseData.language = courseData.language || 'English';
           courseData.certificate = courseData.hasCertificate !== undefined ? courseData.hasCertificate : false;
+        } else if (courseRes.status === 404) {
+          throw new Error('Course not found');
         } else {
-          // Fallback to local data if API fails
-          courseData = fallbackCourses[slug];
-          if (!courseData) throw new Error('Course not found');
+          throw new Error('Failed to load course. Please try again later.');
         }
 
         setCourse(courseData);
@@ -180,11 +88,10 @@ export default function CourseDetails() {
         // Check enrollment status if user is logged in
         if (currentUser) {
           try {
-            const enrollmentData = await apiFetch(`/api/enrollments/check/?userId=${currentUser.id || currentUser._id}&courseSlug=${slug}`);
+            const enrollmentData = await apiFetch(`/api/v1/enrollments/check/?userId=${currentUser.id || currentUser._id}&courseSlug=${slug}`);
             setIsEnrolled(enrollmentData?.isEnrolled || false);
           } catch (enrollErr) {
-            // Enrollment check failed (possibly not logged in properly), default to not enrolled
-            console.log('Enrollment check failed:', enrollErr);
+            // Enrollment check failed, default to not enrolled
             setIsEnrolled(false);
           }
         }
@@ -199,6 +106,10 @@ export default function CourseDetails() {
   }, [slug, currentUser]);
 
   const handleEnroll = () => {
+    if (!currentUser) {
+      navigate(`/sign-in?redirect=/courses/${slug}`);
+      return;
+    }
     if (course.isFree) {
       enrollUser();
     } else if (course.externalUrl) {
@@ -219,7 +130,7 @@ export default function CourseDetails() {
          throw new Error("Payment required for this course.");
       }
 
-      await apiFetch('/api/enrollments/', {
+      await apiFetch('/api/v1/enrollments/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -45,7 +45,7 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
       try {
         setLoading(true);
         setError(null);
-        const data = await apiFetch(`/api/courses/${course.id}/weeks/`);
+        const data = await apiFetch(`/api/v1/courses/${course.id}/weeks/`);
         setWeeksData(data);
 
         // Auto-expand the current week
@@ -103,7 +103,7 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
-          <Spinner size="xl" className="text-blue-600" />
+          <Spinner size="xl" className="text-brand-green" />
           <p className="text-gray-500 dark:text-gray-400 text-sm">Loading your learning journey...</p>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
           <p className="text-red-500 mb-4">{error}</p>
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+            className="inline-flex items-center gap-2 text-brand-green hover:text-brand-green/80 font-medium"
           >
             <HiArrowLeft className="w-4 h-4" />
             Back to My Courses
@@ -141,22 +141,22 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
       )}
 
       {/* Course Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-3xl p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden bg-brand-green rounded-3xl p-8 text-white shadow-xl">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
         
         <div className="relative">
           <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">
             {weeksData?.course_title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-4 text-sm text-blue-100 mb-6">
-            <span className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-white/80 mb-6">
+            <span className="flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-full">
               <HiBookOpen className="w-4 h-4" />
               {weeksData?.total_weeks} {weeksData?.total_weeks === 1 ? 'Week' : 'Weeks'}
             </span>
-            <span className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
+            <span className="flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-full">
               {weeksData?.pacing_type === 'self_paced' ? (
                 <HiOutlineChartBar className="w-4 h-4" />
               ) : (
@@ -169,7 +169,7 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
           {/* Overall Progress */}
           <div className="max-w-md">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-blue-100">Overall Progress</span>
+              <span className="text-white/80">Overall Progress</span>
               <span className="font-semibold bg-white/20 px-2.5 py-1 rounded-full text-xs">
                 {overallProgress}%
               </span>
@@ -185,20 +185,20 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
       </div>
 
       {/* Pacing hint */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl px-5 py-4 text-sm text-blue-700 dark:text-blue-300">
+      <div className="bg-brand-green/5 dark:bg-brand-green/10 border border-brand-green/20 dark:border-brand-green/30 rounded-2xl px-5 py-4 text-sm text-brand-green dark:text-brand-green/80">
         <div className="flex items-start gap-3">
           <div className="mt-0.5">
             {weeksData?.pacing_type === 'self_paced' ? (
-              <HiOutlineChartBar className="w-5 h-5 text-blue-500" />
+              <HiOutlineChartBar className="w-5 h-5 text-brand-green" />
             ) : (
-              <HiOutlineCalendar className="w-5 h-5 text-blue-500" />
+              <HiOutlineCalendar className="w-5 h-5 text-brand-green" />
             )}
           </div>
           <div>
             <span className="font-semibold block mb-1">
               {weeksData?.pacing_type === 'self_paced' ? 'Self-Paced Learning' : 'Scheduled Learning'}
             </span>
-            <span className="text-blue-600/80 dark:text-blue-300/80">
+            <span className="text-brand-green/70 dark:text-brand-green/70">
               {weeksData?.pacing_type === 'self_paced' ? (
                 <>Complete all lessons in a week to unlock the next one. Learn at your own pace.</>
               ) : (
@@ -223,25 +223,25 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
               key={week.id}
               className={`group bg-white dark:bg-gray-800 rounded-2xl border transition-all duration-300 overflow-hidden
                 ${week.is_current
-                  ? 'border-blue-300 dark:border-blue-700 shadow-lg shadow-blue-100/50 dark:shadow-blue-900/20'
+                  ? 'border-brand-green/40 dark:border-brand-green/40 shadow-lg shadow-brand-green/10 dark:shadow-brand-green/10'
                   : week.is_unlocked
-                    ? 'border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-lg'
+                    ? 'border-gray-200 dark:border-gray-700 hover:border-brand-green/30 dark:hover:border-brand-green/20 hover:shadow-lg'
                     : 'border-gray-200 dark:border-gray-700 opacity-70'
                 }
               `}
             >
               {/* Week Header — Always clickable to toggle */}
-              <button
+              <div
                 onClick={() => toggleWeek(week.id)}
-                className="w-full flex items-center gap-4 p-5 md:p-6 text-left transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/50"
+                className="w-full flex items-center gap-4 p-5 md:p-6 text-left cursor-pointer transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/50"
               >
                 {/* Week Number / Status Circle */}
                 <div
                   className={`relative w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 font-semibold text-lg transition-all duration-300
                     ${week.all_completed
-                      ? 'bg-gradient-to-br from-green-400 to-green-500 text-white shadow-md shadow-green-200 dark:shadow-green-900/30'
+                      ? 'bg-brand-green text-white shadow-md shadow-brand-green/20 dark:shadow-brand-green/10'
                       : week.is_current
-                        ? 'bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/30'
+                        ? 'bg-brand-green text-white shadow-md shadow-brand-green/20 dark:shadow-brand-green/10'
                         : week.is_unlocked
                           ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-400'
@@ -279,7 +279,7 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                         </Badge>
                       )}
                       {week.is_current && !week.all_completed && (
-                        <Badge color="info" size="sm" className="rounded-full px-3 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                        <Badge color="info" size="sm" className="rounded-full px-3 py-0.5 text-xs font-medium bg-brand-yellow/20 text-brand-blue dark:bg-brand-yellow/10 dark:text-brand-yellow">
                           Current
                         </Badge>
                       )}
@@ -311,7 +311,7 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                     <div className="mt-3 w-full max-w-xs bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
                       <div
                         className={`rounded-full h-1.5 transition-all duration-500 ease-out
-                          ${week.all_completed ? 'bg-green-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500'}`}
+                          ${week.all_completed ? 'bg-brand-green' : 'bg-brand-yellow'}`}
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
@@ -330,8 +330,8 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                         px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5
                         transition-all hover:scale-105
                         ${week.all_completed
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400'}
+                          ? 'bg-brand-green/10 text-brand-green hover:bg-brand-green/20 dark:bg-brand-green/10 dark:text-brand-green/80'
+                          : 'bg-brand-yellow/20 text-brand-blue hover:bg-brand-yellow/40 dark:bg-brand-yellow/10 dark:text-brand-yellow'}
                       `}
                     >
                       <HiPlay className="w-3 h-3" />
@@ -345,7 +345,7 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                     <HiChevronDown className="w-5 h-5" />
                   </div>
                 </div>
-              </button>
+              </div>
 
               {/* Expanded Lessons List */}
               {isExpanded && (
@@ -370,12 +370,12 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                           {/* Lesson Status Icon */}
                           <div className="flex-shrink-0">
                             {lesson.is_completed ? (
-                              <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                                <HiCheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              <div className="w-6 h-6 rounded-full bg-brand-green/10 dark:bg-brand-green/10 flex items-center justify-center">
+                                <HiCheckCircle className="w-4 h-4 text-brand-green dark:text-brand-green/80" />
                               </div>
                             ) : lesson.is_accessible ? (
-                              <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800/50 transition-colors">
-                                <HiPlay className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                              <div className="w-6 h-6 rounded-full bg-brand-green/10 dark:bg-brand-green/10 flex items-center justify-center group-hover:bg-brand-green/20 dark:group-hover:bg-brand-green/20 transition-colors">
+                                <HiPlay className="w-3.5 h-3.5 text-brand-green dark:text-brand-green/80" />
                               </div>
                             ) : (
                               <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
@@ -389,7 +389,7 @@ export default function CourseWeeksView({ course, onBack, onWeekSelect }) {
                             <span
                               className={`text-sm font-medium
                                 ${lesson.is_accessible
-                                  ? 'text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                                  ? 'text-gray-700 dark:text-gray-200 group-hover:text-brand-green dark:group-hover:text-brand-green/80'
                                   : 'text-gray-400 dark:text-gray-500'
                                 }
                               `}

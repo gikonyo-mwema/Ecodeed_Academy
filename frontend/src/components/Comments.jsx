@@ -1,8 +1,11 @@
 
 import React, { useState } from 'react';
 
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { FaThumbsUp } from 'react-icons/fa';
+
+dayjs.extend(relativeTime);
 import { useSelector } from 'react-redux';
 import { Button, Textarea } from 'flowbite-react';
 import { apiFetch } from '../utils/api';
@@ -16,7 +19,7 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
 
   const handleSave = async () => {
     try {
-      await apiFetch(`/api/comments/editComment/${comment._id}`, {
+      await apiFetch(`/api/v1/comments/editComment/${comment._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: editedContent }),
@@ -46,7 +49,7 @@ export default function Comment({ comment, onLike, onEdit, onDelete }) {
             {user && user.username ? `@${user.username}` : 'anonymous user'}
           </span>
           <span className="text-gray-500 text-xs">
-            {moment(comment.createdAt).fromNow()}
+            {dayjs(comment.createdAt).fromNow()}
           </span>
         </div>
 

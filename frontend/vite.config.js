@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
@@ -12,7 +12,6 @@ export default defineConfig(({ mode }) => ({
       'react-router-dom',
       '@reduxjs/toolkit',
       'react-redux',
-      'axios',
       'flowbite',
       'flowbite-react',
       'framer-motion',

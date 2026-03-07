@@ -23,7 +23,7 @@ export const getApiBaseUrl = () => {
 
 /**
  * Build a complete API URL
- * @param {string} endpoint - The API endpoint (e.g., '/api/posts/getPosts')
+ * @param {string} endpoint - The API endpoint (e.g., '/api/v1/posts/')
  * @returns {string} - Complete URL
  */
 export const buildApiUrl = (endpoint) => {
@@ -92,17 +92,6 @@ export const apiFetch = async (endpoint, options = {}) => {
     };
   }
   
-  // Debug logging for upload requests
-  if (endpoint.includes('upload')) {
-    console.log('🔍 Upload request debug:', {
-      url,
-      credentials: defaultOptions.credentials,
-      hasFormData: options.body instanceof FormData,
-      cookies: document.cookie,
-      headers: defaultOptions.headers
-    });
-  }
-  
   try {
     const response = await fetch(url, defaultOptions);
     
@@ -139,11 +128,8 @@ export const apiFetch = async (endpoint, options = {}) => {
                 );
 
                 if (isTokenError || response.status === 401) {
-                    console.warn(`Authentication token is invalid or expired (401) for ${endpoint}.`);
-                    
                     // Only dispatch logout if we're not already on an auth page and actually have a token to clear
                     if (!isAuthPage && localStorage.getItem('token')) {
-                        console.log('Logging out due to 401 on protected endpoint');
                         localStorage.removeItem('token');
                         window.dispatchEvent(new CustomEvent('auth:logout'));
                     }

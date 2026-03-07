@@ -13,7 +13,7 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
     setLoading(true);
     try {
       // Verify payment with backend (apiFetch adds auth token + correct base URL)
-      const data = await apiFetch('/api/payments/verify', {
+      const data = await apiFetch('/api/v1/payments/verify', {
         method: 'POST',
         body: JSON.stringify({ reference: response.reference }),
       });

@@ -3,7 +3,7 @@
  *
  * Provides helpers for generating optimized Cloudinary image URLs and
  * fallback/default images. All actual uploads go through the Django
- * backend (POST /api/upload/upload) which handles validation and
+ * backend (POST /api/v1/upload/upload) which handles validation and
  * server-side Cloudinary upload securely.
  *
  * @module CloudinaryUtils

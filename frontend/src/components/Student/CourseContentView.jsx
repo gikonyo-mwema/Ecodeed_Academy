@@ -44,7 +44,7 @@ export default function CourseContentView({ course, activeSection = 'overview', 
       
       try {
         setLoading(true);
-        const data = await apiFetch(`/api/courses/${course.slug}/content`);
+        const data = await apiFetch(`/api/v1/courses/${course.slug}/content`);
         setCourseContent(data);
         
         // Set active module to first in-progress or first module
@@ -67,7 +67,7 @@ export default function CourseContentView({ course, activeSection = 'overview', 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-brand-green border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -75,21 +75,21 @@ export default function CourseContentView({ course, activeSection = 'overview', 
   const renderOverview = () => (
     <div className="space-y-6">
       {/* Course Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
+      <div className="bg-brand-green rounded-2xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">{course?.title}</h1>
-        <p className="text-blue-100 mb-4">{course?.shortDescription}</p>
+        <p className="text-white/80 mb-4">{course?.shortDescription}</p>
         
         <div className="flex flex-wrap items-center gap-6 text-sm">
           <div className="flex items-center gap-2">
-            <HiBookOpen className="w-5 h-5 text-blue-200" />
+            <HiBookOpen className="w-5 h-5 text-white/70" />
             <span>{courseContent?.modules?.length || 0} Modules</span>
           </div>
           <div className="flex items-center gap-2">
-            <HiClock className="w-5 h-5 text-blue-200" />
+            <HiClock className="w-5 h-5 text-white/70" />
             <span>{course?.duration || 'Self-paced'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <HiAcademicCap className="w-5 h-5 text-blue-200" />
+            <HiAcademicCap className="w-5 h-5 text-white/70" />
             <span>{course?.certificate ? 'Certificate Included' : 'No Certificate'}</span>
           </div>
         </div>
@@ -101,9 +101,9 @@ export default function CourseContentView({ course, activeSection = 'overview', 
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Your Progress</span>
-              <span className="text-sm font-bold text-blue-600">{course?.progress || 0}%</span>
+              <span className="text-sm font-bold text-brand-green">{course?.progress || 0}%</span>
             </div>
-            <Progress progress={course?.progress || 0} color="blue" size="sm" />
+            <Progress progress={course?.progress || 0} color="green" size="sm" />
           </div>
           <div className="text-xs text-gray-500 whitespace-nowrap">
             {course?.completedLessons || 0}/{course?.totalLessons || 0} lessons
@@ -114,7 +114,7 @@ export default function CourseContentView({ course, activeSection = 'overview', 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-3 gap-4">
         <Card className="text-center cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate(`/dashboard?tab=course-${course?.id}-weeks`)}>
-          <HiPlay className="w-10 h-10 mx-auto text-blue-600 mb-2" />
+          <HiPlay className="w-10 h-10 mx-auto text-brand-green mb-2" />
           <h4 className="font-semibold">Continue Learning</h4>
           <p className="text-sm text-gray-500">Pick up where you left off</p>
         </Card>
@@ -154,7 +154,7 @@ export default function CourseContentView({ course, activeSection = 'overview', 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Course Modules</h2>
-        <Button color="blue" onClick={() => navigate(`/dashboard?tab=course-${course?.id}-weeks`)}>
+        <Button color="green" onClick={() => navigate(`/dashboard?tab=course-${course?.id}-weeks`)}>
           <HiPlay className="w-4 h-4 mr-2" />
           Continue Learning
         </Button>
@@ -169,21 +169,21 @@ export default function CourseContentView({ course, activeSection = 'overview', 
           return (
             <Card
               key={module.id || index}
-              className={`${activeModule?.id === module.id ? 'ring-2 ring-blue-500' : ''} ${isLocked ? 'opacity-60' : ''}`}
+              className={`${activeModule?.id === module.id ? 'ring-2 ring-brand-green' : ''} ${isLocked ? 'opacity-60' : ''}`}
             >
               <div className="flex items-start gap-4">
                 {/* Status Icon */}
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0
-                  ${isCompleted ? 'bg-green-100 dark:bg-green-900/30' : 
-                    isInProgress ? 'bg-blue-100 dark:bg-blue-900/30' : 
+                  ${isCompleted ? 'bg-brand-green/10 dark:bg-brand-green/10' : 
+                    isInProgress ? 'bg-brand-yellow/10 dark:bg-brand-yellow/10' : 
                     'bg-gray-100 dark:bg-gray-700'}
                 `}>
                   {isCompleted ? (
-                    <HiCheckCircle className="w-6 h-6 text-green-600" />
+                    <HiCheckCircle className="w-6 h-6 text-brand-green" />
                   ) : isLocked ? (
                     <HiLockClosed className="w-5 h-5 text-gray-400" />
                   ) : (
-                    <span className="text-lg font-bold text-blue-600">{index + 1}</span>
+                    <span className="text-lg font-bold text-brand-green">{index + 1}</span>
                   )}
                 </div>
 
@@ -222,9 +222,9 @@ export default function CourseContentView({ course, activeSection = 'overview', 
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-gray-500">Progress</span>
-                        <span className="text-blue-600 font-medium">{module.progress || 0}%</span>
+                        <span className="text-brand-green font-medium">{module.progress || 0}%</span>
                       </div>
-                      <Progress progress={module.progress || 0} color="blue" size="sm" />
+                      <Progress progress={module.progress || 0} color="green" size="sm" />
                     </div>
                   )}
 
@@ -238,7 +238,7 @@ export default function CourseContentView({ course, activeSection = 'overview', 
                           onClick={() => navigate(`/dashboard?tab=course-${course?.id}-weeks`)}
                         >
                           {lesson.completed ? (
-                            <HiCheckCircle className="w-5 h-5 text-green-500" />
+                            <HiCheckCircle className="w-5 h-5 text-brand-green" />
                           ) : (
                             <HiPlay className="w-5 h-5 text-gray-400" />
                           )}
@@ -301,7 +301,7 @@ export default function CourseContentView({ course, activeSection = 'overview', 
                     </span>
                   </div>
                 </div>
-                <Button color={assignment.status === 'submitted' ? 'gray' : 'blue'} size="sm">
+                <Button color={assignment.status === 'submitted' ? 'gray' : 'green'} size="sm">
                   {assignment.status === 'submitted' ? 'View Submission' : 'Submit'}
                 </Button>
               </div>
@@ -318,27 +318,27 @@ export default function CourseContentView({ course, activeSection = 'overview', 
 
       {/* Upcoming Session */}
       {courseContent?.upcomingLiveSession && (
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 text-white">
+        <div className="bg-brand-green rounded-2xl p-6 text-white">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
               <HiVideoCamera className="w-8 h-8" />
             </div>
             <div>
-              <p className="text-sm text-purple-200">Upcoming Live Session</p>
+              <p className="text-sm text-white/70">Upcoming Live Session</p>
               <h3 className="text-xl font-bold">{courseContent.upcomingLiveSession.title}</h3>
             </div>
           </div>
           <div className="flex flex-wrap gap-6 mb-4">
             <div className="flex items-center gap-2">
-              <HiCalendar className="w-5 h-5 text-purple-200" />
+              <HiCalendar className="w-5 h-5 text-white/70" />
               <span>{courseContent.upcomingLiveSession.date}</span>
             </div>
             <div className="flex items-center gap-2">
-              <HiClock className="w-5 h-5 text-purple-200" />
+              <HiClock className="w-5 h-5 text-white/70" />
               <span>{courseContent.upcomingLiveSession.time}</span>
             </div>
             <div className="flex items-center gap-2">
-              <HiUsers className="w-5 h-5 text-purple-200" />
+              <HiUsers className="w-5 h-5 text-white/70" />
               <span>Host: {courseContent.upcomingLiveSession.host}</span>
             </div>
           </div>
@@ -392,10 +392,10 @@ export default function CourseContentView({ course, activeSection = 'overview', 
         ].map((category, idx) => (
           <Card key={idx} className="cursor-pointer hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <category.icon className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-brand-green/10 dark:bg-brand-green/10 rounded-lg">
+                <category.icon className="w-6 h-6 text-brand-green" />
               </div>
-              <Badge color="blue">{category.count} items</Badge>
+              <Badge color="green">{category.count} items</Badge>
             </div>
             <h3 className="font-semibold text-gray-800 dark:text-white">{category.title}</h3>
           </Card>

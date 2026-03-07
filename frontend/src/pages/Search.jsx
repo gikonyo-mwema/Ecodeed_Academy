@@ -63,7 +63,7 @@ export default function Search() {
         setError(null);
         try {
             const urlParams = new URLSearchParams(location.search);
-            const data = await apiFetch(`/api/posts/getPosts?${urlParams.toString()}`);
+            const data = await apiFetch(`/api/v1/posts/?${urlParams.toString()}`);
             const fetched = data?.data?.posts || data?.posts || [];
             const total = data?.data?.totalPosts ?? data?.totalPosts ?? fetched.length;
             setPosts(fetched);
@@ -154,7 +154,7 @@ export default function Search() {
             const startIndex = posts.length;
             const urlParams = new URLSearchParams(location.search);
             urlParams.set('startIndex', startIndex);
-            const data = await apiFetch(`/api/posts/getPosts?${urlParams.toString()}`);
+            const data = await apiFetch(`/api/v1/posts/?${urlParams.toString()}`);
             const newPosts = data?.data?.posts || data?.posts || [];
             setPosts((prev) => [...prev, ...newPosts]);
             setShowMore(newPosts.length === 9);

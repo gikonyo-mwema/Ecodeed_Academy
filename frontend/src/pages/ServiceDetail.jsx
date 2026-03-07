@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import DOMPurify from 'dompurify';
+import { apiFetch } from '../utils/api';
 import CallToAction from '../components/CallToAction';
 import {
   FiCheckCircle,
@@ -92,19 +93,18 @@ const ServiceDetail = () => {
   const [activeFaq, setActiveFaq] = useState(null);
 
   useEffect(() => {
-  const fetchService = async () => {
+    const fetchService = async () => {
       try {
         // Try slug endpoint first; fallback to id for backward-compat
-        let response;
+        let data;
         try {
-      response = await axios.get(`/api/services/slug/${slug}`, { headers: { 'Cache-Control': 'no-cache' } });
-        } catch (e) {
-      response = await axios.get(`/api/services/${slug}`, { headers: { 'Cache-Control': 'no-cache' } });
+          data = await apiFetch(`/api/v1/services/slug/${slug}`);
+        } catch {
+          data = await apiFetch(`/api/v1/services/${slug}`);
         }
-        const svc = response.data?.data?.service || response.data?.service || response.data;
+        const svc = data?.data?.service || data?.service || data;
         setService(svc);
-      } catch (err) {
-        console.error('Error fetching service:', err);
+      } catch {
         setError('Unable to load the service. Please try again later.');
       } finally {
         setLoading(false);
@@ -158,7 +158,7 @@ const ServiceDetail = () => {
     );
   }
 
-  const descHtml = service.description || service.fullDescription;
+  const descHtml = DOMPurify.sanitize(service.description || service.fullDescription || '');
   const steps = Array.isArray(service.processSteps) ? service.processSteps.map((s, i) => ({
     title: s.title || s.step,
     description: s.description,

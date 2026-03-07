@@ -200,7 +200,7 @@ export default function PostEditorPage() {
     const fetchPost = async () => {
       try {
         setLoadingPost(true);
-        const data = await apiFetch(`/api/posts/getPosts?postId=${postId}`);
+        const data = await apiFetch(`/api/v1/posts/?postId=${postId}`);
         const posts = data?.results || data?.posts || data?.data?.posts || [];
         if (cancelled) return;
 
@@ -283,13 +283,13 @@ export default function PostEditorPage() {
 
       if (id) {
         // Update existing
-        data = await apiFetch(`/api/posts/update/${id}/${currentUser._id}/`, {
+        data = await apiFetch(`/api/v1/posts/${id}/`, {
           method: 'PUT',
           body: JSON.stringify(payload),
         });
       } else {
         // Create new draft
-        data = await apiFetch('/api/posts/create/', {
+        data = await apiFetch('/api/v1/posts/', {
           method: 'POST',
           body: JSON.stringify(payload),
         });
@@ -331,12 +331,12 @@ export default function PostEditorPage() {
       let data;
 
       if (id) {
-        data = await apiFetch(`/api/posts/update/${id}/${currentUser._id}/`, {
+        data = await apiFetch(`/api/v1/posts/${id}/`, {
           method: 'PUT',
           body: JSON.stringify(payload),
         });
       } else {
-        data = await apiFetch('/api/posts/create/', {
+        data = await apiFetch('/api/v1/posts/', {
           method: 'POST',
           body: JSON.stringify(payload),
         });

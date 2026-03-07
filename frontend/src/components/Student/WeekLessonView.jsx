@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ReactPlayer from 'react-player';
+import DOMPurify from 'dompurify';
 import { Badge, Button, Spinner } from 'flowbite-react';
 import {
   HiArrowLeft,
@@ -108,7 +109,7 @@ export default function WeekLessonView({
       setMarkingComplete(true);
       // Persist to backend FIRST so unlock logic has correct data
       if (enrollmentId) {
-        await apiFetch(`/api/enrollments/${enrollmentId}/complete-lesson/`, {
+        await apiFetch(`/api/v1/enrollments/${enrollmentId}/complete-lesson/`, {
           method: 'POST',
           body: JSON.stringify({ lesson_id: currentLesson.id }),
         });
@@ -155,7 +156,7 @@ export default function WeekLessonView({
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Lesson Title */}
         <div>
-          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">
+          <p className="text-sm text-brand-green dark:text-brand-green/80 font-medium mb-1">
             Lesson {currentIndex + 1} of {lessons.length}
           </p>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -167,7 +168,7 @@ export default function WeekLessonView({
         {currentLesson.content && (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
             <div className="prose dark:prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }} />
             </div>
           </div>
         )}
@@ -213,7 +214,7 @@ export default function WeekLessonView({
                 <button
                   onClick={goNext}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                    bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                    bg-brand-green text-white hover:bg-brand-green/90 transition-colors"
                 >
                   Next Lesson <HiChevronRight className="w-4 h-4" />
                 </button>
@@ -222,7 +223,7 @@ export default function WeekLessonView({
                   <button
                     onClick={() => onWeekComplete?.()}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                      bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                      bg-brand-green text-white hover:bg-brand-green/90 transition-colors"
                   >
                     Next Week <HiChevronRight className="w-4 h-4" />
                   </button>
@@ -234,7 +235,7 @@ export default function WeekLessonView({
               onClick={markComplete}
               disabled={markingComplete}
               className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium
-                bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-60"
+                bg-brand-green text-white hover:bg-brand-green/90 transition-colors disabled:opacity-60"
             >
               {markingComplete ? (
                 <Spinner size="sm" light />
@@ -295,7 +296,7 @@ export default function WeekLessonView({
                   href={a.resource_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-blue-600 hover:underline"
+                  className="flex items-center gap-1 text-brand-green hover:underline"
                 >
                   <HiDownload className="w-4 h-4" /> Download Template
                 </a>
@@ -328,8 +329,8 @@ export default function WeekLessonView({
             className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <HiDownload className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-brand-green/5 dark:bg-brand-green/10 rounded-lg">
+                <HiDownload className="w-5 h-5 text-brand-green" />
               </div>
               <span className="font-medium text-gray-800 dark:text-white">{r.title}</span>
             </div>
@@ -338,7 +339,7 @@ export default function WeekLessonView({
                 href={r.file_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                className="flex items-center gap-1 text-sm text-brand-green hover:underline"
               >
                 Open <HiExternalLink className="w-4 h-4" />
               </a>
@@ -367,13 +368,13 @@ export default function WeekLessonView({
         {sessions.map((s) => (
           <div
             key={s.id}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 text-white space-y-4"
+            className="bg-brand-green rounded-2xl p-6 text-white space-y-4"
           >
             <div className="flex items-center gap-3">
               <HiVideoCamera className="w-8 h-8" />
               <h3 className="text-xl font-bold">{s.title}</h3>
             </div>
-            {s.description && <p className="text-purple-100">{s.description}</p>}
+            {s.description && <p className="text-white/70">{s.description}</p>}
             <div className="flex flex-wrap gap-4 text-sm">
               {s.date_time && (
                 <span className="flex items-center gap-1">
@@ -388,7 +389,7 @@ export default function WeekLessonView({
                   href={s.zoom_link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2 bg-white text-purple-700 rounded-lg font-medium hover:bg-purple-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2 bg-white text-brand-green rounded-lg font-medium hover:bg-brand-green/5 transition-colors"
                 >
                   <HiVideoCamera className="w-5 h-5" /> Join Meeting
                 </a>
@@ -439,12 +440,12 @@ export default function WeekLessonView({
       )}
 
       {/* Week Header Bar */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl px-6 py-4 text-white flex items-center justify-between">
+      <div className="bg-brand-green rounded-xl px-6 py-4 text-white flex items-center justify-between">
         <div>
-          <p className="text-blue-200 text-sm font-medium">Week {week?.week_number}</p>
+          <p className="text-white/70 text-sm font-medium">Week {week?.week_number}</p>
           <h1 className="text-xl font-bold">{week?.title}</h1>
         </div>
-        <div className="text-sm text-blue-100">
+        <div className="text-sm text-white/80">
           {week?.completed_count}/{week?.total_count} lessons completed
         </div>
       </div>

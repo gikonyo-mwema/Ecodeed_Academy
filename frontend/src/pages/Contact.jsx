@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
 import { useSelector } from "react-redux";
+import { apiFetch } from "../utils/api";
 import CallToAction from "../components/CallToAction";
 import {
   FaFacebookF,
@@ -14,15 +14,6 @@ import {
   FaCalendarAlt,
   FaVideo,
 } from "react-icons/fa";
-
-// Configure axios instance with base URL
-const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL, // Use VITE_BACKEND_URL directly
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
 
 const Contact = () => {
   const location = useLocation();
@@ -52,7 +43,10 @@ const Contact = () => {
     setStatus({ message: "", type: "" });
 
     try {
-      const response = await api.post("/api/messages", formData);
+      await apiFetch("/api/v1/messages/contact", {
+        method: "POST",
+        body: JSON.stringify(formData),
+      });
       setStatus({
         message: "Your message has been sent successfully! We'll contact you soon.",
         type: "success"
@@ -64,10 +58,9 @@ const Contact = () => {
         message: ""
       });
     } catch (error) {
-      console.error('Message submission error:', error);
       setStatus({
-        message: error.response?.data?.message || 
-          `We couldn't send your message. Please try again or contact us directly at info@ecodeed.co.ke (Error: ${error.message})`,
+        message: error.message || 
+          "We couldn't send your message. Please try again or contact us directly at info@ecodeed.co.ke",
         type: "error"
       });
     } finally {
@@ -327,79 +320,5 @@ const Contact = () => {
     </div>
   );
 };
-
-// Newsletter Signup Component (now part of CallToAction)
-function NewsletterSignup() {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-
-    setStatus('subscribing');
-    
-    try {
-      const response = await fetch('/api/messages/newsletter/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim() }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus('success');
-        setEmail('');
-        setTimeout(() => setStatus(''), 5000);
-      } else {
-        setStatus('error');
-        setTimeout(() => setStatus(''), 5000);
-      }
-    } catch (error) {
-      console.error('Newsletter subscription error:', error);
-      setStatus('error');
-      setTimeout(() => setStatus(''), 5000);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        type="email"
-        placeholder="Enter your email address"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        disabled={status === 'subscribing'}
-        className="w-full px-4 py-3 rounded-lg border-0 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-brand-yellow backdrop-blur-sm"
-      />
-      <button
-        type="submit"
-        disabled={status === 'subscribing' || status === 'success'}
-        className="w-full bg-brand-yellow hover:bg-brand-yellow/90 disabled:bg-brand-yellow/50 text-brand-blue font-semibold py-3 rounded-lg transition-colors"
-      >
-        {status === 'subscribing' ? 'Subscribing...' : 
-         status === 'success' ? '✓ Subscribed!' : 
-         status === 'error' ? '✗ Try Again' :
-         'Subscribe to Newsletter'}
-      </button>
-      
-      {status === 'success' && (
-        <p className="text-sm text-green-200 mt-2">
-          🎉 Welcome aboard! Check your email for a confirmation message.
-        </p>
-      )}
-      {status === 'error' && (
-        <p className="text-sm text-red-200 mt-2">
-          ❌ Something went wrong. Please try again or contact us directly.
-        </p>
-      )}
-    </form>
-  );
-}
 
 export default Contact;

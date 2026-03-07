@@ -15,7 +15,7 @@ export default function RightSidebar() {
   useEffect(() => {
     const fetchTrendingPosts = async () => {
       try {
-        const data = await apiFetch('/api/posts/trending');
+        const data = await apiFetch('/api/v1/posts/trending/');
         setTrendingPosts(data.posts || []);
       } catch (error) {
         console.error('Error fetching trending posts:', error);
@@ -30,32 +30,20 @@ export default function RightSidebar() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log('🔄 Fetching sidebar data...');
-        
-        // Get recent posts
-        const recentData = await apiFetch('/api/posts/getPosts?limit=5&order=desc');
+
+        // Fetch recent posts (lightweight, only 5)
+        const recentData = await apiFetch('/api/v1/posts/?limit=5&order=desc');
         setRecentPosts(recentData.posts || []);
 
-        // Get all posts to calculate category stats
-        const allPostsData = await apiFetch('/api/posts/getPosts?limit=100');
-        const posts = allPostsData.posts || [];
-        
-        console.log('✅ Sidebar data fetched successfully');
-        
-        // Calculate category counts
-        const categoryCount = posts.reduce((acc, post) => {
-          const category = post.category || 'uncategorized';
-          acc[category] = (acc[category] || 0) + 1;
-          return acc;
-        }, {});
+        // Fetch category counts from the dedicated endpoint
+        // (single COUNT query on the server — no post bodies transferred)
+        const catData = await apiFetch('/api/v1/categories/?limit=6');
+        const catList = catData.results || catData || [];
+        const sorted = [...catList]
+          .sort((a, b) => (b.post_count || 0) - (a.post_count || 0))
+          .slice(0, 6);
+        setCategories(sorted.map(c => ({ name: c.name, slug: c.slug, count: c.post_count || 0 })));
 
-        // Convert to array and sort by count
-        const sortedCategories = Object.entries(categoryCount)
-          .map(([name, count]) => ({ name, count }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 6); // Top 6 categories
-
-        setCategories(sortedCategories);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching sidebar data:', error);
@@ -73,7 +61,7 @@ export default function RightSidebar() {
     setSubscribeStatus('subscribing');
     
     try {
-      const data = await apiFetch('/api/messages/newsletter/subscribe', {
+      const data = await apiFetch('/api/v1/messages/newsletter/subscribe', {
         method: 'POST',
         body: JSON.stringify({ email: email.trim() }),
       });
@@ -108,8 +96,8 @@ export default function RightSidebar() {
           <div className="space-y-2">
             {categories.map((category) => (
               <Link
-                key={category.name}
-                to={`/search?category=${encodeURIComponent(category.name)}`}
+                key={category.slug || category.name}
+                to={`/search?category=${encodeURIComponent(category.slug || category.name)}`}
                 className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
               >
                 <div className="flex items-center">
@@ -145,7 +133,7 @@ export default function RightSidebar() {
           <div className="space-y-4">
             {recentPosts.map((post) => (
               <Link
-                key={post._id}
+                key={post.id}
                 to={`/post/${post.slug}`}
                 className="block hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors duration-200"
               >
@@ -171,7 +159,7 @@ export default function RightSidebar() {
           <div className="space-y-4">
             {trendingPosts.map((post) => (
               <Link
-                key={post._id}
+                key={post.id}
                 to={`/post/${post.slug}`}
                 className="block hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors duration-200"
               >
@@ -215,7 +203,7 @@ export default function RightSidebar() {
           </button>
         </form>
         {subscribeStatus === 'success' && (
-          <p className="text-green-600 dark:text-green-400 text-sm mt-2">Successfully subscribed!</p>
+          <p className="text-green-600 dark:text-green-400 text-sm mt-2">Check your email to confirm your subscription!</p>
         )}
         {subscribeStatus === 'error' && (
           <p className="text-red-600 dark:text-red-400 text-sm mt-2">Subscription failed. Please try again.</p>

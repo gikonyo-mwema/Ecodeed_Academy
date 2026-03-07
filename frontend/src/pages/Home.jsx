@@ -80,9 +80,6 @@ export default function Home() {
      * @function fetchPosts
      */
     const fetchPosts = async () => {
-      const startTime = performance.now();
-      console.log('🔄 Starting to fetch posts...');
-      
       try {
         setLoading(true);
         setError(null);
@@ -94,14 +91,8 @@ export default function Home() {
           order: 'desc' // Latest posts first
         }).toString();
 
-        console.log('📡 Making API request to:', `/api/posts/getPosts?${query}`);
-        
         // Fetch posts from API
-        const response = await apiFetch(`/api/posts/getPosts?${query}`);
-        
-        const fetchTime = performance.now() - startTime;
-        console.log(`✅ API request completed in ${fetchTime.toFixed(2)}ms`);
-        console.log('📊 Response data:', response);
+        const response = await apiFetch(`/api/v1/posts/?${query}`);
         
         // Match the backend response structure from your dashboard
         const postsData = response.posts || [];
@@ -112,8 +103,6 @@ export default function Home() {
           postsPerPage: pagination.postsPerPage,
           hasNextPage: false
         };
-
-        console.log(`📝 Loaded ${postsData.length} posts`);
 
         // Update component state
         setPosts(postsData);
@@ -127,16 +116,12 @@ export default function Home() {
         setCategories(uniqueCategories);
 
       } catch (err) {
-        const fetchTime = performance.now() - startTime;
-        console.error(`❌ API request failed after ${fetchTime.toFixed(2)}ms:`, err);
-        console.error("Fetch error:", err);
         setError(err.message || 'Failed to load posts');
         
         // Development fallback for testing
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Using development fallback data');
+        if (import.meta.env.DEV) {
           setPosts([{
-            _id: 'dev_fallback_1',
+            id: 'dev_fallback_1',
             title: 'Sample Post (Dev Fallback)',
             content: 'This is sample data because the API failed',
             category: 'uncategorized',
@@ -147,8 +132,6 @@ export default function Home() {
           setTotalPages(1);
         }
       } finally {
-        const totalTime = performance.now() - startTime;
-        console.log(`⏱️ Total fetchPosts execution time: ${totalTime.toFixed(2)}ms`);
         setLoading(false);
       }
     };

@@ -134,7 +134,7 @@ export default function PostPage() {
         setError(false);
         viewCounted.current = false;
 
-        const data = await apiFetch(`/api/posts/getPosts?slug=${postSlug}`);
+        const data = await apiFetch(`/api/v1/posts/?slug=${postSlug}`);
         const posts = extractPosts(data);
 
         if (cancelled) return;
