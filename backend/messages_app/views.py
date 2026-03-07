@@ -17,9 +17,11 @@ from django.conf import settings
 from django.utils import timezone
 from django.template.loader import render_to_string
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
+
+from .throttles import ContactFormThrottle, NewsletterSubscribeThrottle
 
 from .models import NewsletterSubscriber, ContactMessage, EmailCampaign
 from .serializers import (
@@ -45,9 +47,14 @@ logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([NewsletterSubscribeThrottle])
 def newsletter_subscribe(request):
     """
-    Subscribe an email to the newsletter.
+    Start the double opt-in flow.
+
+    1. Create subscriber as PENDING (or re-use existing pending row).
+    2. Send a confirmation email with a unique token link.
+    3. Subscriber becomes ACTIVE only after clicking that link.
 
     Expected payload:  { "email": "...", "source": "homepage" }
     Frontend calls:    POST /api/messages/newsletter/subscribe
@@ -62,55 +69,51 @@ def newsletter_subscribe(request):
         email=email,
         defaults={
             'source': source,
-            'status': NewsletterSubscriber.Status.ACTIVE,
-            'confirmed_at': timezone.now(),
+            'status': NewsletterSubscriber.Status.PENDING,
             'user': request.user if request.user.is_authenticated else None,
         },
     )
 
     if not created:
-        if subscriber.status == NewsletterSubscriber.Status.UNSUBSCRIBED:
-            # Re-subscribe
-            subscriber.status = NewsletterSubscriber.Status.ACTIVE
-            subscriber.unsubscribed_at = None
-            subscriber.confirmed_at = timezone.now()
-            subscriber.save(update_fields=['status', 'unsubscribed_at', 'confirmed_at'])
-        elif subscriber.status == NewsletterSubscriber.Status.ACTIVE:
+        if subscriber.status == NewsletterSubscriber.Status.ACTIVE:
             return Response(
                 {'message': 'You are already subscribed!'},
                 status=status.HTTP_200_OK,
             )
+        # PENDING or UNSUBSCRIBED → reset to PENDING and re-send confirmation
+        subscriber.status = NewsletterSubscriber.Status.PENDING
+        subscriber.unsubscribed_at = None
+        subscriber.confirmed_at = None
+        subscriber.save(update_fields=['status', 'unsubscribed_at', 'confirmed_at'])
 
-    # Sync to Brevo contact list (non-blocking; fails silently if unconfigured)
-    add_contact_to_brevo_list(email)
-
-    # Send welcome email
+    # Build confirmation link
     site_url = settings.SITE_URL.rstrip('/')
-    unsubscribe_url = f"{site_url}/unsubscribe?token={subscriber.token}"
+    confirm_url = f"{site_url}/newsletter/confirm?token={subscriber.token}"
 
     try:
-        html_content = render_to_string('emails/newsletter_welcome.html', {
+        html_content = render_to_string('emails/newsletter_confirm.html', {
             'email': email,
-            'unsubscribe_url': unsubscribe_url,
+            'confirm_url': confirm_url,
             'site_url': site_url,
         })
     except Exception:
         html_content = (
-            f'<h2>Welcome to Ecodeed Academy!</h2>'
-            f'<p>Thank you for subscribing to our newsletter.</p>'
-            f'<p>You\'ll receive updates on new courses, environmental insights, and more.</p>'
-            f'<p><a href="{unsubscribe_url}">Unsubscribe</a></p>'
+            f'<h2>Confirm your subscription</h2>'
+            f'<p>Please click the link below to confirm your Ecodeed Academy '
+            f'newsletter subscription:</p>'
+            f'<p><a href="{confirm_url}">Confirm Subscription</a></p>'
+            f'<p>If you did not request this, you can safely ignore this email.</p>'
         )
 
     send_transactional_email(
         to_email=email,
         to_name=email.split('@')[0],
-        subject='Welcome to the Ecodeed Academy Newsletter!',
+        subject='Confirm your Ecodeed Academy newsletter subscription',
         html_content=html_content,
     )
 
     return Response(
-        {'message': 'Successfully subscribed to the newsletter!'},
+        {'message': 'Please check your email to confirm your subscription.'},
         status=status.HTTP_201_CREATED,
     )
 
@@ -157,6 +160,82 @@ def newsletter_unsubscribe(request):
 
     return Response(
         {'message': 'You have been successfully unsubscribed.'},
+        status=status.HTTP_200_OK,
+    )
+
+
+# ────────────────────────────────────────────────────────────────────
+# Newsletter Confirm (Double Opt-In)
+# ────────────────────────────────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def newsletter_confirm(request):
+    """
+    Complete the double opt-in flow.
+
+    The subscriber clicks a link in their confirmation email which hits:
+        GET /api/messages/newsletter/confirm?token=<uuid>
+
+    On success the subscriber status flips to ACTIVE, a welcome email
+    is sent, and the contact is synced to Brevo.
+    """
+    token = request.query_params.get('token')
+    if not token:
+        return Response(
+            {'message': 'Missing confirmation token.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        subscriber = NewsletterSubscriber.objects.get(token=token)
+    except (NewsletterSubscriber.DoesNotExist, ValueError):
+        return Response(
+            {'message': 'Invalid or expired confirmation link.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if subscriber.status == NewsletterSubscriber.Status.ACTIVE:
+        return Response(
+            {'message': 'Your subscription is already confirmed!'},
+            status=status.HTTP_200_OK,
+        )
+
+    # Activate
+    subscriber.status = NewsletterSubscriber.Status.ACTIVE
+    subscriber.confirmed_at = timezone.now()
+    subscriber.save(update_fields=['status', 'confirmed_at'])
+
+    # Sync to Brevo now that opt-in is confirmed
+    add_contact_to_brevo_list(subscriber.email)
+
+    # Send welcome email
+    site_url = settings.SITE_URL.rstrip('/')
+    unsubscribe_url = f"{site_url}/unsubscribe?token={subscriber.token}"
+
+    try:
+        html_content = render_to_string('emails/newsletter_welcome.html', {
+            'email': subscriber.email,
+            'unsubscribe_url': unsubscribe_url,
+            'site_url': site_url,
+        })
+    except Exception:
+        html_content = (
+            f'<h2>Welcome to Ecodeed Academy!</h2>'
+            f'<p>Thank you for confirming your newsletter subscription.</p>'
+            f'<p>You\'ll receive updates on new courses, environmental insights, and more.</p>'
+            f'<p><a href="{unsubscribe_url}">Unsubscribe</a></p>'
+        )
+
+    send_transactional_email(
+        to_email=subscriber.email,
+        to_name=subscriber.email.split('@')[0],
+        subject='Welcome to the Ecodeed Academy Newsletter!',
+        html_content=html_content,
+    )
+
+    return Response(
+        {'message': 'Your subscription has been confirmed! Welcome aboard 🌿'},
         status=status.HTTP_200_OK,
     )
 
@@ -217,6 +296,7 @@ def newsletter_stats(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([ContactFormThrottle])
 def contact_create(request):
     """
     Save a contact form submission and send a notification email to site admins.

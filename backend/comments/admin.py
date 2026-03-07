@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.utils.html import strip_tags
+from django.utils.html import format_html, strip_tags
 
 from .lesson_models import LessonComment
 from .models import Comment
@@ -60,6 +60,7 @@ class CommentAdmin(admin.ModelAdmin):
         return _truncate(obj.content)
     short_content.short_description = "Content"
 
+    @admin.display(description="Status")
     def status_badge(self, obj):
         colors = {
             "approved": "green",
@@ -68,9 +69,11 @@ class CommentAdmin(admin.ModelAdmin):
             "rejected": "gray",
         }
         color = colors.get(obj.status, "gray")
-        return f'<span style="color:{color};font-weight:bold">{obj.get_status_display()}</span>'
-    status_badge.short_description = "Status"
-    status_badge.allow_tags = True
+        return format_html(
+            '<span style="color:{};font-weight:bold">{}</span>',
+            color,
+            obj.get_status_display(),
+        )
 
     def parent_link(self, obj):
         if obj.parent_id:

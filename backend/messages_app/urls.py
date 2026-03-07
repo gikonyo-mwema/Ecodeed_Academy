@@ -1,7 +1,7 @@
 """
 URL configuration for the Messages & Newsletter app.
 
-These URLs are mounted at /api/messages/ in config/urls.py
+These URLs are mounted at /api/v1/messages/ in config/urls.py
 """
 
 from django.urls import path
@@ -12,6 +12,7 @@ app_name = 'messages_app'
 urlpatterns = [
     # Newsletter
     path('newsletter/subscribe', views.newsletter_subscribe, name='newsletter-subscribe'),
+    path('newsletter/confirm', views.newsletter_confirm, name='newsletter-confirm'),
     path('newsletter/unsubscribe', views.newsletter_unsubscribe, name='newsletter-unsubscribe'),
     path('newsletter/stats', views.newsletter_stats, name='newsletter-stats'),
 

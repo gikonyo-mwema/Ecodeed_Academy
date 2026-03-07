@@ -38,10 +38,11 @@ if not os.path.isfile(_env_file):
 environ.Env.read_env(_env_file)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='e1lgcfh_9keys_z@u2ng!r4m-*(j23g@+rer3jwx!w%=v@t#&y')
+# No default — the app will refuse to start if SECRET_KEY is missing.
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=True)
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'backend'])
 
@@ -201,9 +202,11 @@ FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
 # Payment provider secrets
 # the secret key is used server-side only; public key goes to frontend
 # set these in the root .env file or your environment management system
-PAYSTACK_SECRET_KEY = env('PAYSTACK_SECRET_KEY', default='')
-PAYSTACK_PUBLIC_KEY = env('PAYSTACK_PUBLIC_KEY', default='')
-# secret used to verify incoming webhook payloads
+# No defaults — the app will refuse to start if these are missing.
+PAYSTACK_SECRET_KEY = env('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = env('PAYSTACK_PUBLIC_KEY')
+# Webhook secret is optional in development (only needed to verify
+# incoming Paystack webhook signatures in production).
 PAYSTACK_WEBHOOK_SECRET = env('PAYSTACK_WEBHOOK_SECRET', default='')
 # ------------------------------------------------------------------
 
@@ -214,11 +217,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 # CORS Settings
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+# Never allow all origins — always use an explicit allowlist.
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
     'http://localhost:5173',
     'http://127.0.0.1:5173',
 ])
+CORS_ALLOW_CREDENTIALS = True
 
 # REST Framework Settings
 REST_FRAMEWORK = {
@@ -240,10 +245,9 @@ REST_FRAMEWORK = {
         'anon': '100/hour',
         'user': '1000/hour',
     },
-    # ── Content negotiation / versioning ──
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
-    'DEFAULT_VERSION': 'v1',
-    'ALLOWED_VERSIONS': ['v1'],
+    # ── Content negotiation ──
+    # Versioning is handled by URL prefix in config/urls.py (/api/v1/…)
+    # so no DRF versioning class is needed.
     # ── Filtering ──
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -346,3 +350,140 @@ MAX_POST_IMAGE_SIZE = 5 * 1024 * 1024       # 5 MB for post images
 MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024   # 5 MB for profile pictures
 
 
+# ─── Logging ─────────────────────────────────────────────────────
+# Structured logging configuration.
+# - In DEBUG mode: everything INFO+ goes to the console.
+# - In production: WARNING+ for most loggers, but INFO for our own
+#   apps and security-sensitive modules.  Errors are written to a
+#   dedicated file so they survive container restarts.
+#
+# Modules already using `logging.getLogger(__name__)`:
+#   messages_app.views, messages_app.email_utils, payments.views
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose' if not DEBUG else 'simple',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'errors.log',
+            'formatter': 'verbose',
+        },
+    },
+
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO' if DEBUG else 'WARNING',
+    },
+
+    'loggers': {
+        # Our apps — always at INFO so we see what’s happening
+        'courses': {
+            'handlers': ['console', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'payments': {
+            'handlers': ['console', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'messages_app': {
+            'handlers': ['console', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'posts': {
+            'handlers': ['console', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'users': {
+            'handlers': ['console', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'comments': {
+            'handlers': ['console', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'services': {
+            'handlers': ['console', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+
+        # Django internals
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console', 'error_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['console', 'error_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+    },
+}
+
+# Ensure the log directory exists
+(BASE_DIR / 'logs').mkdir(exist_ok=True)
+
+
+# ─── Production Security Headers ─────────────────────────────────
+# These are only enforced when DEBUG is False (i.e. staging / production).
+# In development they are intentionally relaxed so HTTP works locally.
+if not DEBUG:
+    # ── HTTPS / HSTS ──
+    SECURE_SSL_REDIRECT = True                   # 301-redirect all HTTP → HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # trust reverse-proxy header
+    SECURE_HSTS_SECONDS = 31_536_000             # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True        # apply HSTS to *.ecodeedacademy.com
+    SECURE_HSTS_PRELOAD = True                   # allow submission to browser preload lists
+
+    # ── Cookie hardening ──
+    SESSION_COOKIE_SECURE = True                 # only send session cookie over HTTPS
+    CSRF_COOKIE_SECURE = True                    # only send CSRF cookie over HTTPS
+    SESSION_COOKIE_HTTPONLY = True                # no JS access to session cookie
+    SESSION_COOKIE_SAMESITE = 'Lax'              # CSRF mitigation
+    CSRF_COOKIE_SAMESITE = 'Lax'
+
+    # ── Response headers ──
+    SECURE_CONTENT_TYPE_NOSNIFF = True           # X-Content-Type-Options: nosniff
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'  # COOP header
+    X_FRAME_OPTIONS = 'DENY'                     # clickjacking protection
+else:
+    # Development defaults — keep things permissive for local work
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    X_FRAME_OPTIONS = 'SAMEORIGIN'

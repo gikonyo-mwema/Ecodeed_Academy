@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from courses.models import Lesson
+from .models import _sanitize_comment
 
 class LessonComment(models.Model):
     content = models.TextField(max_length=500)
@@ -12,9 +13,17 @@ class LessonComment(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['lesson', '-created_at']),
+        ]
 
     def __str__(self):
         return f"Comment by {self.user} on {self.lesson.title}"
+
+    def save(self, *args, **kwargs):
+        if self.content:
+            self.content = _sanitize_comment(self.content)
+        super().save(*args, **kwargs)
 
     @property
     def likes_count(self):

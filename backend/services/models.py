@@ -30,9 +30,21 @@ class Service(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['is_published']),
+            models.Index(fields=['category']),
+        ]
+
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            base = slugify(self.title) or 'service'
+            slug = base
+            counter = 1
+            while Service.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self):

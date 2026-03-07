@@ -4,11 +4,12 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Service
 from .serializers import ServiceSerializer
+from users.permissions import IsAdminOrReadOnly
 
 class ServiceViewSet(viewsets.ModelViewSet):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ['title', 'category']
 

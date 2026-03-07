@@ -9,8 +9,14 @@ URL Structure:
     - /admin/: Django admin interface
     - /swagger/: Swagger API documentation UI
     - /redoc/: ReDoc API documentation UI
-    - /api/auth/: User authentication and registration endpoints
-    - /api/auth/social/: Social authentication endpoints
+    - /api/v1/auth/: User authentication and registration endpoints
+    - /api/v1/auth/social/: Social authentication endpoints
+    - /api/v1/posts/: Blog posts CRUD
+    - /api/v1/comments/: Blog & lesson comments
+    - /api/v1/courses/: Courses & enrollments
+    - /api/v1/services/: Services
+    - /api/v1/payments/: Payment verification & webhooks
+    - /api/v1/messages/: Contact, newsletter & broadcast
 
 Note:
     Media and static files are only served by Django in DEBUG mode.
@@ -76,17 +82,20 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
-    # Authentication endpoints
-    path('api/auth/', include('users.urls')),
-    path('api/', include('posts.urls')),
-    path('api/comments/', include('comments.urls')),
-    path('api/', include('courses.urls')),
-    path('api/', include('services.urls')),
-    path('api/payments/', include('payments.urls')),
-    path('api/messages/', include('messages_app.urls')),
-    path('api/auth/', include('dj_rest_auth.urls')),
-    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
-    path('api/auth/social/', include('allauth.socialaccount.urls')),
+    # ── Versioned API (v1) ──────────────────────────────────────
+    # All endpoints live under /api/v1/ for consistent versioning.
+    path('api/v1/auth/', include('users.urls')),
+    path('api/v1/', include('posts.urls')),
+    path('api/v1/comments/', include('comments.urls')),
+    path('api/v1/', include('courses.urls')),
+    path('api/v1/', include('services.urls')),
+    path('api/v1/payments/', include('payments.urls')),
+    path('api/v1/messages/', include('messages_app.urls')),
+
+    # dj_rest_auth: token refresh/verify, password reset
+    path('api/v1/auth/jwt/', include('dj_rest_auth.urls')),
+    path('api/v1/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('api/v1/auth/social/', include('allauth.socialaccount.urls')),
 ]
 
 # Serve media and static files in development mode

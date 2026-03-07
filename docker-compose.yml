@@ -12,17 +12,12 @@ services:
       - "${BACKEND_PORT:-8000}:8000"  # Expose Django on configurable port
     volumes:
       - ./backend:/app  # Mount backend code for live reloading
+    env_file:
+      - .env  # Load all env vars from root .env
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      # Override DB host/port for Docker networking
       - MYSQL_HOST=db
       - MYSQL_PORT=3306
-      - PAYSTACK_SECRET_KEY=${PAYSTACK_SECRET_KEY}
-      - PAYSTACK_PUBLIC_KEY=${PAYSTACK_PUBLIC_KEY}
-      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
-      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
-      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
     depends_on:
       - db  # Wait for database to be ready before starting
 

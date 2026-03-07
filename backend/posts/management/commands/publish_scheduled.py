@@ -2,8 +2,11 @@
 Management command: publish_scheduled
 
 Auto-publishes posts whose status is 'scheduled' and scheduled_for <= now.
-This runs automatically via the background scheduler (posts/scheduler.py),
-but can also be run manually:
+Run via cron (or django-celery-beat) in production, e.g.:
+
+    * * * * *  cd /app && python manage.py publish_scheduled
+
+Manual usage:
 
     python manage.py publish_scheduled
     python manage.py publish_scheduled --dry-run   # preview without saving

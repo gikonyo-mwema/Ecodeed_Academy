@@ -22,7 +22,7 @@ urlpatterns = [
         path('profile/update/', views.UserProfileUpdateView.as_view(), name='profile-update'),
 
         # Social authentication
-        path('google', GoogleSignInView.as_view(), name='google-signin'),
+        path('google/', GoogleSignInView.as_view(), name='google-signin'),
         path('facebook/', FacebookSignInView.as_view(), name='facebook-signin'),
         path('twitter/login/', TwitterLoginView.as_view(), name='twitter-login'),
         path('twitter/callback/', TwitterCallbackView.as_view(), name='twitter-callback'),

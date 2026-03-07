@@ -68,7 +68,7 @@ class LatestPostsFeed(Feed):
 
     def item_author_name(self, item):
         u = item.user
-        return u.get_full_name() or u.username
+        return u.get_full_name() or u.email
 
     def item_categories(self, item):
         cats = []
@@ -125,7 +125,7 @@ class CategoryPostsFeed(Feed):
 
     def item_author_name(self, item):
         u = item.user
-        return u.get_full_name() or u.username
+        return u.get_full_name() or u.email
 
     def item_categories(self, item):
         cats = []

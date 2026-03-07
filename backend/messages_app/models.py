@@ -56,6 +56,10 @@ class NewsletterSubscriber(models.Model):
         ordering = ['-subscribed_at']
         verbose_name = 'Newsletter Subscriber'
         verbose_name_plural = 'Newsletter Subscribers'
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['-subscribed_at']),
+        ]
 
     def __str__(self):
         return f"{self.email} ({self.status})"
@@ -77,6 +81,10 @@ class ContactMessage(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Contact Message'
         verbose_name_plural = 'Contact Messages'
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['is_read']),
+        ]
 
     def __str__(self):
         return f"{self.name} — {self.subject}"
@@ -130,6 +138,10 @@ class EmailCampaign(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Email Campaign'
         verbose_name_plural = 'Email Campaigns'
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['-created_at']),
+        ]
 
     def __str__(self):
         return f"{self.subject} ({self.status})"

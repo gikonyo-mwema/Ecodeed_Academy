@@ -25,6 +25,13 @@ class Payment(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     verified_at = models.DateTimeField(null=True, blank=True)
-    
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['user', '-created_at']),
+        ]
+
     def __str__(self):
         return f"{self.user} - {self.course} - {self.reference}"

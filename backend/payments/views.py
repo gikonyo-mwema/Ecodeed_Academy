@@ -1,5 +1,7 @@
+import logging
 import requests
 from django.conf import settings
+from django.db import transaction
 from rest_framework import views, status, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -7,6 +9,8 @@ from django.utils import timezone
 from .models import Payment
 from .serializers import PaymentSerializer
 from courses.models import Course, Enrollment
+
+logger = logging.getLogger(__name__)
 
 class VerifyPaymentView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -37,39 +41,40 @@ class VerifyPaymentView(views.APIView):
             course_id = metadata.get('courseId')
             payment_channel = data.get('channel')
             
-            payment, created = Payment.objects.get_or_create(
-                reference=reference,
-                defaults={
-                    'user': request.user,
-                    'amount': data.get('amount') / 100, 
-                    'email': data.get('customer', {}).get('email'),
-                    'status': 'success',
-                    'verified_at': timezone.now(),
-                    'payment_method': payment_channel
-                }
-            )
-            
-            try:
-                if course_id:
-                     course = Course.objects.get(pk=course_id)
-                     payment.course = course
-                     payment.save()
-                     
-                     Enrollment.objects.get_or_create(
-                         user=request.user,
-                         course=course,
-                         defaults={'status': 'active'}
-                     )
-                else:
+            with transaction.atomic():
+                payment, created = Payment.objects.get_or_create(
+                    reference=reference,
+                    defaults={
+                        'user': request.user,
+                        'amount': data.get('amount') / 100, 
+                        'email': data.get('customer', {}).get('email'),
+                        'status': 'success',
+                        'verified_at': timezone.now(),
+                        'payment_method': payment_channel
+                    }
+                )
+
+                if not course_id:
                     return Response({'message': 'Course ID missing in transaction metadata'}, status=status.HTTP_400_BAD_REQUEST)
 
-            except Course.DoesNotExist:
-                 return Response({'message': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+                try:
+                    course = Course.objects.get(pk=course_id)
+                except Course.DoesNotExist:
+                    return Response({'message': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+
+                payment.course = course
+                payment.save()
+
+                Enrollment.objects.get_or_create(
+                    user=request.user,
+                    course=course,
+                    defaults={'status': 'active'}
+                )
             
             return Response({'message': 'Payment verified and enrollment active'}, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print(f"Payment Verification Error: {e}")
+            logger.exception('Payment verification failed for ref=%s', reference)
             return Response({'message': 'Verification processing failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PaymentViewSet(viewsets.ReadOnlyModelViewSet):
@@ -121,36 +126,37 @@ class PaystackWebhookView(views.APIView):
         data = request.data.get('data', {})
         reference = data.get('reference')
 
-        # update or create payment record based on webhook data
-        payment, created = Payment.objects.get_or_create(
-            reference=reference,
-            defaults={
-                'user': None,
-                'amount': data.get('amount', 0) / 100,
-                'email': data.get('customer', {}).get('email', ''),
-                'status': 'success' if event == 'charge.success' else 'pending',
-                'provider': 'paystack',
-            }
-        )
+        # update or create payment record + enrollment atomically
+        with transaction.atomic():
+            payment, created = Payment.objects.get_or_create(
+                reference=reference,
+                defaults={
+                    'user': None,
+                    'amount': data.get('amount', 0) / 100,
+                    'email': data.get('customer', {}).get('email', ''),
+                    'status': 'success' if event == 'charge.success' else 'pending',
+                    'provider': 'paystack',
+                }
+            )
 
-        if not created and event == 'charge.success':
-            payment.status = 'success'
-            payment.verified_at = timezone.now()
-            payment.save()
+            if not created and event == 'charge.success':
+                payment.status = 'success'
+                payment.verified_at = timezone.now()
+                payment.save()
 
-        # enroll user if courseId present and payment just succeeded
-        if event == 'charge.success':
-            metadata = data.get('metadata', {})
-            course_id = metadata.get('courseId')
-            if course_id and payment.user:
-                try:
-                    course = Course.objects.get(pk=course_id)
-                    Enrollment.objects.get_or_create(
-                        user=payment.user,
-                        course=course,
-                        defaults={'status': 'active'}
-                    )
-                except Course.DoesNotExist:
-                    pass
+            # enroll user if courseId present and payment just succeeded
+            if event == 'charge.success':
+                metadata = data.get('metadata', {})
+                course_id = metadata.get('courseId')
+                if course_id and payment.user:
+                    try:
+                        course = Course.objects.get(pk=course_id)
+                        Enrollment.objects.get_or_create(
+                            user=payment.user,
+                            course=course,
+                            defaults={'status': 'active'}
+                        )
+                    except Course.DoesNotExist:
+                        pass
 
         return Response({'received': True})

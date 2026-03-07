@@ -56,7 +56,7 @@
               provider: 'twitter',
               payload: { error: true, message: 'Authentication failed.' }
             },
-            '*'
+            '{{ frontend_url|escapejs }}'
           );
         }
       }

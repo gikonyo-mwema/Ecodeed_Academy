@@ -240,6 +240,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         ordering = ['-date_joined']
+        indexes = [
+            models.Index(fields=['user_type']),
+            models.Index(fields=['is_active', 'user_type']),
+            models.Index(fields=['-date_joined']),
+        ]
 
     def __str__(self):
         """

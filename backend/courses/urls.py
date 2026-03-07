@@ -4,8 +4,8 @@ from .views import CourseViewSet, EnrollmentViewSet
 from messages_app.views import course_notify_students
 
 router = DefaultRouter()
-router.register(r'courses', CourseViewSet)
-router.register(r'enrollments', EnrollmentViewSet)
+router.register(r'courses', CourseViewSet, basename='course')
+router.register(r'enrollments', EnrollmentViewSet, basename='enrollment')
 
 urlpatterns = [
     path('', include(router.urls)),

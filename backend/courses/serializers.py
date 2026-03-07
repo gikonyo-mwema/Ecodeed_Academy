@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from .models import Course, Enrollment, Module, Lesson, LessonCompletion, Assignment, LiveSession, Resource
 
@@ -82,20 +83,10 @@ class CourseContentSerializer(CourseSerializer):
     
     class Meta(CourseSerializer.Meta):
         fields = CourseSerializer.Meta.fields
-        
-    def get_curriculum(self, obj):
-        return [
-            {
-                "id": module.id,
-                "title": module.title,
-                "items": [
-                    {"id": lesson.id, "title": lesson.title} 
-                    for lesson in module.lessons.all()
-                ]
-            }
-            for module in obj.modules.all()
-        ]
 
+    # get_curriculum() is inherited from CourseSerializer — no need to duplicate.
+
+    @transaction.atomic
     def create(self, validated_data):
         # Extract curriculum payload
         curriculum_data = self.initial_data.get('curriculum', [])
@@ -130,6 +121,7 @@ class CourseContentSerializer(CourseSerializer):
         
         return course
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         # Update standard fields
         for attr, value in validated_data.items():
@@ -210,10 +202,32 @@ class CourseContentSerializer(CourseSerializer):
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     course_details = CourseSerializer(source='course', read_only=True)
-    student_username = serializers.CharField(source='user.username', read_only=True)
     student_email = serializers.CharField(source='user.email', read_only=True)
-    
+    progress = serializers.SerializerMethodField()
+
     class Meta:
         model = Enrollment
-        fields = ['id', 'user', 'course', 'course_details', 'student_username', 'student_email', 'enrolled_at', 'status', 'progress']
+        fields = ['id', 'user', 'course', 'course_details', 'student_email', 'enrolled_at', 'status', 'progress']
         read_only_fields = ['user', 'enrolled_at']
+
+    def get_progress(self, obj):
+        """Build progress dict from queryset annotations + prefetched
+        completed_lessons.  Falls back to the stored JSONField when the
+        instance was not loaded through the annotated queryset."""
+        total = getattr(obj, 'total_lessons', None)
+        completed = getattr(obj, 'completed_count', None)
+
+        if total is not None and completed is not None:
+            completed_ids = [
+                lc.lesson_id for lc in obj.completed_lessons.all()
+            ]
+            percentage = (completed / total) * 100 if total > 0 else 0
+            return {
+                'completed_count': completed,
+                'total_count': total,
+                'completed_lessons': completed_ids,
+                'percentage': round(percentage, 1),
+            }
+
+        # Fallback: instance loaded outside the annotated queryset
+        return obj.progress or {}

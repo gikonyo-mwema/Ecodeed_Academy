@@ -53,8 +53,20 @@ class Course(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            base = slugify(self.title) or 'course'
+            slug = base
+            counter = 1
+            while Course.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['category']),
+            models.Index(fields=['-created_at']),
+        ]
 
     def __str__(self):
         return self.title
@@ -67,6 +79,9 @@ class Module(models.Model):
     
     class Meta:
         ordering = ['order']
+        indexes = [
+            models.Index(fields=['course', 'order']),
+        ]
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
@@ -82,6 +97,9 @@ class Lesson(models.Model):
     
     class Meta:
         ordering = ['order']
+        indexes = [
+            models.Index(fields=['module', 'order']),
+        ]
 
     def __str__(self):
         return self.title
@@ -106,7 +124,7 @@ class AssignmentSubmission(models.Model):
     is_reviewed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.student.username} - {self.assignment.title}"
+        return f"{self.student.email} - {self.assignment.title}"
 
 class LiveSession(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='live_sessions')
@@ -136,9 +154,14 @@ class Enrollment(models.Model):
 
     class Meta:
         unique_together = ('user', 'course')
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['-enrolled_at']),
+            models.Index(fields=['user', 'status']),
+        ]
 
     def __str__(self):
-        return f"{self.user.username} enrolled in {self.course.title}"
+        return f"{self.user.email} enrolled in {self.course.title}"
 
 class LessonCompletion(models.Model):
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name='completed_lessons')

@@ -143,14 +143,17 @@ def send_bulk_email(
 
     for i in range(0, len(recipients), BATCH_SIZE):
         batch = recipients[i:i + BATCH_SIZE]
-        to_list = [
+        bcc_list = [
             {'email': r['email'], 'name': r.get('name', '')}
             for r in batch
         ]
 
+        # Send to self (sender) and BCC all recipients so no one
+        # can see other recipients' email addresses.
         send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
             sender=sender,
-            to=to_list,
+            to=[{'email': sender['email'], 'name': sender['name']}],
+            bcc=bcc_list,
             subject=subject,
             html_content=html_content,
             text_content=text_content or None,
