@@ -28,8 +28,6 @@ import Home from './pages/Home';
 import About from './pages/About';
 import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
-import InstructorDashboard from './pages/InstructorDashboard';
-import Projects from './pages/Projects';
 import SignUp from './pages/SignUp';
 import PostEditorPage from './pages/PostEditorPage';
 import PostPage from './pages/PostPage';
@@ -41,12 +39,15 @@ import CourseDetails from './pages/CourseDetails';
 import LearningPlayer from './pages/LearningPlayer';
 import Contact from './pages/Contact';
 import Unsubscribe from './pages/Unsubscribe';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Unauthorized from './pages/Unauthorized';
+import NotFound from './pages/NotFound';
 
 // Layout Components
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
-import ThemeProvider from './components/ThemeProvider';
 
 // Route Protection Components
 import PrivateRoute from './components/PrivateRoute';
@@ -69,7 +70,6 @@ import DashServices from './components/Admin/Services/DashServices';
 export default function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <ThemeProvider>
         {/* Automatically scrolls to top on route changes */}
         <ScrollToTop />
         
@@ -88,16 +88,17 @@ export default function App() {
           <Route path='/sign-in' element={<SignIn />} />
           <Route path='/sign-up' element={<SignUp />} />
           <Route path='/search' element={<Search />} />
-          <Route path='/projects' element={<Projects />} />
           <Route path='/post/:postSlug' element={<PostPage />} /> {/* Dynamic blog post pages */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* ===== AUTHENTICATED USER ROUTES ===== */}
           {/* These routes require user authentication */}
           <Route element={<PrivateRoute />}>
             <Route path='/dashboard' element={<Dashboard />} />
-            <Route path='/instructor-dashboard' element={<InstructorDashboard />} />
             <Route path='/my-courses' element={<UserCourses />} />
             <Route path='/learn/:slug' element={<LearningPlayer />} />
           </Route>
@@ -111,11 +112,13 @@ export default function App() {
             <Route path='/create-course' element={<CreateCourse />} />
             <Route path='/edit-course/:courseId' element={<EditCourse />} />
           </Route>
+
+          {/* ===== 404 CATCH-ALL ===== */}
+          <Route path='*' element={<NotFound />} />
         </Routes>
         
         {/* Global footer */}
         <Footer />
-      </ThemeProvider>
     </Router>
   );
 }
