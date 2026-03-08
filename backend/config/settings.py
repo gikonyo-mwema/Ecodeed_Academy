@@ -46,6 +46,17 @@ DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'backend'])
 
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+])
+
+# HTTPS settings — only when not in DEBUG mode
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -291,13 +302,13 @@ else:
     EMAIL_HOST_USER = env('BREVO_SMTP_LOGIN', default='')
     EMAIL_HOST_PASSWORD = env('BREVO_SMTP_KEY', default='')
 
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='Ecodeed Academy <noreply@ecodeedacademy.com>')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='Ecodeed <noreply@ecodeed.co.ke>')
 
 # Brevo (Sendinblue) API Settings — used for transactional & marketing emails
 BREVO_API_KEY = env('BREVO_API_KEY', default='')
 BREVO_NEWSLETTER_LIST_ID = env.int('BREVO_NEWSLETTER_LIST_ID', default=0)
 BREVO_SENDER_EMAIL = env('BREVO_SENDER_EMAIL', default='noreply@ecodeedacademy.com')
-BREVO_SENDER_NAME = env('BREVO_SENDER_NAME', default='Ecodeed Academy')
+BREVO_SENDER_NAME = env('BREVO_SENDER_NAME', default='Ecodeed')
 
 # Social Auth Settings
 SOCIALACCOUNT_PROVIDERS = {
