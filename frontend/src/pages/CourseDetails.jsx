@@ -548,7 +548,7 @@ export default function CourseDetails() {
                       {course.instructor?.name || course.instructor?.username || 
                        (course.instructor?.first_name && course.instructor?.last_name 
                          ? `${course.instructor.first_name} ${course.instructor.last_name}` 
-                         : 'Ecodeed Academy')}
+                         : 'Ecodeed')}
                     </h4>
                     <p className="text-sm text-gray-600">
                       {course.instructor?.title || course.instructor?.bio?.substring(0, 50) || 'Environmental Expert'}

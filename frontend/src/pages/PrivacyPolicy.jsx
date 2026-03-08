@@ -21,7 +21,7 @@ export default function PrivacyPolicy() {
           <p>
             Ecodeed Consulting (&ldquo;Ecodeed&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is committed to
             protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and
-            safeguard your information when you visit our website and use the Ecodeed Academy platform.
+            safeguard your information when you visit our website and use the Ecodeed platform.
           </p>
 
           <h2>2. Information We Collect</h2>

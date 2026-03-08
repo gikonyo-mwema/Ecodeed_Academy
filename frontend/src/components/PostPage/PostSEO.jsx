@@ -11,17 +11,17 @@
  */
 import { Helmet } from 'react-helmet-async';
 
-const SITE_NAME = 'Ecodeed Academy';
+const SITE_NAME = 'Ecodeed';
 const SITE_URL = typeof window !== 'undefined' ? window.location.origin : '';
 const DEFAULT_OG_IMAGE = 'https://res.cloudinary.com/dcrubaesi/image/upload/v1737333837/ECODEED_COLORED_LOGO_wj2yy8.png';
 const DEFAULT_AVATAR = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
 
 function getAuthorName(post) {
   const u = post?.user;
-  if (!u) return 'Ecodeed Academy';
+  if (!u) return 'Ecodeed';
   const first = u.firstName || u.first_name || '';
   const last = u.lastName || u.last_name || '';
-  return `${first} ${last}`.trim() || u.username || 'Ecodeed Academy';
+  return `${first} ${last}`.trim() || u.username || 'Ecodeed';
 }
 
 export default function PostSEO({ post }) {

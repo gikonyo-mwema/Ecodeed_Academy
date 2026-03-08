@@ -19,7 +19,7 @@ export default function TermsOfService() {
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-4xl prose dark:prose-invert prose-headings:text-brand-blue dark:prose-headings:text-white prose-a:text-brand-green">
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing and using the Ecodeed Academy platform (&ldquo;the Platform&rdquo;), you
+            By accessing and using the Ecodeed platform (&ldquo;the Platform&rdquo;), you
             agree to be bound by these Terms of Service. If you do not agree, please do not use the
             Platform.
           </p>

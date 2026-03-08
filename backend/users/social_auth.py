@@ -45,12 +45,14 @@ def _get_tokens(user):
 
 
 def _get_or_create_social_user(email, first_name='', last_name='',
-                               provider_field=None, provider_id=None):
+                               provider_field=None, provider_id=None,
+                               photo_url=''):
     """
     Fetch an existing user by *email* or create a new READER account.
 
     If *provider_field* / *provider_id* are given the social-provider column
-    is populated when it is still empty.
+    is populated when it is still empty.  If *photo_url* is provided and the
+    user has no profile picture yet, it is saved automatically.
     """
     user, created = User.objects.get_or_create(
         email=email,
@@ -69,6 +71,9 @@ def _get_or_create_social_user(email, first_name='', last_name='',
         dirty = True
     if not user.last_name and last_name:
         user.last_name = last_name
+        dirty = True
+    if photo_url and not user.profile_picture:
+        user.profile_picture = photo_url
         dirty = True
     if dirty:
         user.save()
@@ -127,6 +132,7 @@ class GoogleSignInView(APIView):
                 first_name = data.get('given_name', '')
                 last_name = data.get('family_name', '')
                 google_id = data.get('sub', '')
+                photo_url = data.get('picture', '')
             except http_requests.RequestException:
                 return Response({'message': 'Failed to verify Google token'},
                                 status=status.HTTP_503_SERVICE_UNAVAILABLE)
@@ -139,10 +145,12 @@ class GoogleSignInView(APIView):
             first_name = parts[0]
             last_name = parts[1] if len(parts) > 1 else ''
             google_id = request.data.get('google_id', '')
+            photo_url = request.data.get('googlePhotoUrl', '')
 
         user, created = _get_or_create_social_user(
             email=email, first_name=first_name, last_name=last_name,
             provider_field='google_id', provider_id=google_id,
+            photo_url=photo_url,
         )
         return _auth_response(user, created)
 
@@ -169,7 +177,7 @@ class FacebookSignInView(APIView):
             resp = http_requests.get(
                 'https://graph.facebook.com/me',
                 params={
-                    'fields': 'id,email,first_name,last_name',
+                    'fields': 'id,email,first_name,last_name,picture.type(large)',
                     'access_token': access_token,
                 },
                 timeout=_TIMEOUT,
@@ -186,12 +194,18 @@ class FacebookSignInView(APIView):
                                 'sign up with email instead.'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            # Extract Facebook profile picture URL
+            fb_photo = ''
+            pic_data = fb.get('picture', {}).get('data', {})
+            if pic_data and not pic_data.get('is_silhouette'):
+                fb_photo = pic_data.get('url', '')
             user, created = _get_or_create_social_user(
                 email=email,
                 first_name=fb.get('first_name', ''),
                 last_name=fb.get('last_name', ''),
                 provider_field='facebook_id',
                 provider_id=fb.get('id', ''),
+                photo_url=fb_photo,
             )
             return _auth_response(user, created)
         except http_requests.RequestException:

@@ -99,7 +99,7 @@ def newsletter_subscribe(request):
     except Exception:
         html_content = (
             f'<h2>Confirm your subscription</h2>'
-            f'<p>Please click the link below to confirm your Ecodeed Academy '
+            f'<p>Please click the link below to confirm your Ecodeed '
             f'newsletter subscription:</p>'
             f'<p><a href="{confirm_url}">Confirm Subscription</a></p>'
             f'<p>If you did not request this, you can safely ignore this email.</p>'
@@ -108,7 +108,7 @@ def newsletter_subscribe(request):
     send_transactional_email(
         to_email=email,
         to_name=email.split('@')[0],
-        subject='Confirm your Ecodeed Academy newsletter subscription',
+        subject='Confirm your Ecodeed newsletter subscription',
         html_content=html_content,
     )
 
@@ -221,7 +221,7 @@ def newsletter_confirm(request):
         })
     except Exception:
         html_content = (
-            f'<h2>Welcome to Ecodeed Academy!</h2>'
+            f'<h2>Welcome to Ecodeed!</h2>'
             f'<p>Thank you for confirming your newsletter subscription.</p>'
             f'<p>You\'ll receive updates on new courses, environmental insights, and more.</p>'
             f'<p><a href="{unsubscribe_url}">Unsubscribe</a></p>'
@@ -230,7 +230,7 @@ def newsletter_confirm(request):
     send_transactional_email(
         to_email=subscriber.email,
         to_name=subscriber.email.split('@')[0],
-        subject='Welcome to the Ecodeed Academy Newsletter!',
+        subject='Welcome to the Ecodeed Newsletter!',
         html_content=html_content,
     )
 
@@ -335,13 +335,13 @@ def contact_create(request):
             f'<p>Hi {contact.name},</p>'
             f'<p>Thank you for reaching out! We received your message and will '
             f'get back to you soon.</p>'
-            f'<p>— Ecodeed Academy Team</p>'
+            f'<p>— The Ecodeed Team</p>'
         )
 
     send_transactional_email(
         to_email=contact.email,
         to_name=contact.name,
-        subject='We received your message — Ecodeed Academy',
+        subject='We received your message — Ecodeed',
         html_content=visitor_html,
     )
 

@@ -35,11 +35,11 @@ def _post_link(post):
 # RSS 2.0 — Latest Posts
 # ---------------------------------------------------------------------------
 class LatestPostsFeed(Feed):
-    title = "Ecodeed Academy Blog"
+    title = "Ecodeed Blog"
     link = SITE_URL
     description = (
         "Latest articles on environmental impact assessment, ecology, "
-        "sustainability, and green careers from Ecodeed Academy."
+        "sustainability, and green careers from Ecodeed."
     )
     language = "en"
 
@@ -96,13 +96,13 @@ class CategoryPostsFeed(Feed):
         return Category.objects.get(slug=slug)
 
     def title(self, obj):
-        return f"Ecodeed Academy — {obj.name}"
+        return f"Ecodeed — {obj.name}"
 
     def link(self, obj):
         return f"{SITE_URL}/search?category={obj.slug}"
 
     def description(self, obj):
-        return obj.description or f"Latest articles in {obj.name} from Ecodeed Academy."
+        return obj.description or f"Latest articles in {obj.name} from Ecodeed."
 
     def items(self, obj):
         return (

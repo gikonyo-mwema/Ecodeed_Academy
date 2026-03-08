@@ -9,18 +9,18 @@ export default function Unsubscribe() {
   const { theme } = useSelector((state) => state.theme);
   const [status, setStatus] = useState('loading'); // loading, success, error, not-found
   const [message, setMessage] = useState('');
-  const email = searchParams.get('email');
+  const token = searchParams.get('token');
 
   useEffect(() => {
     const handleUnsubscribe = async () => {
-      if (!email) {
+      if (!token) {
         setStatus('error');
-        setMessage('No email address provided');
+        setMessage('Missing unsubscribe token.');
         return;
       }
 
       try {
-        const response = await fetch(`/api/v1/messages/newsletter/unsubscribe?email=${encodeURIComponent(email)}`, {
+        const response = await fetch(`/api/v1/messages/newsletter/unsubscribe?token=${encodeURIComponent(token)}`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -42,7 +42,7 @@ export default function Unsubscribe() {
     };
 
     handleUnsubscribe();
-  }, [email]);
+  }, [token]);
 
   const logoUrl = theme === "light"
     ? "https://res.cloudinary.com/dcrubaesi/image/upload/v1753007363/ECODEED_BLACK_LOGO_xtwjoy.png"

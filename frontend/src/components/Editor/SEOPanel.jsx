@@ -39,7 +39,7 @@ function SerpPreview({ title, description, slug }) {
       </p>
       <p className="text-sm text-green-700 dark:text-green-400 truncate">{displayUrl}</p>
       <p className="text-lg text-blue-700 dark:text-blue-400 font-medium leading-snug line-clamp-1 hover:underline cursor-pointer">
-        {title || 'Post Title — Ecodeed Academy'}
+        {title || 'Post Title — Ecodeed'}
       </p>
       <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-0.5">
         {description || 'Add a meta description to control how this post appears in search results…'}

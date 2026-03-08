@@ -39,6 +39,7 @@ import CourseDetails from './pages/CourseDetails';
 import LearningPlayer from './pages/LearningPlayer';
 import Contact from './pages/Contact';
 import Unsubscribe from './pages/Unsubscribe';
+import NewsletterConfirm from './pages/NewsletterConfirm';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Unauthorized from './pages/Unauthorized';
@@ -91,6 +92,7 @@ export default function App() {
           <Route path='/post/:postSlug' element={<PostPage />} /> {/* Dynamic blog post pages */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/newsletter/confirm" element={<NewsletterConfirm />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
