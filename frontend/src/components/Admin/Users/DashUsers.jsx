@@ -369,9 +369,10 @@ export default function DashUsers() {
         </div>
       )}
 
-      <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         {users.length > 0 ? (
           <>
+            <div className="overflow-x-auto overflow-y-visible">
             <Table hoverable className="w-full">
               <Table.Head>
                 <Table.HeadCell>Date Created</Table.HeadCell>
@@ -472,6 +473,7 @@ export default function DashUsers() {
                 })}
               </Table.Body>
             </Table>
+            </div>
 
             {showMore && (
               <div className="p-4 text-center">
