@@ -4,9 +4,13 @@ from rest_framework.response import Response
 from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
-from .models import Course, Enrollment
-from .serializers import CourseSerializer, EnrollmentSerializer, CourseContentSerializer
-from .permissions import IsInstructorOrReadOnly
+from .models import Course, Enrollment, Module, Lesson, LiveSession, Resource, Assignment
+from .serializers import (
+    CourseSerializer, EnrollmentSerializer, CourseContentSerializer,
+    LessonDetailSerializer, LiveSessionDetailSerializer,
+    ResourceDetailSerializer, AssignmentDetailSerializer,
+)
+from .permissions import IsInstructorOrReadOnly, IsModuleContentInstructor
 
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
@@ -376,3 +380,81 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
                 ) if total > 0 else 0,
             },
         })
+
+
+# ──────────── Module-content CRUD ViewSets ────────────
+
+class LessonViewSet(viewsets.ModelViewSet):
+    """CRUD for individual lessons.  Filter with ?course=ID or ?module=ID."""
+    serializer_class = LessonDetailSerializer
+    permission_classes = [IsModuleContentInstructor]
+
+    def get_queryset(self):
+        qs = Lesson.objects.select_related('module__course__instructor')
+        course_id = self.request.query_params.get('course')
+        module_id = self.request.query_params.get('module')
+        if course_id:
+            qs = qs.filter(module__course_id=course_id)
+        if module_id:
+            qs = qs.filter(module_id=module_id)
+        user = self.request.user
+        if user.is_authenticated and not user.is_staff:
+            qs = qs.filter(module__course__instructor=user)
+        return qs.order_by('module__order', 'order')
+
+
+class LiveSessionViewSet(viewsets.ModelViewSet):
+    """CRUD for live sessions.  Filter with ?course=ID or ?module=ID."""
+    serializer_class = LiveSessionDetailSerializer
+    permission_classes = [IsModuleContentInstructor]
+
+    def get_queryset(self):
+        qs = LiveSession.objects.select_related('module__course__instructor')
+        course_id = self.request.query_params.get('course')
+        module_id = self.request.query_params.get('module')
+        if course_id:
+            qs = qs.filter(module__course_id=course_id)
+        if module_id:
+            qs = qs.filter(module_id=module_id)
+        user = self.request.user
+        if user.is_authenticated and not user.is_staff:
+            qs = qs.filter(module__course__instructor=user)
+        return qs.order_by('date_time')
+
+
+class ResourceViewSet(viewsets.ModelViewSet):
+    """CRUD for downloadable resources.  Filter with ?course=ID or ?module=ID."""
+    serializer_class = ResourceDetailSerializer
+    permission_classes = [IsModuleContentInstructor]
+
+    def get_queryset(self):
+        qs = Resource.objects.select_related('module__course__instructor')
+        course_id = self.request.query_params.get('course')
+        module_id = self.request.query_params.get('module')
+        if course_id:
+            qs = qs.filter(module__course_id=course_id)
+        if module_id:
+            qs = qs.filter(module_id=module_id)
+        user = self.request.user
+        if user.is_authenticated and not user.is_staff:
+            qs = qs.filter(module__course__instructor=user)
+        return qs
+
+
+class AssignmentViewSet(viewsets.ModelViewSet):
+    """CRUD for assignments.  Filter with ?course=ID or ?module=ID."""
+    serializer_class = AssignmentDetailSerializer
+    permission_classes = [IsModuleContentInstructor]
+
+    def get_queryset(self):
+        qs = Assignment.objects.select_related('module__course__instructor')
+        course_id = self.request.query_params.get('course')
+        module_id = self.request.query_params.get('module')
+        if course_id:
+            qs = qs.filter(module__course_id=course_id)
+        if module_id:
+            qs = qs.filter(module_id=module_id)
+        user = self.request.user
+        if user.is_authenticated and not user.is_staff:
+            qs = qs.filter(module__course__instructor=user)
+        return qs

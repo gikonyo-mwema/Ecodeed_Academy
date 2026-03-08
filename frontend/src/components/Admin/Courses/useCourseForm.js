@@ -100,6 +100,24 @@ export const useCourseForm = (initialState) => {
     });
   };
 
+  // Lesson detail handler — update any field on a curriculum lesson item
+  const handleLessonDetailChange = (sectionIndex, itemIndex, field, value) => {
+    setFormData(prev => {
+      const newCurriculum = [...(prev.curriculum || [])];
+      if (newCurriculum[sectionIndex] && Array.isArray(newCurriculum[sectionIndex].items)) {
+        const newItems = [...newCurriculum[sectionIndex].items];
+        const currentItem = newItems[itemIndex];
+        if (typeof currentItem === 'object' && currentItem !== null) {
+          newItems[itemIndex] = { ...currentItem, [field]: value };
+        } else {
+          newItems[itemIndex] = { title: currentItem || '', [field]: value };
+        }
+        newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], items: newItems };
+      }
+      return { ...prev, curriculum: newCurriculum };
+    });
+  };
+
   // FAQ Handlers
   const handleFaqChange = (index, field, value) => {
     setFormData(prev => {
@@ -141,6 +159,7 @@ export const useCourseForm = (initialState) => {
     addCurriculumSection,
     addCurriculumItem,
     removeCurriculumItem,
+    handleLessonDetailChange,
     handleFaqChange,
     addFaq,
     removeFaq

@@ -26,6 +26,7 @@ export const EditCourse = () => {
     addCurriculumSection,
     addCurriculumItem,
     removeCurriculumItem,
+    handleLessonDetailChange,
     handleFaqChange,
     addFaq,
     removeFaq
@@ -151,6 +152,7 @@ export const EditCourse = () => {
       addCurriculumSection={addCurriculumSection}
       addCurriculumItem={addCurriculumItem}
       removeCurriculumItem={removeCurriculumItem}
+      handleLessonDetailChange={handleLessonDetailChange}
       addFaq={addFaq}
       removeFaq={removeFaq}
       handleSubmit={handleSubmit}

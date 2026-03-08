@@ -15,7 +15,7 @@ class LiveSessionSerializer(serializers.ModelSerializer):
 class ResourceModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resource
-        fields = ['id', 'title', 'file_url']
+        fields = ['id', 'title', 'description', 'file_url', 'resource_type']
 
 class PublicLessonSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,7 +71,15 @@ class CourseSerializer(serializers.ModelSerializer):
                 "id": module.id,
                 "title": module.title,
                 "items": [
-                    {"id": lesson.id, "title": lesson.title} 
+                    {
+                        "id": lesson.id,
+                        "title": lesson.title,
+                        "video_url": lesson.video_url or '',
+                        "content": lesson.content or '',
+                        "duration": lesson.duration or 0,
+                        "is_free_preview": lesson.is_free_preview,
+                        "order": lesson.order,
+                    }
                     for lesson in module.lessons.all()
                 ]
             }
@@ -112,12 +120,19 @@ class CourseContentSerializer(CourseSerializer):
                 
                 if not lesson_title:
                     continue
-                    
-                Lesson.objects.create(
-                    module=module,
-                    title=lesson_title,
-                    order=lesson_idx
-                )
+
+                lesson_kwargs = {
+                    'module': module,
+                    'title': lesson_title,
+                    'order': lesson_idx,
+                }
+                if isinstance(lesson_item, dict):
+                    lesson_kwargs['video_url'] = lesson_item.get('video_url', '') or ''
+                    lesson_kwargs['content'] = lesson_item.get('content', '') or ''
+                    lesson_kwargs['duration'] = lesson_item.get('duration', 0) or 0
+                    lesson_kwargs['is_free_preview'] = bool(lesson_item.get('is_free_preview', False))
+
+                Lesson.objects.create(**lesson_kwargs)
         
         return course
 
@@ -185,18 +200,23 @@ class CourseContentSerializer(CourseSerializer):
                     
                     if not lesson_title:
                         continue
-                        
+
+                    lesson_kwargs = {
+                        'title': lesson_title,
+                        'order': lesson_idx,
+                        'video_url': lesson_data.get('video_url', '') or '',
+                        'content': lesson_data.get('content', '') or '',
+                        'duration': lesson_data.get('duration', 0) or 0,
+                        'is_free_preview': bool(lesson_data.get('is_free_preview', False)),
+                    }
+
                     if lesson_id and lesson_id in existing_lesson_ids:
                         lesson = Lesson.objects.get(id=lesson_id)
-                        lesson.title = lesson_title
-                        lesson.order = lesson_idx
+                        for attr, val in lesson_kwargs.items():
+                            setattr(lesson, attr, val)
                         lesson.save()
                     else:
-                        Lesson.objects.create(
-                            module=module,
-                            title=lesson_title,
-                            order=lesson_idx
-                        )
+                        Lesson.objects.create(module=module, **lesson_kwargs)
         
         return instance
 
@@ -231,3 +251,61 @@ class EnrollmentSerializer(serializers.ModelSerializer):
 
         # Fallback: instance loaded outside the annotated queryset
         return obj.progress or {}
+
+
+# ──────────── Detail serializers for dashboard CRUD ────────────
+
+class LessonDetailSerializer(serializers.ModelSerializer):
+    """Lesson serializer with module/course context for dashboard CRUD."""
+    module_title = serializers.CharField(source='module.title', read_only=True)
+    course_id = serializers.IntegerField(source='module.course_id', read_only=True)
+    course_title = serializers.CharField(source='module.course.title', read_only=True)
+
+    class Meta:
+        model = Lesson
+        fields = [
+            'id', 'module', 'module_title', 'course_id', 'course_title',
+            'title', 'content', 'video_url', 'duration', 'is_free_preview', 'order',
+        ]
+
+
+class LiveSessionDetailSerializer(serializers.ModelSerializer):
+    """Live session serializer with module/course context for dashboard CRUD."""
+    module_title = serializers.CharField(source='module.title', read_only=True)
+    course_id = serializers.IntegerField(source='module.course_id', read_only=True)
+    course_title = serializers.CharField(source='module.course.title', read_only=True)
+
+    class Meta:
+        model = LiveSession
+        fields = [
+            'id', 'module', 'module_title', 'course_id', 'course_title',
+            'title', 'description', 'date_time', 'zoom_link', 'recording_url',
+        ]
+
+
+class ResourceDetailSerializer(serializers.ModelSerializer):
+    """Resource serializer with module/course context for dashboard CRUD."""
+    module_title = serializers.CharField(source='module.title', read_only=True)
+    course_id = serializers.IntegerField(source='module.course_id', read_only=True)
+    course_title = serializers.CharField(source='module.course.title', read_only=True)
+
+    class Meta:
+        model = Resource
+        fields = [
+            'id', 'module', 'module_title', 'course_id', 'course_title',
+            'title', 'description', 'file_url', 'resource_type',
+        ]
+
+
+class AssignmentDetailSerializer(serializers.ModelSerializer):
+    """Assignment serializer with module/course context for dashboard CRUD."""
+    module_title = serializers.CharField(source='module.title', read_only=True)
+    course_id = serializers.IntegerField(source='module.course_id', read_only=True)
+    course_title = serializers.CharField(source='module.course.title', read_only=True)
+
+    class Meta:
+        model = Assignment
+        fields = [
+            'id', 'module', 'module_title', 'course_id', 'course_title',
+            'title', 'description', 'due_date', 'resource_url',
+        ]

@@ -23,3 +23,22 @@ class IsInstructorOrReadOnly(permissions.BasePermission):
 
         # Write permissions are only allowed to the owner of the course or admins.
         return request.user.is_staff or obj.instructor == request.user
+
+
+class IsModuleContentInstructor(permissions.BasePermission):
+    """
+    Permission for objects nested under a Module (Lesson, LiveSession, Resource, Assignment).
+    Write access requires admin or the course instructor.
+    """
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_authenticated and (
+            request.user.is_staff or getattr(request.user, 'is_mentor', False)
+        )
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_staff or obj.module.course.instructor == request.user

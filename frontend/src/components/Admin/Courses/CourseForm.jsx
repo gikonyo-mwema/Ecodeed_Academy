@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Button, 
   TextInput, 
@@ -18,7 +18,9 @@ import {
   HiOutlineShieldCheck,
   HiOutlineVideoCamera,
   HiOutlineUserCircle,
-  HiOutlineGlobe
+  HiOutlineGlobe,
+  HiChevronDown,
+  HiChevronRight
 } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 
@@ -39,6 +41,7 @@ export const CourseForm = ({
   handleFeatureChange,
   handleCurriculumChange,
   handleCurriculumItemChange,
+  handleLessonDetailChange,
   handleFaqChange,
   addFeatureField, 
   removeFeatureField,
@@ -53,6 +56,18 @@ export const CourseForm = ({
   title, 
   submitButtonText 
 }) => {
+  // Track which lessons are expanded to show detail fields
+  const [expandedLessons, setExpandedLessons] = useState(new Set());
+
+  const toggleLessonExpand = (key) => {
+    setExpandedLessons(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -358,7 +373,7 @@ export const CourseForm = ({
             {/* Curriculum Builder */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <Label value="Course Curriculum" />
+                <Label value="Course Curriculum (Weeks & Lessons)" />
                 <Button
                   type="button"
                   outline
@@ -366,15 +381,16 @@ export const CourseForm = ({
                   size="xs"
                   onClick={addCurriculumSection}
                 >
-                  <HiOutlinePlus className="mr-1" /> Add Section
+                  <HiOutlinePlus className="mr-1" /> Add Week
                 </Button>
               </div>
               
 {(Array.isArray(formData.curriculum) ? formData.curriculum : []).map((section, sectionIndex) => (
                   <div key={sectionIndex} className="mb-4 border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
+                      <Badge color="info" size="sm">Week {sectionIndex + 1}</Badge>
                       <TextInput
-                        placeholder="Section title"
+                        placeholder="Week title (e.g. Environmental Auditing Fundamentals)"
                         value={section.title}
                         onChange={(e) => handleCurriculumChange(sectionIndex, 'title', e.target.value)}
                         className="flex-1"
@@ -391,26 +407,103 @@ export const CourseForm = ({
                       </Button>
                     </div>
                     
-                    {(Array.isArray(section.items) ? section.items : []).map((item, itemIndex) => (
-                      <div key={itemIndex} className="flex items-center gap-2 mb-2">
-                        <TextInput
-                          placeholder={`Lesson ${itemIndex + 1}`}
-                          value={typeof item === 'object' ? item.title : item}
-                          onChange={(e) => handleCurriculumItemChange(sectionIndex, itemIndex, e.target.value)}
-                          className="flex-1"
-                          required
-                        />
-                        <Button
-                          type="button"
-                          color="failure"
-                          size="xs"
-                          onClick={() => removeCurriculumItem(sectionIndex, itemIndex)}
-                          disabled={(section.items || []).length <= 1}
-                      >
-                        <HiOutlineX className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    {(Array.isArray(section.items) ? section.items : []).map((item, itemIndex) => {
+                      const lessonKey = `${sectionIndex}-${itemIndex}`;
+                      const isExpanded = expandedLessons.has(lessonKey);
+                      const itemObj = typeof item === 'object' && item !== null ? item : { title: item || '' };
+                      
+                      return (
+                        <div key={itemIndex} className="mb-3 border border-gray-100 dark:border-gray-700 rounded-lg">
+                          {/* Lesson header row */}
+                          <div className="flex items-center gap-2 p-2">
+                            <button
+                              type="button"
+                              onClick={() => toggleLessonExpand(lessonKey)}
+                              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                              title={isExpanded ? 'Collapse' : 'Expand to edit video, content & duration'}
+                            >
+                              {isExpanded ? (
+                                <HiChevronDown className="w-4 h-4 text-teal-600" />
+                              ) : (
+                                <HiChevronRight className="w-4 h-4 text-gray-400" />
+                              )}
+                            </button>
+                            <span className="text-xs text-gray-400 w-6">{itemIndex + 1}.</span>
+                            <TextInput
+                              placeholder={`Lesson ${itemIndex + 1} title`}
+                              value={itemObj.title || ''}
+                              onChange={(e) => handleCurriculumItemChange(sectionIndex, itemIndex, e.target.value)}
+                              className="flex-1"
+                              sizing="sm"
+                              required
+                            />
+                            {/* Indicators */}
+                            {itemObj.video_url && (
+                              <Badge color="purple" size="xs" title="Has video">🎬</Badge>
+                            )}
+                            {itemObj.content && (
+                              <Badge color="info" size="xs" title="Has text content">📝</Badge>
+                            )}
+                            <Button
+                              type="button"
+                              color="failure"
+                              size="xs"
+                              onClick={() => removeCurriculumItem(sectionIndex, itemIndex)}
+                              disabled={(section.items || []).length <= 1}
+                            >
+                              <HiOutlineX className="h-3 w-3" />
+                            </Button>
+                          </div>
+
+                          {/* Expanded lesson details */}
+                          {isExpanded && (
+                            <div className="px-4 pb-4 pt-1 border-t border-gray-100 dark:border-gray-700 space-y-3 bg-gray-50 dark:bg-gray-800/50 rounded-b-lg">
+                              <div>
+                                <Label value="Video URL (YouTube, Vimeo, etc.)" className="text-xs" />
+                                <TextInput
+                                  type="url"
+                                  placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
+                                  value={itemObj.video_url || ''}
+                                  onChange={(e) => handleLessonDetailChange(sectionIndex, itemIndex, 'video_url', e.target.value)}
+                                  sizing="sm"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <Label value="Duration (seconds)" className="text-xs" />
+                                  <TextInput
+                                    type="number"
+                                    placeholder="e.g. 600 for 10 min"
+                                    value={itemObj.duration || ''}
+                                    onChange={(e) => handleLessonDetailChange(sectionIndex, itemIndex, 'duration', Number(e.target.value) || 0)}
+                                    sizing="sm"
+                                    min="0"
+                                  />
+                                </div>
+                                <div className="flex items-end pb-1">
+                                  <div className="flex items-center gap-2">
+                                    <Checkbox
+                                      checked={Boolean(itemObj.is_free_preview)}
+                                      onChange={(e) => handleLessonDetailChange(sectionIndex, itemIndex, 'is_free_preview', e.target.checked)}
+                                    />
+                                    <Label className="text-xs">Free Preview</Label>
+                                  </div>
+                                </div>
+                              </div>
+                              <div>
+                                <Label value="Lesson Content (lecture notes, HTML supported)" className="text-xs" />
+                                <Textarea
+                                  placeholder="Write lesson text content here. Supports HTML formatting."
+                                  value={itemObj.content || ''}
+                                  onChange={(e) => handleLessonDetailChange(sectionIndex, itemIndex, 'content', e.target.value)}
+                                  rows={5}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   
                   <Button
                     type="button"

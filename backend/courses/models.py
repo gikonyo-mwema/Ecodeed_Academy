@@ -138,9 +138,20 @@ class LiveSession(models.Model):
         return self.title
 
 class Resource(models.Model):
+    RESOURCE_TYPE_CHOICES = [
+        ('pdf', 'PDF Document'),
+        ('link', 'External Link'),
+        ('video', 'Video'),
+        ('document', 'Document'),
+        ('spreadsheet', 'Spreadsheet'),
+        ('other', 'Other'),
+    ]
+
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='resources')
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     file_url = models.URLField(max_length=1000)
+    resource_type = models.CharField(max_length=20, choices=RESOURCE_TYPE_CHOICES, default='link')
 
     def __str__(self):
         return self.title
