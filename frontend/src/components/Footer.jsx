@@ -1,25 +1,52 @@
-import React from 'react';
-import { BsFacebook, BsInstagram, BsYoutube, BsLinkedin, BsTwitter } from 'react-icons/bs';
+import React, { useState, useEffect } from 'react';
+import { BsFacebook, BsInstagram, BsLinkedin, BsTwitter } from 'react-icons/bs';
 import { FaPhoneAlt, FaEnvelope, FaGlobe } from 'react-icons/fa';
 import { Footer } from 'flowbite-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { apiFetch } from '../utils/api';
+
+const FOOTER_SERVICE_LIMIT = 4;
+const FOOTER_COURSE_LIMIT = 4;
 
 export default function FooterComponent() {
     const { theme } = useSelector((state) => state.theme);
-    const services = [
-        { name: "Environmental Audits", path: "/services#audits" },
-        { name: "Climate Change & Sustainability Solutions", path: "/services#climate" },
-        { name: "Environmental Impact Assessments", path: "/services#eia" },
-        { name: "Environmental Safeguards & Policy Advisory", path: "/services#policy" }
-    ];
+    const [services, setServices] = useState([]);
+    const [totalServices, setTotalServices] = useState(0);
+    const [courses, setCourses] = useState([]);
+    const [totalCourses, setTotalCourses] = useState(0);
+
+    useEffect(() => {
+        const fetchServices = async () => {
+            try {
+                const data = await apiFetch('/api/v1/services/?isPublished=true');
+                const list = data?.results || (Array.isArray(data) ? data : []);
+                setTotalServices(list.length);
+                setServices(list.slice(0, FOOTER_SERVICE_LIMIT));
+            } catch {
+                // Silently fail
+            }
+        };
+        const fetchCourses = async () => {
+            try {
+                const data = await apiFetch('/api/v1/courses/');
+                const list = data?.results || (Array.isArray(data) ? data : []);
+                setTotalCourses(list.length);
+                setCourses(list.slice(0, FOOTER_COURSE_LIMIT));
+            } catch {
+                // Silently fail
+            }
+        };
+        fetchServices();
+        fetchCourses();
+    }, []);
 
     return (
         <Footer container className={`border-t-4 ${theme === 'light' ? 'border-brand-green bg-white' : 'border-brand-yellow bg-brand-blue'} mt-auto`}>
             <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 
                 {/* Top Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
                     
                     {/* Company Info */}
                     <div>
@@ -43,7 +70,6 @@ export default function FooterComponent() {
                                 { icon: BsFacebook, href: "https://web.facebook.com/ecodeedconsulting", label: "Facebook" },
                                 { icon: BsTwitter, href: "https://x.com/EcodeedC", label: "Twitter" },
                                 { icon: BsInstagram, href: "https://www.instagram.com/ecodeed_consulting/", label: "Instagram" },
-                                { icon: BsYoutube, href: "https://youtube.com", label: "YouTube" },
                                 { icon: BsLinkedin, href: "https://www.linkedin.com/company/ecodeed-consultancy-company", label: "LinkedIn" }
                             ].map((social, index) => (
                                 <a 
@@ -72,7 +98,9 @@ export default function FooterComponent() {
                             {[
                                 { name: "Home", path: "/" },
                                 { name: "About Us", path: "/about" },
-                                { name: "Services", path: "/services" }
+                                { name: "Services", path: "/services" },
+                                { name: "Courses", path: "/courses" },
+                                { name: "Contact", path: "/contact" }
                             ].map((link, index) => (
                                 <Link 
                                     key={index}
@@ -87,6 +115,48 @@ export default function FooterComponent() {
                         </Footer.LinkGroup>
                     </div>
 
+                    {/* Courses */}
+                    <div>
+                        <Footer.Title 
+                            title="Our Courses" 
+                            className={`mb-3 text-lg font-semibold ${theme === 'light' ? 'text-brand-blue' : 'text-brand-yellow'}`} 
+                        />
+                        <Footer.LinkGroup col className="space-y-2">
+                            {courses.length > 0 ? (
+                                courses.map((course) => (
+                                    <Link 
+                                        key={course.id || course._id}
+                                        to={`/courses/${course.slug || course.id}`}
+                                        className={`text-sm ${theme === 'light' 
+                                            ? 'text-gray-600 hover:text-brand-yellow' 
+                                            : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
+                                    >
+                                        {course.title}
+                                    </Link>
+                                ))
+                            ) : (
+                                <Link 
+                                    to="/courses"
+                                    className={`text-sm ${theme === 'light' 
+                                        ? 'text-gray-600 hover:text-brand-yellow' 
+                                        : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
+                                >
+                                    View Our Courses
+                                </Link>
+                            )}
+                            {totalCourses > FOOTER_COURSE_LIMIT && (
+                                <Link 
+                                    to="/courses"
+                                    className={`text-sm font-medium ${theme === 'light' 
+                                        ? 'text-brand-green hover:text-brand-yellow' 
+                                        : 'text-brand-yellow hover:text-white'} transition-colors duration-200`}
+                                >
+                                    View All Courses →
+                                </Link>
+                            )}
+                        </Footer.LinkGroup>
+                    </div>
+
                     {/* Services */}
                     <div>
                         <Footer.Title 
@@ -94,17 +164,38 @@ export default function FooterComponent() {
                             className={`mb-3 text-lg font-semibold ${theme === 'light' ? 'text-brand-blue' : 'text-brand-yellow'}`} 
                         />
                         <Footer.LinkGroup col className="space-y-2">
-                            {services.map((service, index) => (
+                            {services.length > 0 ? (
+                                services.map((service) => (
+                                    <Link 
+                                        key={service.id || service._id}
+                                        to={`/services/${service.slug || service.id}`}
+                                        className={`text-sm ${theme === 'light' 
+                                            ? 'text-gray-600 hover:text-brand-yellow' 
+                                            : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
+                                    >
+                                        {service.title}
+                                    </Link>
+                                ))
+                            ) : (
                                 <Link 
-                                    key={index}
-                                    to={service.path}
+                                    to="/services"
                                     className={`text-sm ${theme === 'light' 
                                         ? 'text-gray-600 hover:text-brand-yellow' 
                                         : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
                                 >
-                                    {service.name}
+                                    View Our Services
                                 </Link>
-                            ))}
+                            )}
+                            {totalServices > FOOTER_SERVICE_LIMIT && (
+                                <Link 
+                                    to="/services"
+                                    className={`text-sm font-medium ${theme === 'light' 
+                                        ? 'text-brand-green hover:text-brand-yellow' 
+                                        : 'text-brand-yellow hover:text-white'} transition-colors duration-200`}
+                                >
+                                    View All Services →
+                                </Link>
+                            )}
                         </Footer.LinkGroup>
                     </div>
 
@@ -150,22 +241,21 @@ export default function FooterComponent() {
 
                 {/* Bottom Section */}
                 <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <Footer.Copyright
-                        href="/"
-                        by="Ecodeed"
-                        year={new Date().getFullYear()}
-                        className={`${theme === 'light' ? 'text-gray-600' : 'text-gray-300'} text-sm`}
-                    />
-                    <div className="flex space-x-4">
+                    <p className={`text-sm ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
+                        © {new Date().getFullYear()}{' '}
+                        <Link to="/" className="hover:underline">Ecodeed</Link>
+                        ™. All Rights Reserved.
+                    </p>
+                    <div className="flex space-x-4 relative z-10">
                         <Link 
                             to="/privacy-policy" 
-                            className={`text-sm ${theme === 'light' ? 'text-gray-600 hover:text-brand-yellow' : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
+                            className={`text-sm cursor-pointer ${theme === 'light' ? 'text-gray-600 hover:text-brand-yellow' : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
                         >
                             Privacy Policy
                         </Link>
                         <Link 
                             to="/terms-of-service" 
-                            className={`text-sm ${theme === 'light' ? 'text-gray-600 hover:text-brand-yellow' : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
+                            className={`text-sm cursor-pointer ${theme === 'light' ? 'text-gray-600 hover:text-brand-yellow' : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
                         >
                             Terms of Service
                         </Link>

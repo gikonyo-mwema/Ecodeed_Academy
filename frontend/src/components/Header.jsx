@@ -32,10 +32,12 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AiOutlineSearch } from "react-icons/ai";
 import { FaMoon, FaSun } from "react-icons/fa";
+import { HiX } from "react-icons/hi";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice";
 import { signOut } from "../redux/user/userSlice";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { apiFetch } from "../utils/api";
 
 /**
  * Header Component
@@ -57,6 +59,35 @@ export default function Header() {
   // Local state
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const navToggleRef = useRef(null);
+
+  // Announcement bar — fetched from API, dismissable per-id
+  const [announcement, setAnnouncement] = useState(null);
+  const [showBanner, setShowBanner] = useState(false);
+
+  useEffect(() => {
+    const fetchAnnouncement = async () => {
+      try {
+        const data = await apiFetch('/api/v1/messages/announcements/active');
+        if (data && data.id) {
+          setAnnouncement(data);
+          const dismissed = localStorage.getItem(`dismissed-ann-${data.id}`) === 'true';
+          setShowBanner(!dismissed);
+        }
+      } catch {
+        // Silently fail — no banner is fine
+      }
+    };
+    fetchAnnouncement();
+  }, []);
+
+  const dismissBanner = () => {
+    setShowBanner(false);
+    if (announcement?.id) {
+      localStorage.setItem(`dismissed-ann-${announcement.id}`, 'true');
+    }
+  };
 
   /**
    * Effect to handle automatic logout on auth failure
@@ -80,6 +111,18 @@ export default function Header() {
       setSearchTerm(searchTermFromUrl);
     }
   }, [location.search]);
+
+  /**
+   * Effect to close mobile menu when route changes
+   * Programmatically clicks the Flowbite toggle to sync its internal state
+   */
+  useEffect(() => {
+    if (isNavOpen && navToggleRef.current) {
+      navToggleRef.current.click();
+    }
+    setIsNavOpen(false);
+    setIsMobileSearchOpen(false);
+  }, [path]);
 
   /**
    * Handles user sign out
@@ -123,24 +166,35 @@ export default function Header() {
 
   return (
     <header className={`sticky top-0 z-50 ${theme === "light" ? "bg-white shadow-md" : "bg-brand-blue"}`}>
-      {/* Top Quote Bar (hide on very small screens) */}
-      <div className="bg-brand-green py-2 px-4 text-center hidden sm:block">
-        <p className="text-sm italic text-white inline">
-          "Empowering a sustainable future through expert environmental consulting"{" "}
-          <Link
-            to="/about"
-            className="text-xs text-brand-yellow hover:underline inline font-medium"
+      {/* Dismissable Announcement Bar */}
+      {showBanner && announcement && (
+        <div className="bg-brand-green py-2 px-4 text-center hidden sm:flex items-center justify-center gap-3 animate-slide-down">
+          <p className="text-sm text-white">
+            {announcement.text}{" "}
+            {(announcement.link_url || announcement.linkUrl) && (
+              <Link
+                to={announcement.link_url || announcement.linkUrl}
+                className="text-brand-yellow hover:underline font-semibold ml-1"
+              >
+                {announcement.link_label || announcement.linkLabel || 'Learn more →'}
+              </Link>
+            )}
+          </p>
+          <button
+            onClick={dismissBanner}
+            className="text-white/70 hover:text-white transition-colors p-0.5 rounded-full hover:bg-white/10"
+            aria-label="Dismiss announcement"
           >
-            Learn more →
-          </Link>
-        </p>
-      </div>
+            <HiX className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Main Navbar */}
       <Navbar
         fluid
         rounded
-        className={`border-b ${theme === "light" ? "border-gray-200" : "border-gray-700"} max-w-7xl mx-auto px-4 py-3 ${theme === "light" ? "bg-white" : "bg-brand-blue"}`}
+        className={`border-b ${theme === "light" ? "border-gray-200" : "border-gray-700"} px-4 py-3 ${theme === "light" ? "bg-white" : "bg-brand-blue"}`}
       >
         {/* Logo Section */}
         <Navbar.Brand as={Link} to="/" className="flex items-center space-x-2 hover:scale-105 transition-transform duration-200">
@@ -284,7 +338,7 @@ export default function Header() {
               
               {/* Instructor Dashboard - shown if user is a tutor/mentor */}
               {currentUser.isInstructor && !currentUser.isAdmin && (
-                <Link to="/instructor-dashboard">
+                <Link to="/dashboard">
                   <Dropdown.Item className="text-gray-700 dark:text-gray-200 hover:!bg-brand-yellow dark:hover:!bg-brand-yellow hover:!text-white dark:hover:!text-gray-900 transition-colors duration-200 focus:!bg-brand-yellow focus:!text-white">
                     Instructor Dashboard
                   </Dropdown.Item>
@@ -340,7 +394,11 @@ export default function Header() {
             </Dropdown>
           )}
 
-          <Navbar.Toggle className="lg:hidden text-brand-green dark:text-brand-yellow" />
+          <Navbar.Toggle
+            ref={navToggleRef}
+            onClick={() => setIsNavOpen((prev) => !prev)}
+            className="lg:hidden text-brand-green dark:text-brand-yellow"
+          />
         </div>
 
         {/* Mobile Search Panel */}
@@ -376,8 +434,19 @@ export default function Header() {
           </div>
         )}
 
+        {/* Tap-outside overlay – closes mobile menu */}
+        {isNavOpen && (
+          <div
+            className="fixed inset-0 bg-black/20 z-[60] lg:hidden"
+            onClick={() => {
+              if (navToggleRef.current) navToggleRef.current.click();
+              setIsNavOpen(false);
+            }}
+          />
+        )}
+
         {/* Mobile Menu */}
-        <Navbar.Collapse className="lg:hidden w-full mt-3 bg-white dark:bg-brand-blue rounded-lg shadow-lg">
+        <Navbar.Collapse className="lg:hidden w-full mt-3 bg-white dark:bg-brand-blue rounded-lg shadow-lg relative z-[70]">
           {[
             { to: "/", label: "Home" },
             { to: "/about", label: "About" },
@@ -390,6 +459,10 @@ export default function Header() {
               active={path === to}
               as={Link}
               to={to}
+              onClick={() => {
+                if (navToggleRef.current) navToggleRef.current.click();
+                setIsNavOpen(false);
+              }}
               className={`px-4 py-3 rounded-md transition-colors duration-200 ${
                 path === to
                   ? "bg-brand-green text-white"

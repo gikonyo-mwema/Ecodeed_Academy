@@ -1,32 +1,17 @@
 /**
  * Dashboard Sidebar Component
  * 
- * A responsive navigation sidebar for the admin dashboard that provides
- * easy access to all administrative functions and data management sections.
+ * Role-aware navigation sidebar for admin and instructor dashboards.
  * 
- * Features:
- * - Responsive design with mobile toggle functionality
- * - Collapsible sidebar for better screen space utilization
- * - Active tab highlighting based on URL parameters
- * - Tooltips for better user experience when collapsed
- * - Role-based access control (admin only)
- * - Sign out functionality with proper state cleanup
+ * Admin sees:  Overview → All Courses / All Enrollments → Posts, Users,
+ *              Comments, Newsletter, Announcement, Services
+ * Instructor:  Overview → My Courses / My Students
  * 
- * Navigation Sections:
- * - Dashboard Overview: Main dashboard with all data summaries
- * - User Management: User accounts, permissions, and activity
- * - Content Management: Posts, comments, and content moderation
- * - Business Operations: Services, courses, and enrollment
- * - Financial Tracking: Payments and revenue analytics
- * - Communication: Email newsletters and messaging
- * 
- * State Management:
- * - Local state for sidebar collapse and mobile menu
- * - URL-based active tab tracking
- * - Redux integration for user authentication
- * 
+ * Assignments, Live Sessions, and Resources are accessed via the
+ * course drill-down (CourseDetailView) — NOT as top-level sidebar items.
+ *
  * @component
- * @version 1.0.0
+ * @version 2.0.0
  * @author Gikonyo Mwema
  */
 
@@ -43,49 +28,28 @@ import {
   HiOutlineViewGrid,
   HiMail,
   HiShoppingBag,
-  HiVideoCamera,
-  HiArchive
+  HiChartPie,
+  HiSpeakerphone,
+  HiCurrencyDollar,
 } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { signOut } from "../../redux/user/userSlice"; 
 
-/**
- * DashSidebar Component
- * Administrative navigation sidebar with responsive design
- * 
- * @returns {JSX.Element} Responsive sidebar with admin navigation options
- */
 export default function DashSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  // Redux state for user authentication
   const { currentUser } = useSelector((state) => state.user);
   
-  /**
-   * Current active tab state
-   * Synchronized with URL parameters for proper navigation
-   */
   const [tab, setTab] = useState("");
-  
-  /**
-   * Sidebar collapsed state for desktop view
-   * Allows users to maximize content area when needed
-   */
   const [collapsed, setCollapsed] = useState(false);
-  
-  /**
-   * Mobile menu open state
-   * Controls sidebar visibility on mobile devices
-   */
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  /**
-   * Effect to sync tab state with URL parameters
-   * Updates active tab when user navigates via URL
-   */
+  const isAdmin = currentUser?.isAdmin;
+  const isInstructor = currentUser?.isInstructor;
+
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const tabFromUrl = urlParams.get("tab");
@@ -94,12 +58,6 @@ export default function DashSidebar() {
     }
   }, [location.search]);
 
-  /**
-   * Handles user sign out process
-   * Clears Redux state and redirects to sign-in page
-   * 
-   * @async
-   */
   const handleSignOut = async () => {
     try {
       await dispatch(signOut()).unwrap();
@@ -109,12 +67,6 @@ export default function DashSidebar() {
     }
   };
 
-  /**
-   * Handles tab navigation with mobile responsiveness
-   * Updates URL and closes mobile menu on small screens
-   * 
-   * @param {string} tabName - The tab name to navigate to
-   */
   const handleTabClick = (tabName) => {
     navigate(`/dashboard?tab=${tabName}`);
     if (window.innerWidth < 768) {
@@ -122,10 +74,6 @@ export default function DashSidebar() {
     }
   };
 
-  /**
-   * Toggles sidebar visibility/collapse state
-   * Handles both mobile menu toggle and desktop collapse
-   */
   const toggleSidebar = () => {
     if (window.innerWidth < 768) {
       setMobileOpen(!mobileOpen);
@@ -134,25 +82,30 @@ export default function DashSidebar() {
     }
   };
 
-  /**
-   * Admin navigation tab configuration
-   * Defines all available admin sections with icons and routing
-   */
+  /* ── Admin-only platform management tabs ── */
   const adminTabs = [
     { id: "posts", name: "Posts", icon: HiDocumentText },
     { id: "users", name: "Users", icon: HiOutlineUserGroup },
     { id: "comments", name: "Comments", icon: HiAnnotation },
     { id: "newsletter", name: "Newsletter", icon: HiMail },
+    { id: "announcement", name: "Announcement", icon: HiSpeakerphone },
     { id: "services", name: "Services", icon: HiClipboardCheck },
   ];
 
-  const courseTabs = [
-    { id: "courses", name: "All Courses", icon: HiAcademicCap },
-    { id: "enrollments", name: "Enrollments", icon: HiShoppingBag },
-    { id: "assignments", name: "Assignments", icon: HiClipboardCheck },
-    { id: "live-session", name: "Live Sessions", icon: HiVideoCamera },
-    { id: "resources", name: "Resources", icon: HiArchive },
-  ];
+  /* ── Course sub-tabs: role-aware ── */
+  const courseTabs = isAdmin
+    ? [
+        { id: "courses", name: "All Courses", icon: HiAcademicCap },
+        { id: "enrollments", name: "All Enrollments", icon: HiShoppingBag },
+      ]
+    : [
+        { id: "courses", name: "My Courses", icon: HiAcademicCap },
+        { id: "my-students", name: "My Students", icon: HiOutlineUserGroup },
+        { id: "my-earnings", name: "My Earnings", icon: HiCurrencyDollar },
+      ];
+
+  /* Is the current tab inside the course collapse? Also match course-detail-* */
+  const isCourseTabActive = courseTabs.some(t => t.id === tab) || tab?.startsWith('course-detail');
 
   return (
     <>
@@ -165,7 +118,6 @@ export default function DashSidebar() {
         <HiOutlineViewGrid className="w-6 h-6" />
       </button>
 
-      {/* Main sidebar component with responsive design */}
       <Sidebar 
         className={`w-full md:w-56 fixed md:relative z-40 transition-all duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
@@ -174,12 +126,26 @@ export default function DashSidebar() {
       >
         <Sidebar.Items>
           <Sidebar.ItemGroup className="flex flex-col gap-1">
-            {/* User profile section */}
+
+            {/* ── Overview — first item for both roles ── */}
+            <Tooltip content="Overview" placement="right" trigger={collapsed ? "hover" : null}>
+              <Sidebar.Item
+                active={tab === "dash"}
+                icon={HiChartPie}
+                onClick={() => handleTabClick("dash")}
+                as="div"
+                className="cursor-pointer"
+              >
+                {!collapsed && "Overview"}
+              </Sidebar.Item>
+            </Tooltip>
+
+            {/* ── Profile ── */}
             <Tooltip content="Profile" placement="right" trigger={collapsed ? "hover" : null}>
               <Sidebar.Item
                 active={tab === "profile"}
                 icon={HiUser}
-                label={currentUser?.isAdmin ? "Admin" : currentUser?.isInstructor ? "Instructor" : "User"}
+                label={isAdmin ? "Admin" : isInstructor ? "Instructor" : "User"}
                 labelColor="dark"
                 onClick={() => handleTabClick("profile")}
                 as="div"
@@ -189,27 +155,12 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Tooltip>
 
-            {/* My Learning - Only visible to students (non-admin users) */}
-            {!currentUser?.isAdmin && (
-              <Tooltip content="My Learning" placement="right" trigger={collapsed ? "hover" : null}>
-                <Sidebar.Item
-                  active={tab === "learning"}
-                  icon={HiAcademicCap}
-                  onClick={() => handleTabClick("learning")}
-                  as="div"
-                  className="cursor-pointer"
-                >
-                  {!collapsed && "My Learning"}
-                </Sidebar.Item>
-              </Tooltip>
-            )}
-
-            {/* Course Management — visible to admins AND instructors */}
-            {(currentUser?.isAdmin || currentUser?.isInstructor) && (
+            {/* ── Course Management — visible to admins AND instructors ── */}
+            {(isAdmin || isInstructor) && (
               <Sidebar.Collapse 
                 icon={HiAcademicCap} 
-                label="Courses" 
-                open={courseTabs.some(t => t.id === tab)}
+                label={isAdmin ? "Courses" : "Teaching"} 
+                open={isCourseTabActive}
               >
                 {courseTabs.map((item) => (
                   <Sidebar.Item
@@ -226,8 +177,8 @@ export default function DashSidebar() {
               </Sidebar.Collapse>
             )}
 
-            {/* Admin-only tabs — hidden from instructors */}
-            {currentUser?.isAdmin && adminTabs.map((item) => (
+            {/* ── Admin-only tabs — hidden from instructors ── */}
+            {isAdmin && adminTabs.map((item) => (
               <Tooltip key={item.id} content={item.name} placement="right" trigger={collapsed ? "hover" : null}>
                 <Sidebar.Item
                   active={tab === item.id}
@@ -241,7 +192,7 @@ export default function DashSidebar() {
               </Tooltip>
             ))}
 
-            {/* Sign out option */}
+            {/* ── Sign out ── */}
             <Tooltip content="Sign Out" placement="right" trigger={collapsed ? "hover" : null}>
               <Sidebar.Item
                 icon={HiArrowSmRight}

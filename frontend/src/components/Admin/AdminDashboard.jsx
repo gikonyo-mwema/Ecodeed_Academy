@@ -10,18 +10,15 @@ import DashServices from './Services/DashServices';
 import { DashCourses } from './Courses/DashCourses';
 import DashEnrollments from './Courses/DashEnrollments';
 import DashNewsletter from './DashNewsletter';
-import DashAssignments from './Assignments/DashAssignments';
-import DashLiveSessions from './LiveSessions/DashLiveSessions';
-import DashResources from './Resources/DashResources';
+import DashAnnouncement from './DashAnnouncement';
+import MyStudents from './Courses/MyStudents';
+import MyEarnings from './Courses/MyEarnings';
 import { useSelector } from 'react-redux';
-import UserCourses from '../UserCourses';
 
 export default function AdminDashboard() {
   const location = useLocation();
   const { currentUser } = useSelector((state) => state.user);
-  const [tab, setTab] = useState('profile');
-  //const [purchasedCourses, setPurchasedCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('dash');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -32,25 +29,28 @@ export default function AdminDashboard() {
   }, [location.search]);
 
   return (
-    <div className='min-h-screen flex flex-col md:flex-row'>
+    <div className='min-h-screen flex flex-col md:flex-row bg-gray-50 dark:bg-gray-900'>
       <div className='md:w-56'>
         <DashSidebar />
       </div>
       <div className="flex-1 p-4 md:p-8">
+        {/* Shared */}
+        {tab === 'dash' && <DashboardComponent />}
         {tab === 'profile' && <DashProfile />}
+        {tab === 'courses' && <DashCourses />}
+        {tab === 'enrollments' && <DashEnrollments />}
+
+        {/* Instructor-specific */}
+        {tab === 'my-students' && <MyStudents />}
+        {tab === 'my-earnings' && <MyEarnings />}
+
+        {/* Admin-only */}
         {tab === 'posts' && <DashPosts />}
         {tab === 'users' && <DashUsers />}
         {tab === 'comments' && <DashComments />}
         {tab === 'newsletter' && <DashNewsletter />}
-        {tab === 'dash' && <DashboardComponent />}
+        {tab === 'announcement' && <DashAnnouncement />}
         {tab === 'services' && <DashServices />}
-        {tab === 'courses' && <DashCourses />}
-        {tab === 'enrollments' && <DashEnrollments />}
-        {tab === 'assignments' && <DashAssignments />}
-        {tab === 'live-session' && <DashLiveSessions />}
-        {tab === 'resources' && <DashResources />}
-        {/* {tab === 'learning' && <UserCourses />} */ }
-        {/* Re-enable learning for admin if they want to see it? Or maybe separate check. For now excluding Student view parts */}
       </div>
     </div>
   );

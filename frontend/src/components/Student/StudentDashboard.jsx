@@ -218,7 +218,7 @@ export default function StudentDashboard() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <Spinner size="xl" className="mb-4" />
-            <p className="text-gray-500">Loading your courses...</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading your courses...</p>
           </div>
         </div>
       );

@@ -73,7 +73,8 @@ const UserCourses = ({ purchasedCourses: propCourses }) => {
                     <Table.Cell>
                         <Link to={`/dashboard?tab=course-${course.id || course._id}-weeks`}>
                             <Button 
-                            gradientDuoTone="tealToLime" 
+                            color="none"
+                            className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0"
                             size="sm"
                             >
                             <HiOutlinePlay className="mr-2 h-4 w-4" />
@@ -90,7 +91,7 @@ const UserCourses = ({ purchasedCourses: propCourses }) => {
       ) : (
         <div className="text-center py-12 bg-white rounded-lg shadow dark:bg-gray-800">
           <p className="text-gray-500 mb-4">You haven't enrolled in any courses yet</p>
-          <Button gradientDuoTone="tealToLime" as={Link} to="/courses">
+          <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0" as={Link} to="/courses">
             Browse Courses
           </Button>
         </div>

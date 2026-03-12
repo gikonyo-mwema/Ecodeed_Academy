@@ -147,7 +147,7 @@ export default function StudentSidebar({
                     if (onBackToWeeks) onBackToWeeks();
                     if (window.innerWidth < 768) setMobileOpen(false);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                 >
                   <HiChevronRight className="w-4 h-4 rotate-180" />
                   <span>All Weeks</span>
@@ -161,7 +161,7 @@ export default function StudentSidebar({
                   <p className="text-sm font-bold text-gray-800 dark:text-white truncate">
                     {activeWeek.title}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {activeWeek.completed_count}/{activeWeek.total_count} lessons done
                   </p>
                 </div>
@@ -281,7 +281,7 @@ export default function StudentSidebar({
                 {/* Divider + other weeks quick-nav */}
                 {weeksData?.weeks?.length > 1 && (
                   <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
-                    <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                    <p className="px-4 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
                       Other Weeks
                     </p>
                     <div className="space-y-0.5 max-h-40 overflow-y-auto">
@@ -355,7 +355,7 @@ export default function StudentSidebar({
                 {/* Enrolled Courses List */}
                 {!collapsed && enrolledCourses.length > 0 && (
                   <div className="mt-4">
-                    <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                       Enrolled Courses
                     </p>
                     {enrolledCourses.map((course) => (
