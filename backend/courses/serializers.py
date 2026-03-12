@@ -1,6 +1,17 @@
 from django.db import transaction
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Course, Enrollment, Module, Lesson, LessonCompletion, Assignment, LiveSession, Resource
+
+User = get_user_model()
+
+
+class InstructorSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for instructor details on course cards."""
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'profile_picture', 'bio']
+        read_only_fields = fields
 
 class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,6 +61,9 @@ class FullModuleSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     modules = ModuleSerializer(many=True, read_only=True)
     _id = serializers.IntegerField(source='id', read_only=True)
+    instructor = InstructorSerializer(read_only=True)
+    instructor_name = serializers.SerializerMethodField()
+    enrollment_count = serializers.SerializerMethodField()
     
     # Accept curriculum as input (write_only) and output (via get_curriculum)
     curriculum = serializers.SerializerMethodField()
@@ -61,9 +75,23 @@ class CourseSerializer(serializers.ModelSerializer):
             'image', 'price', 'category', 'is_free', 'modules', 'curriculum',
             'created_at', 'updated_at', 'level', 'format', 'features', 'faqs',
             'target_audience', 'resources', 'external_url', 'is_popular', 'is_live',
-            'has_certificate', 'pacing_type', 'instructor'
+            'has_certificate', 'pacing_type', 'instructor', 'instructor_name',
+            'enrollment_count',
         ]
         read_only_fields = ['instructor']
+
+    def get_instructor_name(self, obj):
+        if obj.instructor:
+            name = f"{obj.instructor.first_name} {obj.instructor.last_name}".strip()
+            return name or obj.instructor.email
+        return None
+
+    def get_enrollment_count(self, obj):
+        # Use annotation if available (set in viewset queryset), else fallback to DB
+        count = getattr(obj, '_enrollment_count', None)
+        if count is not None:
+            return count
+        return obj.enrollments.count()
 
     def get_curriculum(self, obj):
         return [
@@ -81,7 +109,28 @@ class CourseSerializer(serializers.ModelSerializer):
                         "order": lesson.order,
                     }
                     for lesson in module.lessons.all()
-                ]
+                ],
+                "live_sessions": [
+                    {
+                        "id": ls.id,
+                        "title": ls.title,
+                        "description": ls.description or '',
+                        "date_time": ls.date_time.isoformat() if ls.date_time else '',
+                        "zoom_link": ls.zoom_link or '',
+                        "recording_url": ls.recording_url or '',
+                    }
+                    for ls in module.live_sessions.all()
+                ],
+                "resources": [
+                    {
+                        "id": r.id,
+                        "title": r.title,
+                        "description": r.description or '',
+                        "file_url": r.file_url or '',
+                        "resource_type": r.resource_type or 'link',
+                    }
+                    for r in module.resources.all()
+                ],
             }
             for module in obj.modules.all()
         ]
@@ -133,7 +182,32 @@ class CourseContentSerializer(CourseSerializer):
                     lesson_kwargs['is_free_preview'] = bool(lesson_item.get('is_free_preview', False))
 
                 Lesson.objects.create(**lesson_kwargs)
-        
+
+            # Create live sessions for this module
+            for ls_data in module_data.get('live_sessions', []):
+                if not ls_data.get('title'):
+                    continue
+                LiveSession.objects.create(
+                    module=module,
+                    title=ls_data['title'],
+                    description=ls_data.get('description', ''),
+                    date_time=ls_data.get('date_time') or None,
+                    zoom_link=ls_data.get('zoom_link', ''),
+                    recording_url=ls_data.get('recording_url', ''),
+                )
+
+            # Create resources for this module
+            for r_data in module_data.get('resources', []):
+                if not r_data.get('title'):
+                    continue
+                Resource.objects.create(
+                    module=module,
+                    title=r_data['title'],
+                    description=r_data.get('description', ''),
+                    file_url=r_data.get('file_url', ''),
+                    resource_type=r_data.get('resource_type', 'link'),
+                )
+
         return course
 
     @transaction.atomic
@@ -217,7 +291,56 @@ class CourseContentSerializer(CourseSerializer):
                         lesson.save()
                     else:
                         Lesson.objects.create(module=module, **lesson_kwargs)
-        
+
+                # ── Upsert live sessions ──
+                incoming_ls = module_data.get('live_sessions', [])
+                existing_ls_ids = list(module.live_sessions.values_list('id', flat=True))
+                incoming_ls_ids = [ls.get('id') for ls in incoming_ls if ls.get('id')]
+                LiveSession.objects.filter(id__in=set(existing_ls_ids) - set(incoming_ls_ids)).delete()
+                for ls_data in incoming_ls:
+                    ls_id = ls_data.get('id')
+                    ls_title = ls_data.get('title')
+                    if not ls_title:
+                        continue
+                    ls_kwargs = {
+                        'title': ls_title,
+                        'description': ls_data.get('description', ''),
+                        'date_time': ls_data.get('date_time') or None,
+                        'zoom_link': ls_data.get('zoom_link', ''),
+                        'recording_url': ls_data.get('recording_url', ''),
+                    }
+                    if ls_id and ls_id in existing_ls_ids:
+                        ls_obj = LiveSession.objects.get(id=ls_id)
+                        for attr, val in ls_kwargs.items():
+                            setattr(ls_obj, attr, val)
+                        ls_obj.save()
+                    else:
+                        LiveSession.objects.create(module=module, **ls_kwargs)
+
+                # ── Upsert resources ──
+                incoming_res = module_data.get('resources', [])
+                existing_res_ids = list(module.resources.values_list('id', flat=True))
+                incoming_res_ids = [r.get('id') for r in incoming_res if r.get('id')]
+                Resource.objects.filter(id__in=set(existing_res_ids) - set(incoming_res_ids)).delete()
+                for r_data in incoming_res:
+                    r_id = r_data.get('id')
+                    r_title = r_data.get('title')
+                    if not r_title:
+                        continue
+                    r_kwargs = {
+                        'title': r_title,
+                        'description': r_data.get('description', ''),
+                        'file_url': r_data.get('file_url', ''),
+                        'resource_type': r_data.get('resource_type', 'link'),
+                    }
+                    if r_id and r_id in existing_res_ids:
+                        r_obj = Resource.objects.get(id=r_id)
+                        for attr, val in r_kwargs.items():
+                            setattr(r_obj, attr, val)
+                        r_obj.save()
+                    else:
+                        Resource.objects.create(module=module, **r_kwargs)
+
         return instance
 
 class EnrollmentSerializer(serializers.ModelSerializer):

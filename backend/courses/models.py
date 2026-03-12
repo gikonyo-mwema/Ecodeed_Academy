@@ -16,7 +16,7 @@ class Course(models.Model):
 
     PACING_CHOICES = [
         ('self_paced', 'Self-Paced'),
-        ('scheduled', 'Scheduled'),
+        ('weekly', 'Weekly Content'),
     ]
 
     title = models.CharField(max_length=255)

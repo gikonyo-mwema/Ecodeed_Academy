@@ -71,6 +71,29 @@ export default function Courses() {
         
         const courseList = Array.isArray(data) ? data : (data.results || []);
 
+        const formatEnrollCount = (count) => {
+          if (!count || count === 0) return null;
+          if (count >= 1000) return `${(count / 1000).toFixed(1).replace(/\.0$/, '')}k+ enrolled`;
+          return `${count} enrolled`;
+        };
+
+        const calcDuration = (c) => {
+          // Sum lesson durations from modules/curriculum
+          const modules = c.modules || c.curriculum || [];
+          let totalMins = 0;
+          modules.forEach(m => {
+            const lessons = m.lessons || m.items || [];
+            lessons.forEach(l => {
+              totalMins += (typeof l === 'object' ? (l.duration || 0) : 0);
+            });
+          });
+          if (totalMins === 0) return null;
+          if (totalMins < 60) return `${totalMins} min`;
+          const hrs = Math.floor(totalMins / 60);
+          const mins = totalMins % 60;
+          return mins > 0 ? `${hrs}h ${mins}m` : `${hrs} hour${hrs > 1 ? 's' : ''}`;
+        };
+
         const normalize = (c) => ({
           ...c,
           id: c.id || c._id,
@@ -81,8 +104,8 @@ export default function Courses() {
           isPopular: c.is_popular !== undefined ? c.is_popular : c.isPopular,
           features: Array.isArray(c.features) ? c.features : [],
           category: c.category || 'specialized',
-          duration: c.duration || '2 hours',
-          students: c.students || '1.2k+ enrolled'
+          duration: calcDuration(c),
+          students: formatEnrollCount(c.enrollment_count || c.enrollmentCount),
         });
 
         setCourses(courseList.map(normalize));
@@ -111,15 +134,16 @@ export default function Courses() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-emerald-600 dark:from-teal-800 dark:to-emerald-800">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="absolute inset-0 bg-grid-white/[0.2] bg-grid"></div>
+      <div className="relative overflow-hidden bg-gradient-to-br from-brand-green via-brand-green/90 to-brand-yellow">
+        {/* Subtle decorative circles instead of grid */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-brand-yellow/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
         <div className="relative max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 animate-fade-in">
+          <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6">
             Expand Your Environmental
-            <span className="block text-yellow-300">Knowledge</span>
+            <span className="block text-brand-yellow drop-shadow-md">Knowledge</span>
           </h1>
-          <p className="text-xl text-teal-50 max-w-3xl mx-auto mb-10">
+          <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto mb-10">
             Discover our carefully curated courses designed to advance your environmental expertise
           </p>
         </div>
@@ -172,11 +196,6 @@ function CourseCard({ course, category, index }) {
               🎓 Free
             </Badge>
           )}
-          {course.isLive && (
-            <Badge color="failure" className="px-3 py-1 text-sm font-semibold shadow-lg animate-pulse">
-              🔴 LIVE
-            </Badge>
-          )}
           {course.isPopular && (
             <Badge color="warning" className="px-3 py-1 text-sm font-semibold shadow-lg">
               ⭐ Popular
@@ -187,7 +206,7 @@ function CourseCard({ course, category, index }) {
 
       {/* Card Content */}
       <div className="p-6">
-        <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+        <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3 group-hover:text-brand-green dark:group-hover:text-brand-yellow transition-colors">
           {course.title}
         </h3>
         
@@ -220,7 +239,7 @@ function CourseCard({ course, category, index }) {
             <ul className="space-y-2">
               {course.features.slice(0, 3).map((feature, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <HiOutlineBadgeCheck className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
+                  <HiOutlineBadgeCheck className="w-4 h-4 text-brand-green flex-shrink-0 mt-0.5" />
                   <span>{feature}</span>
                 </li>
               ))}
@@ -245,7 +264,8 @@ function CourseCard({ course, category, index }) {
           
           <Link to={`/courses/${course.slug}`}>
             <Button
-              className={`bg-gradient-to-r ${config.color} text-white hover:shadow-lg transition-all transform hover:-translate-y-0.5 px-6`}
+              color="none"
+              className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 hover:shadow-lg transition-all transform hover:-translate-y-0.5 px-6"
               size="md"
             >
               View More →

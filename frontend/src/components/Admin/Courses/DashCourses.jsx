@@ -1,150 +1,63 @@
 /**
  * Dashboard Courses Management Component
- * 
- * A comprehensive course management interface for administrators that provides
- * full CRUD operations for educational environmental courses and programs.
- * 
- * Features:
- * - Create, edit, and delete environmental courses
- * - Course enrollment tracking and analytics
- * - Student progress monitoring and reporting
- * - Course content management with modules
- * - Pricing and payment integration
- * - Course scheduling and availability management
- * - Certificate generation for completed courses
- * - Bulk operations for course administration
- * 
- * Course Types Managed:
- * - Environmental Science Fundamentals
- * - Climate Change and Mitigation Strategies
- * - Sustainable Development Practices
- * - Renewable Energy Technologies
- * - Waste Management and Recycling
- * - Water Conservation Techniques
- * - Green Building and LEED Certification
- * - Carbon Footprint Assessment
- * 
- * Course Information Displayed:
- * - Course title, description, and objectives
- * - Instructor information and credentials
- * - Course duration and schedule
- * - Enrollment numbers and capacity
- * - Pricing and payment options
- * - Course rating and student feedback
- * - Completion rates and analytics
- * 
- * Administrative Features:
- * - Real-time enrollment monitoring
- * - Student progress tracking
- * - Course performance analytics
- * - Content management and updates
- * - Payment and billing oversight
- * - Certificate management
- * 
- * Security Features:
- * - Admin-only access with role verification
- * - Secure course deletion with confirmation
- * - Protected course content and materials
- * - Student data privacy protection
- * 
- * State Management:
- * - Local state for courses list and pagination
- * - Redux integration for user authentication
- * - Modal state for delete confirmations
- * - Loading states for API operations
- * 
+ *
+ * Enriched course table with instructor name, enrollment count, status.
+ * Clicking a row drills into CourseDetailView (assignments, sessions,
+ * resources, enrollments — all scoped to that course).
+ *
  * @component
- * @version 1.0.0
+ * @version 2.0.0
  * @author Gikonyo Mwema
  */
 
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Modal } from 'flowbite-react';
-import { HiOutlinePlus, HiOutlinePencilAlt, HiOutlineExclamationCircle } from 'react-icons/hi';
+import { Button, Table, Modal, Badge } from 'flowbite-react';
+import { HiOutlinePlus, HiOutlinePencilAlt, HiOutlineExclamationCircle, HiEye } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Unauthorized } from './Unauthorized';
 import { apiFetch } from '../../../utils/api';
+import CourseDetailView from './CourseDetailView';
 
-/**
- * DashCourses Component
- * Main courses management interface for administrators
- * 
- * @returns {JSX.Element} Complete courses management dashboard
- */
 export const DashCourses = () => {
-  // Redux state for user authentication
   const { currentUser } = useSelector((state) => state.user);
-  
-  /**
-   * Courses list state
-   * Stores the array of course objects fetched from the API
-   */
+
   const [courses, setCourses] = useState([]);
-  
-  /**
-   * Pagination control state
-   * Determines if more courses can be loaded
-   */
   const [showMore, setShowMore] = useState(true);
-  
-  /**
-   * Delete modal visibility state
-   * Controls the confirmation modal for course deletion
-   */
   const [showModal, setShowModal] = useState(false);
-  
-  /**
-   * Course deletion target
-   * Stores the ID of the course selected for deletion
-   */
   const [courseIdToDelete, setCourseIdToDelete] = useState('');
-  
-  /**
-   * Loading state for API operations
-   * Shows loading indicators during data fetching
-   */
   const [loading, setLoading] = useState(false);
 
-  /**
-   * Fetches courses from the API with pagination support
-   * Handles both initial load and pagination requests
-   * 
-   * @async
-   * @param {number} startIndex - Starting index for pagination (default: 0)
-   */
+  /* ── Drill-down state ── */
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
+  const isAdmin = currentUser?.isAdmin;
+  const isInstructor = currentUser?.isInstructor;
+
   const fetchCourses = async (startIndex = 0) => {
     try {
       setLoading(true);
-      
-      // Use the 'my-taught-courses' endpoint to filter by instructor (or show all for admin)
-      // This ensures mentors only see their own courses.
-      const url = startIndex > 0 
+      const url = startIndex > 0
         ? `/api/v1/courses/my-taught-courses?startIndex=${startIndex}`
         : '/api/v1/courses/my-taught-courses/';
-      
+
       const data = await apiFetch(url);
-      
-      // Determine correctly if using Django pagination (results) or naked list
       const courseList = Array.isArray(data) ? data : (data.results || data.courses || []);
-      
-      // Normalize Django snake_case to Frontend camelCase/Mongo-style _id
+
       const normalizedCourses = courseList.map(c => ({
         ...c,
         isPopular: c.is_popular !== undefined ? c.is_popular : c.isPopular,
         shortDescription: c.short_description || c.shortDescription,
-        features: Array.isArray(c.features) ? c.features : []
+        features: Array.isArray(c.features) ? c.features : [],
+        instructor_name: c.instructor_name || null,
+        enrollment_count: c.enrollment_count ?? 0,
       }));
 
       if (startIndex > 0) {
-        // Append to existing courses for pagination
         setCourses(prev => [...prev, ...normalizedCourses]);
       } else {
-        // Set initial courses data
         setCourses(normalizedCourses);
       }
-      
-      // Update pagination control
       setShowMore(normalizedCourses.length >= 9);
     } catch (error) {
       console.error('Error fetching courses:', error.message);
@@ -153,34 +66,15 @@ export const DashCourses = () => {
     }
   };
 
-  /**
-   * Effect to fetch courses when component mounts
-   * Only runs if current user has admin privileges
-   */
   useEffect(() => {
-    if (currentUser?.isAdmin || currentUser?.isInstructor) fetchCourses();
+    if (isAdmin || isInstructor) fetchCourses();
   }, [currentUser]);
 
-  /**
-   * Handles loading more courses for pagination
-   * Fetches the next batch of courses
-   */
-  const handleShowMore = () => {
-    fetchCourses(courses.length);
-  };
+  const handleShowMore = () => fetchCourses(courses.length);
 
-  /**
-   * Handles course deletion with API call
-   * Updates local state after successful deletion
-   * 
-   * @async
-   */
   const handleDeleteCourse = async () => {
     try {
-      await apiFetch(`/api/v1/courses/${courseIdToDelete}/`, {
-        method: 'DELETE',
-      });
-      
+      await apiFetch(`/api/v1/courses/${courseIdToDelete}/`, { method: 'DELETE' });
       setCourses(prev => prev.filter(course => course.id !== courseIdToDelete));
       setShowModal(false);
     } catch (error) {
@@ -188,16 +82,27 @@ export const DashCourses = () => {
     }
   };
 
-  if (!currentUser?.isAdmin && !currentUser?.isInstructor) {
-    return <Unauthorized />;
+  if (!isAdmin && !isInstructor) return <Unauthorized />;
+
+  /* ── Drill-down: show CourseDetailView ── */
+  if (selectedCourse) {
+    return (
+      <CourseDetailView
+        course={selectedCourse}
+        onBack={() => setSelectedCourse(null)}
+      />
+    );
   }
 
+  /* ── Courses list table ── */
   return (
     <div className="table-auto overflow-x-scroll md:mx-auto p-3">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">Manage Courses</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          {isAdmin ? 'All Courses' : 'My Courses'}
+        </h2>
         <Link to="/create-course">
-          <Button gradientDuoTone="tealToLime">
+          <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25">
             <HiOutlinePlus className="mr-2" />
             Add New Course
           </Button>
@@ -212,54 +117,78 @@ export const DashCourses = () => {
         <>
           <Table hoverable className="shadow-md">
             <Table.Head>
-              <Table.HeadCell>Title</Table.HeadCell>
-              <Table.HeadCell>Slug</Table.HeadCell>
+              <Table.HeadCell>Course</Table.HeadCell>
+              {isAdmin && <Table.HeadCell>Instructor</Table.HeadCell>}
               <Table.HeadCell>Price</Table.HeadCell>
-              <Table.HeadCell>Popular</Table.HeadCell>
+              <Table.HeadCell>Students</Table.HeadCell>
+              <Table.HeadCell>Status</Table.HeadCell>
               <Table.HeadCell>Actions</Table.HeadCell>
             </Table.Head>
             <Table.Body className="divide-y">
               {courses.map((course) => (
-                <Table.Row key={course.id} className="hover:bg-gray-50">
-                  <Table.Cell className="font-medium text-gray-900">
-                    {course.title}
-                  </Table.Cell>
-                  <Table.Cell className="font-mono text-sm text-gray-700">
-                    {course.slug}
-                  </Table.Cell>
+                <Table.Row
+                  key={course.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => setSelectedCourse(course)}
+                >
                   <Table.Cell>
-                    {course.price?.toLocaleString('en-US', {
-                      style: 'currency',
-                      currency: 'KES'
-                    })}
+                    <div className="flex items-center gap-3">
+                      {course.image && (
+                        <img src={course.image} alt="" className="w-12 h-8 rounded object-cover hidden sm:block" />
+                      )}
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{course.title}</p>
+                        <p className="text-xs text-gray-500">{course.category}</p>
+                      </div>
+                    </div>
                   </Table.Cell>
+                  {isAdmin && (
+                    <Table.Cell className="text-sm text-gray-600 dark:text-gray-300">
+                      {course.instructor_name || '—'}
+                    </Table.Cell>
+                  )}
                   <Table.Cell>
-                    {course.isPopular ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Popular
-                      </span>
+                    {course.is_free ? (
+                      <Badge color="success" size="sm">Free</Badge>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        Standard
+                      <span className="text-sm font-medium">
+                        KES {Number(course.price).toLocaleString()}
                       </span>
                     )}
                   </Table.Cell>
                   <Table.Cell>
-                    <div className="flex space-x-2">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand-green/10 text-brand-green text-sm font-bold">
+                      {course.enrollment_count}
+                    </span>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div className="flex gap-1.5">
+                      {course.is_live ? (
+                        <Badge color="success" size="sm">Live</Badge>
+                      ) : (
+                        <Badge color="gray" size="sm">Draft</Badge>
+                      )}
+                      {course.isPopular && (
+                        <Badge color="warning" size="sm">Popular</Badge>
+                      )}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        size="xs" color="light"
+                        onClick={() => setSelectedCourse(course)}
+                      >
+                        <HiEye className="mr-1 w-4 h-4" /> View
+                      </Button>
                       <Link to={`/edit-course/${course.id}`}>
-                        <Button outline gradientDuoTone="tealToLime" size="xs">
-                          <HiOutlinePencilAlt className="mr-1" />
-                          Edit
+                        <Button outline color="none" size="xs" className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors">
+                          <HiOutlinePencilAlt className="mr-1" /> Edit
                         </Button>
                       </Link>
                       <Button
-                        outline
-                        gradientDuoTone="pinkToOrange"
-                        size="xs"
-                        onClick={() => {
-                          setShowModal(true);
-                          setCourseIdToDelete(course.id);
-                        }}
+                        color="failure" outline size="xs"
+                        onClick={() => { setShowModal(true); setCourseIdToDelete(course.id); }}
                       >
                         Delete
                       </Button>
@@ -269,11 +198,11 @@ export const DashCourses = () => {
               ))}
             </Table.Body>
           </Table>
-          
+
           {showMore && (
             <button
               onClick={handleShowMore}
-              className="w-full text-teal-500 py-7 text-sm hover:text-teal-700 transition-colors"
+              className="w-full text-brand-green py-7 text-sm hover:text-brand-green/70 transition-colors"
               disabled={loading}
             >
               {loading ? 'Loading...' : 'Show more'}
@@ -284,7 +213,7 @@ export const DashCourses = () => {
         <div className="text-center py-12">
           <p className="text-gray-500 mb-4">No courses found</p>
           <Link to="/create-course">
-            <Button gradientDuoTone="tealToLime">
+            <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25">
               Create Your First Course
             </Button>
           </Link>
@@ -292,9 +221,7 @@ export const DashCourses = () => {
       )}
 
       <Modal show={showModal} onClose={() => setShowModal(false)} size="md">
-        <Modal.Header className="border-b-0 pb-0">
-          Confirm Deletion
-        </Modal.Header>
+        <Modal.Header className="border-b-0 pb-0">Confirm Deletion</Modal.Header>
         <Modal.Body className="pt-4">
           <div className="text-center">
             <HiOutlineExclamationCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -302,20 +229,8 @@ export const DashCourses = () => {
               Are you sure you want to delete this course?
             </h3>
             <div className="flex justify-center gap-4">
-              <Button 
-                color="gray" 
-                onClick={() => setShowModal(false)}
-                className="px-5"
-              >
-                Cancel
-              </Button>
-              <Button 
-                color="failure" 
-                onClick={handleDeleteCourse}
-                className="px-5"
-              >
-                Yes, delete
-              </Button>
+              <Button color="gray" onClick={() => setShowModal(false)} className="px-5">Cancel</Button>
+              <Button color="failure" onClick={handleDeleteCourse} className="px-5">Yes, delete</Button>
             </div>
           </div>
         </Modal.Body>

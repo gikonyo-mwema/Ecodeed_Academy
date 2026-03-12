@@ -21,31 +21,38 @@ export const EditCourse = () => {
     handleFeatureChange,
     addFeatureField,
     removeFeatureField,
+    handleTargetAudienceChange,
+    addTargetAudience,
+    removeTargetAudience,
     handleCurriculumChange,
     handleCurriculumItemChange,
     addCurriculumSection,
     addCurriculumItem,
     removeCurriculumItem,
     handleLessonDetailChange,
+    addLiveSession,
+    updateLiveSession,
+    removeLiveSession,
+    addResource,
+    updateResource,
+    removeResource,
     handleFaqChange,
     addFaq,
     removeFaq
   } = useCourseForm({
     title: '',
-    slug: '',
     price: '',
     shortDescription: '',
     description: '',
-    externalUrl: '',
     isPopular: false,
     isFree: false,
+    isLive: false,
     hasCertificate: false,
     pacingType: 'self_paced',
     category: 'specialized',
     features: [''],
+    targetAudience: [''],
     faqs: [{ question: '', answer: '' }],
-    level: [],
-    format: [],
     curriculum: []
   });
 
@@ -58,21 +65,26 @@ export const EditCourse = () => {
         setFormData(prev => ({
           ...prev,
           title: data.title || '',
-          slug: data.slug || '',
           price: data.price || '',
           shortDescription: data.short_description || data.shortDescription || '',
           description: data.full_description || data.description || '',
-          externalUrl: data.external_url || data.externalUrl || '',
           isPopular: data.is_popular !== undefined ? data.is_popular : (data.isPopular || false),
           isFree: data.is_free !== undefined ? data.is_free : (data.isFree || false),
           hasCertificate: data.has_certificate !== undefined ? data.has_certificate : (data.hasCertificate || false),
+          isLive: data.is_live !== undefined ? data.is_live : (data.isLive || false),
           pacingType: data.pacing_type || data.pacingType || 'self_paced',
           category: data.category || 'specialized',
           features: Array.isArray(data.features) && data.features.length > 0 ? data.features : [''],
+          targetAudience: Array.isArray(data.target_audience) && data.target_audience.length > 0 ? data.target_audience : (Array.isArray(data.targetAudience) && data.targetAudience.length > 0 ? data.targetAudience : ['']),
           faqs: Array.isArray(data.faqs) && data.faqs.length > 0 ? data.faqs : [{ question: '', answer: '' }],
-          level: Array.isArray(data.level) ? data.level : [],
-          format: Array.isArray(data.format) ? data.format : [],
-          curriculum: Array.isArray(data.curriculum) && data.curriculum.length > 0 ? data.curriculum : []
+          curriculum: Array.isArray(data.curriculum) && data.curriculum.length > 0
+            ? data.curriculum.map(section => ({
+                ...section,
+                items: Array.isArray(section.items) ? section.items : [],
+                live_sessions: Array.isArray(section.live_sessions) ? section.live_sessions : [],
+                resources: Array.isArray(section.resources) ? section.resources : [],
+              }))
+            : []
         }));
       } catch (error) {
         setError(error.message);
@@ -81,19 +93,19 @@ export const EditCourse = () => {
       }
     };
 
-    if (currentUser?.isAdmin) {
+    if (currentUser?.isAdmin || currentUser?.isInstructor) {
       fetchCourse();
     }
   }, [courseId, currentUser, setFormData, setError, setLoading]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, { isLive } = {}) => {
     e.preventDefault();
     try {
       setLoading(true);
       setError(null);
       
-      if (!currentUser?.isAdmin) {
-        throw new Error('Only admins can edit courses');
+      if (!currentUser?.isAdmin && !currentUser?.isInstructor) {
+        throw new Error('Only admins and instructors can edit courses');
       }
 
       // Map back to snake_case for Django
@@ -101,12 +113,15 @@ export const EditCourse = () => {
         ...formData,
         short_description: formData.shortDescription,
         full_description: formData.description,
-        external_url: formData.externalUrl,
         is_popular: formData.isPopular,
         is_free: formData.isFree,
         has_certificate: formData.hasCertificate,
         pacing_type: formData.pacingType || 'self_paced',
-        price: Number(formData.price) || 0
+        target_audience: formData.targetAudience || [],
+        price: Number(formData.price) || 0,
+        // If isLive is explicitly passed (from Publish/Unpublish buttons), use it.
+        // Otherwise preserve the current value from formData.
+        is_live: isLive !== undefined ? isLive : Boolean(formData.isLive),
       };
 
       const data = await apiFetch(`/api/v1/courses/${courseId}/`, {
@@ -122,7 +137,7 @@ export const EditCourse = () => {
     }
   };
 
-  if (!currentUser?.isAdmin) {
+  if (!currentUser?.isAdmin && !currentUser?.isInstructor) {
     return <Unauthorized />;
   }
 
@@ -149,15 +164,23 @@ export const EditCourse = () => {
       handleFaqChange={handleFaqChange}
       addFeatureField={addFeatureField}
       removeFeatureField={removeFeatureField}
+      handleTargetAudienceChange={handleTargetAudienceChange}
+      addTargetAudience={addTargetAudience}
+      removeTargetAudience={removeTargetAudience}
       addCurriculumSection={addCurriculumSection}
       addCurriculumItem={addCurriculumItem}
       removeCurriculumItem={removeCurriculumItem}
       handleLessonDetailChange={handleLessonDetailChange}
+      addLiveSession={addLiveSession}
+      updateLiveSession={updateLiveSession}
+      removeLiveSession={removeLiveSession}
+      addResource={addResource}
+      updateResource={updateResource}
+      removeResource={removeResource}
       addFaq={addFaq}
       removeFaq={removeFaq}
       handleSubmit={handleSubmit}
       title="Edit Course"
-      submitButtonText="Update Course"
     />
   );
 };

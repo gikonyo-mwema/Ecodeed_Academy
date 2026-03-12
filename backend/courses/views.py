@@ -2,7 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from .models import Course, Enrollment, Module, Lesson, LiveSession, Resource, Assignment
 from .serializers import (
@@ -15,20 +15,50 @@ from .permissions import IsInstructorOrReadOnly, IsModuleContentInstructor
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    
+
+    def get_serializer_class(self):
+        """Use CourseContentSerializer for write operations so the custom
+        create()/update() logic that persists curriculum, live_sessions,
+        and resources is actually invoked."""
+        if self.action in ('create', 'update', 'partial_update'):
+            return CourseContentSerializer
+        return CourseSerializer
+
     def get_queryset(self):
         """Optimised queryset with prefetch_related to prevent N+1 queries.
         
         Module → lessons, assignments, live_sessions, resources are all
         reverse FK relations, so we use prefetch_related (not select_related).
         instructor is a FK on Course, so select_related is appropriate.
+        _enrollment_count is annotated for the serializer.
+
+        For public list views, only published (is_live=True) courses are shown.
+        Admins see everything; instructors also see their own drafts.
         """
-        return Course.objects.select_related('instructor').prefetch_related(
+        qs = Course.objects.select_related('instructor').prefetch_related(
             'modules__lessons',
             'modules__assignments',
             'modules__live_sessions',
             'modules__resources',
+        ).annotate(
+            _enrollment_count=Count('enrollments'),
         )
+
+        # For list actions, filter out drafts for public visitors
+        if self.action == 'list':
+            user = self.request.user
+            if user.is_authenticated and user.is_staff:
+                # Admins see all courses including drafts
+                return qs
+            elif user.is_authenticated and getattr(user, 'user_type', None) == 'instructor':
+                # Instructors see published courses + their own drafts
+                from django.db.models import Q
+                return qs.filter(Q(is_live=True) | Q(instructor=user))
+            else:
+                # Public visitors and regular users see only published courses
+                return qs.filter(is_live=True)
+
+        return qs
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -284,6 +314,13 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         )
         if self.request.user.is_staff:
             return qs
+        # Instructors see enrollments for courses they teach
+        from users.models import CustomUser
+        if self.request.user.user_type == CustomUser.UserType.MENTOR:
+            return qs.filter(
+                Q(user=self.request.user) |
+                Q(course__instructor=self.request.user)
+            )
         return qs.filter(user=self.request.user)
 
     def perform_create(self, serializer):

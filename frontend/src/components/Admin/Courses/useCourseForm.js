@@ -7,161 +7,177 @@ export const useCourseForm = (initialState) => {
 
   const handleChange = (e) => {
     const { id, value, type, checked } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [id]: type === 'checkbox' ? (checked !== undefined ? checked : value === 'true') : value 
+    setFormData(prev => ({
+      ...prev,
+      [id]: type === 'checkbox' ? (checked !== undefined ? checked : value === 'true') : value,
     }));
   };
 
+  // ── Features ──
   const handleFeatureChange = (index, value) => {
     setFormData(prev => {
-      const newFeatures = [...(prev.features || [])];
-      newFeatures[index] = value;
-      return { ...prev, features: newFeatures };
+      const f = [...(prev.features || [])];
+      f[index] = value;
+      return { ...prev, features: f };
     });
   };
+  const addFeatureField = () => setFormData(prev => ({ ...prev, features: [...(prev.features || []), ''] }));
+  const removeFeatureField = (index) => setFormData(prev => ({
+    ...prev, features: (prev.features || []).filter((_, i) => i !== index),
+  }));
 
-  const addFeatureField = () => {
-    setFormData(prev => ({ ...prev, features: [...(prev.features || []), ''] }));
-  };
-
-  const removeFeatureField = (index) => {
+  // ── Target Audience ──
+  const handleTargetAudienceChange = (index, value) => {
     setFormData(prev => {
-      const newFeatures = (prev.features || []).filter((_, i) => i !== index);
-      return { ...prev, features: newFeatures };
+      const ta = [...(prev.targetAudience || [])];
+      ta[index] = value;
+      return { ...prev, targetAudience: ta };
+    });
+  };
+  const addTargetAudience = () => setFormData(prev => ({ ...prev, targetAudience: [...(prev.targetAudience || []), ''] }));
+  const removeTargetAudience = (index) => setFormData(prev => ({
+    ...prev, targetAudience: (prev.targetAudience || []).filter((_, i) => i !== index),
+  }));
+
+  // ── Curriculum (Weeks/Modules) ──
+  const _updateSection = (sectionIndex, updater) => {
+    setFormData(prev => {
+      const c = [...(prev.curriculum || [])];
+      if (c[sectionIndex]) c[sectionIndex] = updater(c[sectionIndex]);
+      return { ...prev, curriculum: c };
     });
   };
 
-  // Curriculum Handlers
   const handleCurriculumChange = (sectionIndex, field, value) => {
-    setFormData(prev => {
-      const newCurriculum = [...(prev.curriculum || [])];
-      if (newCurriculum[sectionIndex]) {
-        newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], [field]: value };
-      }
-      return { ...prev, curriculum: newCurriculum };
-    });
+    _updateSection(sectionIndex, sec => ({ ...sec, [field]: value }));
   };
 
   const handleCurriculumItemChange = (sectionIndex, itemIndex, value) => {
-    setFormData(prev => {
-      const newCurriculum = [...(prev.curriculum || [])];
-      if (newCurriculum[sectionIndex] && Array.isArray(newCurriculum[sectionIndex].items)) {
-        const newItems = [...newCurriculum[sectionIndex].items];
-        
-        // Update object if it's an object, or convert string to object (migration safety)
-        const currentItem = newItems[itemIndex];
-        if (typeof currentItem === 'object' && currentItem !== null) {
-           newItems[itemIndex] = { ...currentItem, title: value };
-        } else {
-           newItems[itemIndex] = { title: value };
-        }
-        
-        newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], items: newItems };
-      }
-      return { ...prev, curriculum: newCurriculum };
+    _updateSection(sectionIndex, sec => {
+      const items = [...(sec.items || [])];
+      const cur = items[itemIndex];
+      items[itemIndex] = typeof cur === 'object' && cur !== null
+        ? { ...cur, title: value }
+        : { title: value };
+      return { ...sec, items };
     });
   };
 
   const addCurriculumSection = () => {
-    setFormData(prev => ({ 
-      ...prev, 
-      curriculum: [...(prev.curriculum || []), { title: '', items: [{ title: '' }] }] 
+    setFormData(prev => ({
+      ...prev,
+      curriculum: [...(prev.curriculum || []), {
+        title: '', items: [{ title: '' }], live_sessions: [], resources: [],
+      }],
     }));
   };
 
   const addCurriculumItem = (sectionIndex) => {
-    setFormData(prev => {
-      const newCurriculum = [...(prev.curriculum || [])];
-      if (newCurriculum[sectionIndex]) {
-        newCurriculum[sectionIndex] = { 
-          ...newCurriculum[sectionIndex], 
-          items: [...(newCurriculum[sectionIndex].items || []), { title: '' }] 
-        };
-      }
-      return { ...prev, curriculum: newCurriculum };
-    });
+    _updateSection(sectionIndex, sec => ({
+      ...sec,
+      items: [...(sec.items || []), { title: '' }],
+    }));
   };
 
   const removeCurriculumItem = (sectionIndex, itemIndex) => {
     setFormData(prev => {
-      const newCurriculum = [...(prev.curriculum || [])];
-      if (newCurriculum[sectionIndex]) {
-        if (itemIndex !== undefined) {
-          // Remove specific lesson
-          const newItems = newCurriculum[sectionIndex].items.filter((_, i) => i !== itemIndex);
-          newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], items: newItems };
-        } else {
-          // Remove whole section
-          newCurriculum.splice(sectionIndex, 1);
-        }
+      const c = [...(prev.curriculum || [])];
+      if (!c[sectionIndex]) return prev;
+      if (itemIndex !== undefined) {
+        c[sectionIndex] = {
+          ...c[sectionIndex],
+          items: c[sectionIndex].items.filter((_, i) => i !== itemIndex),
+        };
+      } else {
+        c.splice(sectionIndex, 1);
       }
-      return { ...prev, curriculum: newCurriculum };
+      return { ...prev, curriculum: c };
     });
   };
 
   // Lesson detail handler — update any field on a curriculum lesson item
   const handleLessonDetailChange = (sectionIndex, itemIndex, field, value) => {
-    setFormData(prev => {
-      const newCurriculum = [...(prev.curriculum || [])];
-      if (newCurriculum[sectionIndex] && Array.isArray(newCurriculum[sectionIndex].items)) {
-        const newItems = [...newCurriculum[sectionIndex].items];
-        const currentItem = newItems[itemIndex];
-        if (typeof currentItem === 'object' && currentItem !== null) {
-          newItems[itemIndex] = { ...currentItem, [field]: value };
-        } else {
-          newItems[itemIndex] = { title: currentItem || '', [field]: value };
-        }
-        newCurriculum[sectionIndex] = { ...newCurriculum[sectionIndex], items: newItems };
-      }
-      return { ...prev, curriculum: newCurriculum };
+    _updateSection(sectionIndex, sec => {
+      const items = [...(sec.items || [])];
+      const cur = items[itemIndex];
+      items[itemIndex] = typeof cur === 'object' && cur !== null
+        ? { ...cur, [field]: value }
+        : { title: cur || '', [field]: value };
+      return { ...sec, items };
     });
   };
 
-  // FAQ Handlers
-  const handleFaqChange = (index, field, value) => {
-    setFormData(prev => {
-      const newFaqs = [...(prev.faqs || [])];
-      if (newFaqs[index]) {
-        newFaqs[index] = { ...newFaqs[index], [field]: value };
-      }
-      return { ...prev, faqs: newFaqs };
-    });
-  };
-
-  const addFaq = () => {
-    setFormData(prev => ({ 
-      ...prev, 
-      faqs: [...(prev.faqs || []), { question: '', answer: '' }] 
+  // ── Live Sessions per week ──
+  const addLiveSession = (sectionIndex) => {
+    _updateSection(sectionIndex, sec => ({
+      ...sec,
+      live_sessions: [...(sec.live_sessions || []), { title: '', zoom_link: '', description: '', date_time: '' }],
     }));
   };
 
-  const removeFaq = (index) => {
-    setFormData(prev => {
-      const newFaqs = (prev.faqs || []).filter((_, i) => i !== index);
-      return { ...prev, faqs: newFaqs };
+  const updateLiveSession = (sectionIndex, lsIndex, field, value) => {
+    _updateSection(sectionIndex, sec => {
+      const ls = [...(sec.live_sessions || [])];
+      ls[lsIndex] = { ...ls[lsIndex], [field]: value };
+      return { ...sec, live_sessions: ls };
     });
   };
 
+  const removeLiveSession = (sectionIndex, lsIndex) => {
+    _updateSection(sectionIndex, sec => ({
+      ...sec,
+      live_sessions: (sec.live_sessions || []).filter((_, i) => i !== lsIndex),
+    }));
+  };
+
+  // ── Resources per week ──
+  const addResource = (sectionIndex) => {
+    _updateSection(sectionIndex, sec => ({
+      ...sec,
+      resources: [...(sec.resources || []), { title: '', file_url: '', description: '', resource_type: 'link' }],
+    }));
+  };
+
+  const updateResource = (sectionIndex, rIndex, field, value) => {
+    _updateSection(sectionIndex, sec => {
+      const res = [...(sec.resources || [])];
+      res[rIndex] = { ...res[rIndex], [field]: value };
+      return { ...sec, resources: res };
+    });
+  };
+
+  const removeResource = (sectionIndex, rIndex) => {
+    _updateSection(sectionIndex, sec => ({
+      ...sec,
+      resources: (sec.resources || []).filter((_, i) => i !== rIndex),
+    }));
+  };
+
+  // ── FAQs ──
+  const handleFaqChange = (index, field, value) => {
+    setFormData(prev => {
+      const f = [...(prev.faqs || [])];
+      if (f[index]) f[index] = { ...f[index], [field]: value };
+      return { ...prev, faqs: f };
+    });
+  };
+  const addFaq = () => setFormData(prev => ({
+    ...prev, faqs: [...(prev.faqs || []), { question: '', answer: '' }],
+  }));
+  const removeFaq = (index) => setFormData(prev => ({
+    ...prev, faqs: (prev.faqs || []).filter((_, i) => i !== index),
+  }));
+
   return {
-    formData,
-    setFormData,
-    error,
-    setError,
-    loading,
-    setLoading,
+    formData, setFormData, error, setError, loading, setLoading,
     handleChange,
-    handleFeatureChange,
-    addFeatureField,
-    removeFeatureField,
-    handleCurriculumChange,
-    handleCurriculumItemChange,
-    addCurriculumSection,
-    addCurriculumItem,
-    removeCurriculumItem,
+    handleFeatureChange, addFeatureField, removeFeatureField,
+    handleTargetAudienceChange, addTargetAudience, removeTargetAudience,
+    handleCurriculumChange, handleCurriculumItemChange,
+    addCurriculumSection, addCurriculumItem, removeCurriculumItem,
     handleLessonDetailChange,
-    handleFaqChange,
-    addFaq,
-    removeFaq
+    addLiveSession, updateLiveSession, removeLiveSession,
+    addResource, updateResource, removeResource,
+    handleFaqChange, addFaq, removeFaq,
   };
 };

@@ -112,12 +112,8 @@ export default function CourseDetails() {
     }
     if (course.isFree) {
       enrollUser();
-    } else if (course.externalUrl) {
-      // External payment platform
-      setProcessing(true);
-      window.location.href = course.externalUrl;
     } else {
-      // Show our payment modal
+      // Show Paystack payment modal
       setShowPaymentModal(true);
     }
   };
@@ -166,7 +162,7 @@ export default function CourseDetails() {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Course Unavailable</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <Link to="/courses">
-            <Button gradientDuoTone="tealToLime">
+            <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25">
               Browse Other Courses
             </Button>
           </Link>
@@ -262,9 +258,9 @@ export default function CourseDetails() {
                 {!isEnrolled ? (
                   <>
                     <Button
-                      gradientDuoTone="tealToLime"
+                      color="none"
                       size="lg"
-                      className="w-full mb-4"
+                      className="w-full mb-4 bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
                       onClick={handleEnroll}
                       disabled={processing}
                     >
@@ -279,19 +275,15 @@ export default function CourseDetails() {
 
                     <div className="space-y-3 text-sm text-gray-600">
                       <p className="flex items-center">
-                        <HiOutlineCheckCircle className="mr-2 text-teal-500 w-5 h-5" />
+                          <HiOutlineCheckCircle className="mr-2 text-brand-green w-5 h-5" />
                         Lifetime access
                       </p>
                       {course.certificate && (
                         <p className="flex items-center">
-                          <HiOutlineCheckCircle className="mr-2 text-teal-500 w-5 h-5" />
+                          <HiOutlineCheckCircle className="mr-2 text-brand-green w-5 h-5" />
                           Certificate of completion
                         </p>
                       )}
-                      <p className="flex items-center">
-                        <HiOutlineCheckCircle className="mr-2 text-teal-500 w-5 h-5" />
-                        30-day money-back guarantee
-                      </p>
                     </div>
                   </>
                 ) : (
@@ -300,8 +292,8 @@ export default function CourseDetails() {
                       ✓ You're enrolled!
                     </Badge>
                     <Button 
-                      gradientDuoTone="tealToLime" 
-                      className="w-full"
+                      color="none"
+                      className="w-full bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0"
                       onClick={() => navigate(`/dashboard?tab=course-${course.id || course._id}-weeks`)}
                     >
                       Continue Learning
@@ -336,7 +328,7 @@ export default function CourseDetails() {
                       {course.fullDescription?.length > 300 && (
                         <button
                           onClick={() => setShowFullDescription(!showFullDescription)}
-                          className="text-teal-600 font-medium hover:text-teal-700 mt-2"
+                          className="text-brand-green font-medium hover:text-brand-green/70 mt-2"
                         >
                           {showFullDescription ? 'Show less' : 'Read more'}
                         </button>
@@ -347,7 +339,7 @@ export default function CourseDetails() {
                     <div className="grid md:grid-cols-2 gap-3">
                       {course.features?.map((feature, index) => (
                         <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg">
-                          <HiOutlineCheckCircle className="h-5 w-5 text-teal-500 mr-3 mt-0.5 flex-shrink-0" />
+                          <HiOutlineCheckCircle className="h-5 w-5 text-brand-green mr-3 mt-0.5 flex-shrink-0" />
                           <span className="text-gray-700">{feature}</span>
                         </div>
                       ))}
@@ -450,9 +442,9 @@ export default function CourseDetails() {
                 {!isEnrolled ? (
                   <>
                     <Button
-                      gradientDuoTone="tealToLime"
+                      color="none"
                       size="lg"
-                      className="w-full mb-4"
+                      className="w-full mb-4 bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
                       onClick={handleEnroll}
                       disabled={processing}
                     >
@@ -467,12 +459,12 @@ export default function CourseDetails() {
 
                     <div className="space-y-2 text-sm text-gray-600">
                       <p className="flex items-center">
-                        <HiOutlineCheckCircle className="mr-2 text-teal-500" />
+                        <HiOutlineCheckCircle className="mr-2 text-brand-green" />
                         Lifetime access
                       </p>
                       {course.certificate && (
                         <p className="flex items-center">
-                          <HiOutlineCheckCircle className="mr-2 text-teal-500" />
+                          <HiOutlineCheckCircle className="mr-2 text-brand-green" />
                           Certificate of completion
                         </p>
                       )}
@@ -484,8 +476,8 @@ export default function CourseDetails() {
                       ✓ You're enrolled!
                     </Badge>
                     <Button 
-                      gradientDuoTone="tealToLime" 
-                      className="w-full"
+                      color="none"
+                      className="w-full bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0"
                       onClick={() => navigate(`/dashboard?tab=course-${course.id || course._id}-weeks`)}
                     >
                       Continue Learning
@@ -510,12 +502,12 @@ export default function CourseDetails() {
                     <span className="text-gray-600">Language</span>
                     <span className="font-medium text-gray-800">{course.language}</span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Certificate</span>
-                    <Badge color={course.certificate ? 'success' : 'gray'}>
-                      {course.certificate ? 'Yes' : 'No'}
-                    </Badge>
-                  </div>
+                  {course.certificate && (
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Certificate</span>
+                      <Badge color="success">Yes</Badge>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between py-2">
                     <span className="text-gray-600">Access</span>
                     <span className="font-medium text-gray-800">Lifetime</span>
@@ -530,12 +522,12 @@ export default function CourseDetails() {
                   {course.instructor?.profile_picture ? (
                     <img 
                       src={course.instructor.profile_picture} 
-                      alt={course.instructor.name || course.instructor.username}
+                      alt={course.instructor_name || 'Instructor'}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 flex items-center justify-center text-white text-2xl font-bold">
-                      {(course.instructor?.name || course.instructor?.username || course.instructor?.first_name || 'E')
+                      {(course.instructor_name || course.instructor?.first_name || 'E')
                         .split(' ')
                         .map(n => n[0])
                         .join('')
@@ -545,16 +537,17 @@ export default function CourseDetails() {
                   )}
                   <div>
                     <h4 className="font-bold text-gray-800">
-                      {course.instructor?.name || course.instructor?.username || 
+                      {course.instructor_name || 
                        (course.instructor?.first_name && course.instructor?.last_name 
                          ? `${course.instructor.first_name} ${course.instructor.last_name}` 
-                         : 'Ecodeed')}
+                         : course.instructor?.email || 'Ecodeed')}
                     </h4>
-                    <p className="text-sm text-gray-600">
-                      {course.instructor?.title || course.instructor?.bio?.substring(0, 50) || 'Environmental Expert'}
-                    </p>
-                    {course.instructor?.experience && (
-                      <p className="text-sm text-gray-500 mt-1">{course.instructor.experience}</p>
+                    {course.instructor?.bio && (
+                      <p className="text-sm text-gray-600">
+                        {course.instructor.bio.length > 80 
+                          ? `${course.instructor.bio.substring(0, 80)}...` 
+                          : course.instructor.bio}
+                      </p>
                     )}
                   </div>
                 </div>
