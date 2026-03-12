@@ -145,3 +145,42 @@ class EmailCampaign(models.Model):
 
     def __str__(self):
         return f"{self.subject} ({self.status})"
+
+
+class Announcement(models.Model):
+    """
+    Site-wide announcement banner managed by admins.
+
+    Only the most recent active announcement is displayed.
+    Admins can create, edit, and deactivate announcements
+    from the dashboard without touching code.
+    """
+
+    text = models.CharField(max_length=300, help_text='The announcement message')
+    link_url = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        help_text='Internal route (e.g. /courses) or full URL',
+    )
+    link_label = models.CharField(
+        max_length=60,
+        blank=True,
+        default='',
+        help_text='CTA text shown next to the message (e.g. "Learn more →")',
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Only the latest active announcement is displayed',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Announcement'
+        verbose_name_plural = 'Announcements'
+
+    def __str__(self):
+        status = '✅' if self.is_active else '❌'
+        return f"{status} {self.text[:60]}"

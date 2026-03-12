@@ -21,4 +21,9 @@ urlpatterns = [
 
     # Broadcast (admin)
     path('broadcast/', views.broadcast, name='broadcast'),
+
+    # Announcements
+    path('announcements/active', views.announcement_active, name='announcement-active'),
+    path('announcements/', views.announcement_list_create, name='announcement-list-create'),
+    path('announcements/<int:pk>/', views.announcement_detail, name='announcement-detail'),
 ]

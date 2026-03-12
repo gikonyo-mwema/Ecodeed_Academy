@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import NewsletterSubscriber, ContactMessage, EmailCampaign
+from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, Announcement
 
 
 @admin.register(NewsletterSubscriber)
@@ -29,3 +29,11 @@ class EmailCampaignAdmin(admin.ModelAdmin):
     list_filter = ('status', 'audience_type')
     search_fields = ('subject',)
     readonly_fields = ('sent_at', 'created_at', 'recipient_count')
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('text', 'is_active', 'link_url', 'created_at', 'updated_at')
+    list_filter = ('is_active',)
+    list_editable = ('is_active',)
+    search_fields = ('text',)

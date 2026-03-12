@@ -3,7 +3,7 @@ Serializers for the Messages & Newsletter app.
 """
 
 from rest_framework import serializers
-from .models import NewsletterSubscriber, ContactMessage, EmailCampaign
+from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, Announcement
 
 
 class NewsletterSubscribeSerializer(serializers.Serializer):
@@ -73,3 +73,21 @@ class EmailCampaignListSerializer(serializers.ModelSerializer):
             'recipient_count', 'sent_by_email', 'sent_at', 'created_at',
         ]
         read_only_fields = fields
+
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    """Serializer for the site-wide announcement banner."""
+    linkUrl = serializers.CharField(source='link_url', required=False, allow_blank=True)
+    linkLabel = serializers.CharField(source='link_label', required=False, allow_blank=True)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+
+    class Meta:
+        model = Announcement
+        fields = [
+            'id', 'text', 'link_url', 'linkUrl', 'link_label', 'linkLabel',
+            'is_active', 'isActive', 'created_at', 'createdAt',
+            'updated_at', 'updatedAt',
+        ]
+        read_only_fields = ['id', 'created_at', 'createdAt', 'updated_at', 'updatedAt']

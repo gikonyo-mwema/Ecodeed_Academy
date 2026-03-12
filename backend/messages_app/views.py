@@ -23,13 +23,14 @@ from rest_framework.response import Response
 
 from .throttles import ContactFormThrottle, NewsletterSubscribeThrottle
 
-from .models import NewsletterSubscriber, ContactMessage, EmailCampaign
+from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, Announcement
 from .serializers import (
     NewsletterSubscribeSerializer,
     NewsletterSubscriberSerializer,
     ContactMessageSerializer,
     EmailCampaignCreateSerializer,
     EmailCampaignListSerializer,
+    AnnouncementSerializer,
 )
 from .email_utils import (
     send_transactional_email,
@@ -551,3 +552,59 @@ def course_notify_students(request, course_id):
         },
         status=status.HTTP_201_CREATED,
     )
+
+
+# ────────────────────────────────────────────────────────────────────
+# Announcements
+# ────────────────────────────────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def announcement_active(request):
+    """
+    Return the latest active announcement (public).
+    Called by the Header component on every page load.
+    """
+    ann = Announcement.objects.filter(is_active=True).first()
+    if not ann:
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
+    return Response(AnnouncementSerializer(ann).data)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAdminUser])
+def announcement_list_create(request):
+    """
+    GET  — list all announcements (admin).
+    POST — create a new announcement (admin).
+    """
+    if request.method == 'GET':
+        qs = Announcement.objects.all()
+        return Response(AnnouncementSerializer(qs, many=True).data)
+
+    serializer = AnnouncementSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['PUT', 'PATCH', 'DELETE'])
+@permission_classes([IsAdminUser])
+def announcement_detail(request, pk):
+    """
+    PUT/PATCH — update an announcement (admin).
+    DELETE   — remove an announcement (admin).
+    """
+    try:
+        ann = Announcement.objects.get(pk=pk)
+    except Announcement.DoesNotExist:
+        return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        ann.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = AnnouncementSerializer(ann, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
