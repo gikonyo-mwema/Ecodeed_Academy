@@ -288,18 +288,22 @@ const Contact = () => {
                 </h4>
                 <div className="flex items-center gap-4">
                   {[
-                    { icon: FaFacebookF, url: "https://www.facebook.com/ecodeedcompany/", color: "bg-blue-600" },
-                    { icon: FaInstagram, url: "https://www.instagram.com/ecodeedcompany/", color: "bg-gradient-to-r from-pink-500 to-purple-500" },
-                    { icon: FaLinkedinIn, url: "https://www.linkedin.com/company/ecodeed-consultancy-company", color: "bg-blue-700" },
-                    { icon: FaTwitter, url: "https://x.com/EcodeedC", color: "bg-gray-800" },
+                    { icon: FaFacebookF, url: "https://www.facebook.com/ecodeedcompany/", label: "Facebook" },
+                    { icon: FaInstagram, url: "https://www.instagram.com/ecodeedcompany/", label: "Instagram" },
+                    { icon: FaLinkedinIn, url: "https://www.linkedin.com/company/ecodeed-consultancy-company", label: "LinkedIn" },
+                    { icon: FaTwitter, url: "https://x.com/EcodeedC", label: "Twitter" },
                   ].map((social, index) => (
                     <a
                       key={index}
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`p-3 rounded-full text-white hover:scale-110 transition-transform ${social.color}`}
-                      aria-label={social.icon.name.replace("Fa", "")}
+                      className={`p-3 rounded-full hover:scale-110 transition-all duration-200 ${
+                        theme === "light"
+                          ? "bg-brand-green text-white hover:bg-brand-yellow hover:text-brand-blue"
+                          : "bg-gray-700 text-gray-300 hover:bg-brand-yellow hover:text-brand-blue"
+                      }`}
+                      aria-label={social.label}
                     >
                       <social.icon size={16} />
                     </a>

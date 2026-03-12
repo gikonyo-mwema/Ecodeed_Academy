@@ -116,8 +116,8 @@ export default function Unsubscribe() {
           <div className="mt-8 space-y-4">
             <Link to="/">
               <Button 
-                gradientDuoTone="greenToBlue" 
-                className="w-full sm:w-auto"
+                color="none"
+                className="w-full sm:w-auto bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
               >
                 Back to Homepage
               </Button>

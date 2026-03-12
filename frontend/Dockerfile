@@ -10,8 +10,9 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Install dependencies first (layer caching)
+# This layer is only re-run when package*.json changes
 COPY package*.json ./
-RUN npm ci --maxsockets 5 --fetch-retries 5 --fetch-retry-mintimeout 20000
+RUN npm ci --prefer-offline --no-audit --no-fund
 
 # Copy source and build
 COPY . .

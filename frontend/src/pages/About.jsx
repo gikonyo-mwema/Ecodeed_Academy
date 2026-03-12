@@ -6,7 +6,7 @@ export default function About() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative bg-brand-blue text-white py-20">
+      <section className="relative bg-brand-blue dark:bg-brand-blue/80 dark:border-b dark:border-brand-green/30 text-white py-20">
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="md:w-1/2 space-y-6">
