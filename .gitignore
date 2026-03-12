@@ -1,6 +1,8 @@
 # Client .gitignore
 node_modules/
 .env
+.env.*
+frontend/.env*
 dist/
 .vite/
 

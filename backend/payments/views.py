@@ -117,7 +117,12 @@ class PaystackWebhookView(views.APIView):
 
     def post(self, request):
         secret = getattr(settings, 'PAYSTACK_WEBHOOK_SECRET', '')
+        if not secret:
+            logger.error('PAYSTACK_WEBHOOK_SECRET is not configured — rejecting webhook')
+            return Response({'detail': 'webhook not configured'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         header_sig = request.META.get('HTTP_X_PAYSTACK_SIGNATURE', '')
+        if not header_sig:
+            return Response({'detail': 'missing signature'}, status=status.HTTP_400_BAD_REQUEST)
         computed = hmac.new(secret.encode(), request.body, hashlib.sha512).hexdigest()
         if not hmac.compare_digest(computed, header_sig):
             return Response({'detail': 'invalid signature'}, status=status.HTTP_400_BAD_REQUEST)

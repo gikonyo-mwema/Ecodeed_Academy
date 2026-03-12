@@ -34,7 +34,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql  # Persist database data
     ports:
-      - "3306:3306"  # Optional: expose MySQL for external tools
+      - "127.0.0.1:3306:3306"  # Localhost only — never expose DB to network
 
   # ===========================================
   # Vite/React Frontend Service

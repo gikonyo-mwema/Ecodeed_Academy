@@ -7,9 +7,15 @@ from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime
+
+
+class LoginRateThrottle(AnonRateThrottle):
+    """Limit login attempts to 5 per minute per IP to prevent brute-force."""
+    rate = '5/min'
 
 from .serializers import (
     UserSerializer, UserRegistrationSerializer,
@@ -39,6 +45,7 @@ class UserRegistrationView(generics.CreateAPIView):
 
 class UserLoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [LoginRateThrottle]
 
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
@@ -177,16 +184,19 @@ class UserViewSet(viewsets.ModelViewSet):
         if not request.user.is_superuser and not request.user.is_staff:
              return Response({'message': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
              
-        start_index = int(request.query_params.get('startIndex', 0))
-        limit = int(request.query_params.get('limit', 9))
+        try:
+            start_index = max(0, int(request.query_params.get('startIndex', 0)))
+            limit = min(100, max(1, int(request.query_params.get('limit', 9))))
+        except (ValueError, TypeError):
+            return Response({'message': 'Invalid pagination parameters'}, status=status.HTTP_400_BAD_REQUEST)
         page = request.query_params.get('page')
         
         # Support page param for DashboardComponent
         if page:
              try:
-                 limit_val = int(limit) if limit else 5
-                 start_index = (int(page) - 1) * limit_val
-             except ValueError:
+                 limit_val = min(100, max(1, int(limit) if limit else 5))
+                 start_index = max(0, (int(page) - 1) * limit_val)
+             except (ValueError, TypeError):
                  pass
 
         # Sort logic

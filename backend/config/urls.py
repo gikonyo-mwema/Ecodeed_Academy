@@ -37,6 +37,9 @@ from posts.feeds import LatestPostsFeed, LatestPostsAtomFeed, CategoryPostsFeed
 from posts.sitemaps import SITEMAPS
 
 # Configure Swagger/OpenAPI documentation schema
+# In production, restrict API docs to staff users; in development, allow anyone
+_docs_permission = (permissions.AllowAny,) if settings.DEBUG else (permissions.IsAdminUser,)
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Ecodeed API",
@@ -46,8 +49,8 @@ schema_view = get_schema_view(
         contact=openapi.Contact(email="info@ecodeed.com"),
         license=openapi.License(name="BSD License"),
     ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
+    public=settings.DEBUG,
+    permission_classes=_docs_permission,
 )
 
 def robots_txt(request):

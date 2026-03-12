@@ -17,6 +17,11 @@ COPY . .
 # Collect static files at build time so Gunicorn/WhiteNoise can serve them
 RUN python manage.py collectstatic --noinput 2>/dev/null || true
 
+# Security: run as non-root user
+RUN addgroup --system app && adduser --system --ingroup app app \
+    && chown -R app:app /app
+USER app
+
 # Gunicorn: production-grade WSGI server
 # --bind            listen on all interfaces, port 8000
 # --workers         2× CPU cores + 1  (container usually gets 1-2 cores)
