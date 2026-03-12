@@ -220,7 +220,7 @@ export default function DashComments() {
                     </Table>
 
                     {showMore && (
-                        <button onClick={handleShowMore} className='w-full text-teal-500 self-center text-sm py-7'>
+                        <button onClick={handleShowMore} className='w-full text-brand-green self-center text-sm py-7'>
                             Show more
                         </button>
                     )}

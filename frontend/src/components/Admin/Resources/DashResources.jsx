@@ -139,7 +139,7 @@ export default function DashResources() {
           </p>
         </div>
         {selectedCourseId && (
-          <Button gradientDuoTone="tealToLime" onClick={openAdd}>
+          <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25" onClick={openAdd}>
             <HiOutlinePlus className="mr-2 h-5 w-5" /> Add Resource
           </Button>
         )}
@@ -170,7 +170,7 @@ export default function DashResources() {
           <HiDownload className="w-16 h-16 mx-auto mb-4" />
           <p className="text-lg mb-2">No resources yet</p>
           <p className="text-sm mb-4">Add PDFs, links, or other materials for students</p>
-          <Button gradientDuoTone="tealToLime" onClick={openAdd}>
+          <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25" onClick={openAdd}>
             <HiOutlinePlus className="mr-2" /> Add Resource
           </Button>
         </div>
@@ -269,7 +269,7 @@ export default function DashResources() {
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <Button color="gray" onClick={() => setShowModal(false)}>Cancel</Button>
-              <Button type="submit" gradientDuoTone="tealToLime" disabled={saving}>
+              <Button type="submit" color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25" disabled={saving}>
                 {saving && <Spinner size="sm" className="mr-2" />}
                 {editingResource ? 'Update' : 'Add'} Resource
               </Button>

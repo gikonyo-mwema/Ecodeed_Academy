@@ -221,9 +221,9 @@ export default function DashProfile() {
         />
         <Button
           type="submit"
-          className="bg-brand-green hover:bg-green-700 text-black font-semibold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md w-full sm:w-auto self-center mt-4"
+          color="none"
+          className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md w-full sm:w-auto self-center mt-4 border-0"
           disabled={loading}
-          gradientDuoTone="greenToBlue"
         >
           {loading ? 'Updating...' : 'Update Profile'}
         </Button>

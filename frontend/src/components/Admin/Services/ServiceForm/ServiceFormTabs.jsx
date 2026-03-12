@@ -207,7 +207,8 @@ const ServiceFormTabs = ({
           </div>
         ))}
         <Button
-          gradientMonochrome="info"
+          color="none"
+          className="bg-brand-green hover:bg-brand-green/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
           onClick={addProcessStep}
           disabled={loading}
         >
@@ -249,7 +250,8 @@ const ServiceFormTabs = ({
           </div>
         ))}
         <Button
-          gradientMonochrome="info"
+          color="none"
+          className="bg-brand-green hover:bg-brand-green/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
           onClick={addExample}
           disabled={loading}
         >
@@ -443,7 +445,8 @@ const ServiceFormTabs = ({
           </div>
         ))}
         <Button
-          gradientMonochrome="info"
+          color="none"
+          className="bg-brand-green hover:bg-brand-green/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
           onClick={addProjectType}
           disabled={loading}
         >
@@ -517,7 +520,8 @@ const ServiceFormTabs = ({
           </div>
         ))}
         <Button
-          gradientMonochrome="info"
+          color="none"
+          className="bg-brand-green hover:bg-brand-green/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
           onClick={addBenefit}
           disabled={loading}
         >
@@ -584,7 +588,8 @@ const ServiceFormTabs = ({
           </div>
         ))}
         <Button
-          gradientMonochrome="info"
+          color="none"
+          className="bg-brand-green hover:bg-brand-green/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
           onClick={addFeature}
           disabled={loading}
         >

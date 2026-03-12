@@ -88,7 +88,7 @@ export default function OAuth() {
         disabled={!googleAvailable || loading}
         className={`!border-2 !rounded-lg shadow-md font-semibold w-full flex items-center justify-center transition-all duration-200 ${
           googleAvailable && !loading
-            ? '!bg-white !border-red-500 !text-red-600 hover:!bg-red-500 hover:!text-white hover:!border-red-500 focus:!ring-2 focus:!ring-red-400 focus:!outline-none hover:scale-[1.02] active:scale-95'
+            ? '!bg-white !border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white hover:!border-brand-green focus:!ring-2 focus:!ring-brand-yellow focus:!outline-none hover:scale-[1.02] active:scale-95'
             : '!bg-gray-100 !border-gray-300 !text-gray-500 cursor-not-allowed'
         }`}
       >

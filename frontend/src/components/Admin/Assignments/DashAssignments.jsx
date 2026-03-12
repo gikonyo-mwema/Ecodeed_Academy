@@ -126,7 +126,7 @@ export default function DashAssignments() {
           </p>
         </div>
         {selectedCourseId && (
-          <Button gradientDuoTone="tealToLime" onClick={openAdd}>
+          <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25" onClick={openAdd}>
             <HiOutlinePlus className="mr-2 h-5 w-5" /> Add Assignment
           </Button>
         )}
@@ -157,7 +157,7 @@ export default function DashAssignments() {
           <HiClipboardCheck className="w-16 h-16 mx-auto mb-4" />
           <p className="text-lg mb-2">No assignments yet</p>
           <p className="text-sm mb-4">Create your first assignment for this course</p>
-          <Button gradientDuoTone="tealToLime" onClick={openAdd}>
+          <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25" onClick={openAdd}>
             <HiOutlinePlus className="mr-2" /> Add Assignment
           </Button>
         </div>
@@ -256,7 +256,7 @@ export default function DashAssignments() {
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <Button color="gray" onClick={() => setShowModal(false)}>Cancel</Button>
-              <Button type="submit" gradientDuoTone="tealToLime" disabled={saving}>
+              <Button type="submit" color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25" disabled={saving}>
                 {saving && <Spinner size="sm" className="mr-2" />}
                 {editingAssignment ? 'Update' : 'Create'} Assignment
               </Button>

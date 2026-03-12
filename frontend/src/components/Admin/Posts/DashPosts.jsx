@@ -106,7 +106,7 @@ export default function DashPosts() {
         
         {/* Create/Cancel post button */}
         <Button
-          className="bg-gradient-to-r from-brand-green to-brand-blue hover:from-brand-blue hover:to-brand-green text-white border-0 focus:ring-4 focus:ring-brand-green/25"
+          className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
           onClick={() => {
             setShowCreateForm(!showCreateForm);
             setShowEditForm(false);

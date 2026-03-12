@@ -88,6 +88,8 @@ export default function TipTapEditor({
         dropcursor: { color: '#14b8a6', width: 3 },
         // Disable built-in extensions we're replacing with configured versions
         strike: false,
+        // Disable link — we add our own configured Link extension below
+        link: false,
       }),
       Underline,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
