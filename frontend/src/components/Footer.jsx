@@ -121,15 +121,15 @@ export default function FooterComponent() {
                             title="Our Courses" 
                             className={`mb-3 text-lg font-semibold ${theme === 'light' ? 'text-brand-blue' : 'text-brand-yellow'}`} 
                         />
-                        <Footer.LinkGroup col className="space-y-2">
+                        <Footer.LinkGroup col className="space-y-2 max-h-64 overflow-y-auto">
                             {courses.length > 0 ? (
                                 courses.map((course) => (
                                     <Link 
                                         key={course.id || course._id}
                                         to={`/courses/${course.slug || course.id}`}
-                                        className={`text-sm ${theme === 'light' 
+                                        className={`text-sm normalize-case ${theme === 'light' 
                                             ? 'text-gray-600 hover:text-brand-yellow' 
-                                            : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
+                                            : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200 line-clamp-2`}
                                     >
                                         {course.title}
                                     </Link>
@@ -163,15 +163,15 @@ export default function FooterComponent() {
                             title="Our Services" 
                             className={`mb-3 text-lg font-semibold ${theme === 'light' ? 'text-brand-blue' : 'text-brand-yellow'}`} 
                         />
-                        <Footer.LinkGroup col className="space-y-2">
+                        <Footer.LinkGroup col className="space-y-2 max-h-64 overflow-y-auto">
                             {services.length > 0 ? (
                                 services.map((service) => (
                                     <Link 
                                         key={service.id || service._id}
                                         to={`/services/${service.slug || service.id}`}
-                                        className={`text-sm ${theme === 'light' 
+                                        className={`text-sm normalize-case ${theme === 'light' 
                                             ? 'text-gray-600 hover:text-brand-yellow' 
-                                            : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200`}
+                                            : 'text-gray-300 hover:text-brand-yellow'} transition-colors duration-200 line-clamp-2`}
                                     >
                                         {service.title}
                                     </Link>

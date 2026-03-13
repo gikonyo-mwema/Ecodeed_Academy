@@ -4,6 +4,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Normalize uppercase text to sentence case display */
+.normalize-case {
+    text-transform: none;
+}
+
+.capitalize-first {
+    text-transform: lowercase;
+}
+
+.capitalize-first::first-letter {
+    text-transform: uppercase;
+}
+
 body{
     height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
