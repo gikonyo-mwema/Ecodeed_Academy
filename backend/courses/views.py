@@ -83,7 +83,7 @@ from rest_framework.response import Response
 from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
-from .models import Course, Enrollment, Module, Lesson, LiveSession, Resource, Assignment
+from .models import Course, Enrollment, Lesson, LiveSession, Resource, Assignment
 from .serializers import (
     CourseSerializer, EnrollmentSerializer, CourseContentSerializer,
     LessonDetailSerializer, LiveSessionDetailSerializer,

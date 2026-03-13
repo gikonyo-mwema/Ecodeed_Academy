@@ -265,7 +265,7 @@ class Command(BaseCommand):
         # Try to find user, fallback to default
         user = default_user
         if 'userId' in mongo_post:
-            user_id_obj = mongo_post['userId']
+            mongo_post['userId']
             # MongoDB ObjectId format
             try:
                 # This is a placeholder - in reality you'd need to map MongoDB IDs

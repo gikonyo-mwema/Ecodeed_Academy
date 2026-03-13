@@ -109,10 +109,6 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from urllib.parse import urlparse
-<<<<<<< HEAD
-=======
-from slug import Slug  # Using python-slug library, or fallback to basic slugify
->>>>>>> origin/develop
 
 
 def slugify(text):

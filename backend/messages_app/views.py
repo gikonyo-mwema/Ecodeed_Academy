@@ -23,10 +23,9 @@ from rest_framework.response import Response
 
 from .throttles import ContactFormThrottle, NewsletterSubscribeThrottle
 
-from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, Announcement
+from .models import NewsletterSubscriber, EmailCampaign, Announcement
 from .serializers import (
     NewsletterSubscribeSerializer,
-    NewsletterSubscriberSerializer,
     ContactMessageSerializer,
     EmailCampaignCreateSerializer,
     EmailCampaignListSerializer,
