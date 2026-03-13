@@ -1,3 +1,105 @@
+/**
+ * useCourseForm Hook — Hierarchical course curriculum management with nested arrays.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Manages complex course form state including hierarchical curriculum structure
+ * with weeks/modules, lessons, live sessions, resources, FAQs, features, and target
+ * audience. Provides comprehensive handlers for deeply nested array operations.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * CURRICULUM STRUCTURE (Hierarchical)
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * curriculum: {
+ *   [section]: {
+ *     title: "Week 1",
+ *     items: [          // Lessons
+ *       { title: "Lesson 1", description, duration, ... }
+ *     ],
+ *     live_sessions: [  // Weekly live sessions
+ *       { title, zoom_link, description, date_time }
+ *     ],
+ *     resources: [      // Weekly resources
+ *       { title, file_url, resource_type, description }
+ *     ]
+ *   }
+ * }\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HANDLER ORGANIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Basic Form:
+ *   handleChange(e): Standard form field handler
+ *
+ * Features & Audience:
+ *   handleFeatureChange(i, value): Update feature by index
+ *   addFeatureField(), removeFeatureField(i)
+ *   handleTargetAudienceChange(i, value)
+ *   addTargetAudience(), removeTargetAudience(i)
+ *
+ * Curriculum (Weeks):
+ *   addCurriculumSection(): New week
+ *   handleCurriculumChange(sectionIdx, field, value)
+ *   removeCurriculumItem(sectionIdx): Delete entire week
+ *
+ * Lessons (per Week):
+ *   addCurriculumItem(sectionIdx): New lesson in week
+ *   handleCurriculumItemChange(sectionIdx, itemIdx, value)
+ *   handleLessonDetailChange(sectionIdx, itemIdx, field, value): Update any lesson field
+ *   removeCurriculumItem(sectionIdx, itemIdx): Delete lesson
+ *
+ * Live Sessions (per Week):
+ *   addLiveSession(sectionIdx): New session for week
+ *   updateLiveSession(sectionIdx, sessionIdx, field, value)
+ *   removeLiveSession(sectionIdx, sessionIdx)
+ *
+ * Resources (per Week):
+ *   addResource(sectionIdx): New resource for week
+ *   updateResource(sectionIdx, resourceIdx, field, value)
+ *   removeResource(sectionIdx, resourceIdx)
+ *
+ * FAQs (Global):
+ *   handleFaqChange(idx, field, value)
+ *   addFaq(), removeFaq(idx)\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FORM SCHEMA
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * {
+ *   title: string,
+ *   description: string,
+ *   features: string[],
+ *   targetAudience: string[],
+ *   curriculum: [
+ *     { title, items[], live_sessions[], resources[] }
+ *   ],
+ *   faqs: [{ question, answer }],
+ *   ...otherFields
+ * }\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * const {
+ *   formData,
+ *   handleCurriculumChange,
+ *   addCurriculumSection,
+ *   handleLessonDetailChange,
+ *   addResource, updateResource, removeResource
+ * } = useCourseForm(initialCourse);
+ *
+ * // Add a week
+ * <button onClick={addCurriculumSection}>+ Add Week</button>
+ *
+ * // Update week title
+ * <input
+ *   value={formData.curriculum[0].title}
+ *   onChange={(e) => handleCurriculumChange(0, 'title', e.target.value)}
+ * />\n *
+ * @hook useCourseForm
+ * @param {object} initialState - Initial form data with course structure
+ * @returns {object} Form state and handlers for all fields (features, audience, curriculum, etc.)
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useState } from 'react';
 
 export const useCourseForm = (initialState) => {

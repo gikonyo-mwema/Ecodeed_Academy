@@ -114,12 +114,8 @@ export default function Header() {
 
   /**
    * Effect to close mobile menu when route changes
-   * Programmatically clicks the Flowbite toggle to sync its internal state
    */
   useEffect(() => {
-    if (isNavOpen && navToggleRef.current) {
-      navToggleRef.current.click();
-    }
     setIsNavOpen(false);
     setIsMobileSearchOpen(false);
   }, [path]);
@@ -398,6 +394,7 @@ export default function Header() {
             ref={navToggleRef}
             onClick={() => setIsNavOpen((prev) => !prev)}
             className="lg:hidden text-brand-green dark:text-brand-yellow"
+            aria-expanded={isNavOpen}
           />
         </div>
 
@@ -437,16 +434,15 @@ export default function Header() {
         {/* Tap-outside overlay – closes mobile menu */}
         {isNavOpen && (
           <div
-            className="fixed inset-0 bg-black/20 z-[60] lg:hidden"
+            className="fixed inset-0 bg-black/20 z-[40] lg:hidden"
             onClick={() => {
-              if (navToggleRef.current) navToggleRef.current.click();
               setIsNavOpen(false);
             }}
           />
         )}
 
         {/* Mobile Menu */}
-        <Navbar.Collapse className="lg:hidden w-full mt-3 bg-white dark:bg-brand-blue rounded-lg shadow-lg relative z-[70]">
+        <Navbar.Collapse className={`${isNavOpen ? 'block' : 'hidden'} lg:hidden w-full mt-3 bg-white dark:bg-brand-blue rounded-lg shadow-lg relative z-[50]`}>
           {[
             { to: "/", label: "Home" },
             { to: "/about", label: "About" },
@@ -460,7 +456,6 @@ export default function Header() {
               as={Link}
               to={to}
               onClick={() => {
-                if (navToggleRef.current) navToggleRef.current.click();
                 setIsNavOpen(false);
               }}
               className={`px-4 py-3 rounded-md transition-colors duration-200 ${

@@ -1,3 +1,145 @@
+/**
+ * LearningPlayer Page — Interactive course lesson player with progress tracking
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Professional learning environment for playing course videos and accessing lesson
+ * materials. Provides video playback with progress tracking, sidebar course navigation,
+ * lesson resources, and auto-completion marking. Integrates with enrollment and
+ * progress tracking systems.
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * 1. **Video Player**
+ *    - React-Player (supports YouTube, Vimeo, HLS streams, MP4)
+ *    - Responsive container (16:9 aspect ratio)
+ *    - Play/pause, volume, fullscreen controls
+ *    - Progress bar with seek support
+ *    - Speed controls (0.5x, 1x, 1.5x, 2x)
+ *    - Picture-in-picture mode
+ *    - Automatic quality selection
+ * 
+ * 2. **Sidebar Navigation**
+ *    - Course structure with expandable modules/weeks
+ *    - All lessons listed under each module
+ *    - Current lesson highlighted
+ *    - Completion checkmark for finished lessons
+ *    - Click lesson to jump to it
+ *    - Collapsible on mobile (hamburger menu)
+ *    - Expandable/collapsible weeks
+ * 
+ * 3. **Lesson Content Tabs**
+ *    - \"Content\" tab: Lesson description and materials
+ *    - \"Resources\" tab: Downloadable files and links
+ *    - \"Notes\" tab: Student's personal lesson notes
+ *    - \"Discussion\" tab: Q&A and discussion board
+ * 
+ * 4. **Lesson Resources**
+ *    - Download links (PDFs, worksheets, code samples)
+ *    - External resource links (with \"Open in new tab\" option)
+ *    - Embedded resources (slides, documents)
+ *    - Resource preview where applicable
+ * 
+ * 5. **Progress Tracking**
+ *    - Auto-mark lesson as complete after watching threshold (e.g., 80%)
+ *    - Completion checkmark in sidebar
+ *    - Overall course progress percentage
+ *    - Progress saved to backend via API
+ *    - Visual progress bar showing course completion
+ * 
+ * 6. **Lesson Navigation**
+ *    - Previous/Next lesson buttons
+ *    - Jump to any lesson in sidebar
+ *    - Auto-advance to next lesson on completion (optional)
+ *    - Scrollable lesson list
+ * 
+ * 7. **Responsive Design**
+ *    - Desktop: Video + sidebar layout
+ *    - Tablet: Toggle sidebar view
+ *    - Mobile: Full-width video, collapsible sidebar
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * **Endpoints:**
+ *   GET /api/v1/courses/{slug}/ — Fetch course content (modules, lessons)
+ *   GET /api/v1/enrollments/my-courses/ — Check enrollment status
+ *   POST /api/v1/enrollments/{enrollmentId}/mark-lesson-complete/ — Mark lesson done
+ *   GET /api/v1/enrollments/{enrollmentId}/progress/ — Get progress data
+ *   POST /api/v1/enrollments/{enrollmentId}/progress/ — Update progress
+ * 
+ * **Course Data Structure:**
+ *   - id, title, slug, description
+ *   - modules: [
+ *       { id, title, lessons: [
+ *           { id, title, duration, videoUrl, description, resources: [...] }
+ *       ]}
+ *     ]
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE MANAGEMENT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Local state:
+ * - course: course data with modules and lessons
+ * - currentLesson: current lesson object being played
+ * - currentModuleIndex: index of active module
+ * - completedLessons: Array of completed lesson IDs
+ * - sidebarOpen: boolean (mobile sidebar visibility)
+ * - activeTab: 'content' | 'resources' | 'notes' | 'discussion'
+ * - videoProgress: 0-100 (percentage watched)
+ * - loading: boolean (initial fetch)
+ * - enrollmentId: enrollment record ID
+ * - expandedWeek: which module/week is expanded
+ * - expandedSection: which lesson section is expanded
+ * 
+ * Redux state:
+ * - currentUser: from user reducer (verify enrollment)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * AUTO-COMPLETION LOGIC
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Lesson is marked complete when:
+ *   1. Video playback reaches 80% of total duration, OR
+ *   2. User clicks \"Mark as Complete\" button, OR
+ *   3. API marks it complete on backend request
+ * 
+ * Triggers:
+ *   - POST to /api/v1/enrollments/{enrollmentId}/mark-lesson-complete/
+ *   - Updates completedLessons array
+ *   - Updates sidebar checkmarks
+ *   - Updates progress percentage
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * KEYBOARD SHORTCUTS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * - Space: Play/Pause
+ * - ←/→: Seek ±5 seconds
+ * - ↑/↓: Volume ±10%
+ * - F: Toggle fullscreen
+ * - M: Toggle mute
+ * 
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ * // In App.jsx router:
+ * <Route path=\"/learn/:slug/:lessonId?\" element={<LearningPlayer />} />
+ * 
+ * // Navigation from StudentDashboard:
+ * navigate(`/learn/${course.slug}`);
+ * 
+ * // Jump to specific lesson:
+ * navigate(`/learn/${course.slug}/${lesson.id}`);
+ */
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';

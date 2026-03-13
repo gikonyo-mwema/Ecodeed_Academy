@@ -1,16 +1,4 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import {
-  HiAnnotation,
-  HiArrowNarrowUp,
-  HiDocumentText,
-  HiOutlineUserGroup,
-  HiOutlineClipboardCheck,
-  HiAcademicCap,
-  HiCurrencyDollar
-} from "react-icons/hi";
-
-const MetricCard = ({ title, value, lastMonthValue, icon: Icon, iconColor, link }) => (
+/**\n * Dashboard Metrics Component — KPI cards with growth indicators.\n *\n * Displays key performance indicator (KPI) cards for the admin dashboard.\n * Shows platform-wide metrics: users, posts, comments, courses, enrollments, revenue.\n * Each metric card is clickable to navigate to detailed management sections.\n *\n * Features:\n * - KPI Cards: Colorized metric cards with icon, title, and current value\n * - Growth Indicators: \"Last month\" comparison with green up-arrow styling\n * - Interactive Navigation: Click any card to navigate to management tab\n * - Dark Mode Support: Tailwind dark: classes for theme integration\n * - Responsive Grid: Cards arrange in responsive columns (md:w-72 fallback)\n * - Hover Effects: Shadow elevation on hover with smooth transitions\n * - Icon Badges: Colored circular icons (teal, blue, lime, purple, etc.)\n *\n * Props:\n * - totals (object): Current counts { users, posts, comments, courses, revenue }\n * - lastMonth (object): Last month's counts for growth comparison\n *\n * @component\n * @version 1.0.0\n * @author Gikonyo Mwema\n */\n\nimport React from "react";\nimport { Link } from "react-router-dom";\nimport {\n  HiAnnotation,\n  HiArrowNarrowUp,\n  HiDocumentText,\n  HiOutlineUserGroup,\n  HiOutlineClipboardCheck,\n  HiAcademicCap,\n  HiCurrencyDollar\n} from "react-icons/hi";\n\nconst MetricCard = ({ title, value, lastMonthValue, icon: Icon, iconColor, link }) => (
   <Link to={`/dashboard?tab=${link}`}>
     <div className="flex flex-col p-3 dark:bg-slate-800 gap-4 md:w-72 w-full rounded-md shadow-md hover:shadow-lg transition-shadow cursor-pointer">
       <div className="flex justify-between">

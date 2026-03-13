@@ -1,7 +1,91 @@
+"""
+═══════════════════════════════════════════════════════════════════════════════
+SERVICE MODELS — Professional services and consulting offerings.
+
+This module defines the Service model for Ecodeed Academy's consulting services,
+including environmental impact assessments, energy audits, training, and other
+professional services offered to organizations.
+
+═══════════════════════════════════════════════════════════════════════════════
+SERVICE CATEGORIES
+═══════════════════════════════════════════════════════════════════════════════
+
+• EIA: Environmental Impact Assessment
+• EA: Environmental Audit
+• Training: Professional training programs
+• Consulting: Strategic consulting services
+• Research: Research and analysis services
+• Custom: Custom professional services
+
+═══════════════════════════════════════════════════════════════════════════════
+DATA STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+Service (Main offering)
+  ├─ title: Service name
+  ├─ category: Service type classification
+  ├─ description: Short and full descriptions
+  ├─ pricing: Price, suffix (e.g., "per project"), timeline
+  ├─ details (JSON):
+  │  ├─ features: Service capabilities
+  │  ├─ benefits: Customer benefits
+  │  ├─ process: Steps in service delivery
+  │  ├─ faqs: Frequently asked questions
+  │  └─ deliverables: Concrete outputs
+  └─ metadata: Publishing status, image, timestamps
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
 from django.db import models
 from django.utils.text import slugify
 
 class Service(models.Model):
+    """
+    Service Model — Professional services offering.
+    
+    Represents a professional service (e.g., EIA, EA, Training) that Ecodeed
+    Academy offers to organizations. Includes pricing, detailed descriptions,
+    process steps, FAQs, and deliverables.
+    
+    Fields:
+      title (str, required): Service name (max 255 chars)
+      slug (str): URL-safe identifier (auto-generated, unique)
+      category (str): Service type - 'EIA', 'EA', 'Training', 'Consulting', etc.
+      short_description (str, required): Brief overview (max 500 chars)
+      full_description (str): Detailed service description with HTML support
+      is_published (bool): Publishing status (default: True)
+      price (Decimal): Service cost in KES (null = price on request)
+      price_suffix (str): Price context (e.g., "per project", "per day")
+      features (JSON): List of service features/capabilities
+        Format: [{ "title": "...", "description": "..." }, ...]
+      benefits (JSON): Customer benefits list
+        Format: [{ "title": "...", "description": "...", "icon": "..." }, ...]
+      process (JSON): Service delivery steps
+        Format: [{ "step": 1, "title": "...", "description": "..." }, ...]
+      faqs (JSON): Frequently asked questions
+        Format: [{ "question": "...", "answer": "..." }, ...]
+      deliverables (JSON): Concrete outputs/deliverables
+        Format: [{ "title": "...", "description": "...", "format": "..." }, ...]
+      timeline (str): Estimated duration (e.g., "2-4 weeks", "1 month")
+      image (URL): Service thumbnail/featured image
+      icon (str): Emoji or icon identifier for UI display
+      created_at (DateTime): Creation timestamp (auto-set)
+      updated_at (DateTime): Last modification timestamp (auto-updated)
+    
+    Methods:
+      save(): Auto-generates unique slug from title
+      __str__(): Returns service title
+    
+    Indexes:
+      - is_published: Fast filtering for published services
+      - category: Fast filtering by service type
+    
+    @model Service
+    @version 1.0.0
+    @author Gikonyo Mwema
+    """
+    
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
     category = models.CharField(max_length=100, blank=True) # e.g., 'EIA', 'EA', 'Training'

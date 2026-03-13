@@ -1,20 +1,146 @@
 /**
- * PostEditorPage — Unified create / edit page (replaces CreatePost + UpdatePost).
+ * PostEditorPage — Unified blog post creation and editing interface
  *
- * When `postId` is present in the URL → edit mode; otherwise → create mode.
- *
- * Industry-standard features:
- *  1. TipTap editor (same engine as Substack / GitLab)
- *  2. Drag-and-drop / paste featured image upload + URL input
- *  3. Category picker loaded from API (no hardcoded list)
- *  4. Tag picker (multi-select from API)
- *  5. SEO panel (meta title, description, canonical, OG/Twitter images)
- *  6. Draft / Publish / Schedule workflow
- *  7. Auto-save every 30 seconds (draft mode)
- *  8. Live preview toggle
- *  9. Featured / unfeatured toggle
- *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Professional blog post editor combining content creation, media management, SEO
+ * optimization, and publishing workflow. Used for both creating new posts and
+ * editing existing ones.
+ * 
+ * When `postId` is present in the URL → Edit mode
+ * When no `postId` → Create mode (new post)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * 1. **Rich Text Editor (TipTap)**
+ *    - Industry-standard editor (used by Substack, GitLab, etc.)
+ *    - Formatting: Bold, italic, underline, code, lists, quotes, links
+ *    - Headings (H1-H6), blockquotes, code blocks
+ *    - Paste from Word/Google Docs (clean conversion)
+ *    - Undo/Redo support
+ *    - Word count display
+ * 
+ * 2. **Featured Image Management**
+ *    - Drag-and-drop image upload
+ *    - Paste image from clipboard
+ *    - Image URL input (direct link)
+ *    - Image preview in editor
+ *    - Cloudinary integration for storage
+ * 
+ * 3. **Metadata**
+ *    - Post title (required)
+ *    - Slug generation (auto-generated from title, editable)
+ *    - Category picker (loaded from API, no hardcoded list)
+ *    - Tag picker (multi-select, free-form or from API suggestions)
+ *    - Excerpt/Summary
+ * 
+ * 4. **SEO Optimization Panel**
+ *    - Meta title and description
+ *    - Canonical URL (for syndicated content)
+ *    - Open Graph (OG) image and tags (for social sharing)
+ *    - Twitter Card configuration
+ *    - Schema.org structured data
+ * 
+ * 5. **Publishing Workflow**
+ *    - Draft mode: Auto-save every 30 seconds
+ *    - Publish: Immediate publication
+ *    - Schedule: Future publication date/time
+ *    - Featured/Unfeatured toggle (appears in homepage featured)
+ * 
+ * 6. **Live Preview**
+ *    - Toggle between editor and preview view
+ *    - Preview shows rendered HTML with styling
+ *    - Real-time preview updates as you type
+ * 
+ * 7. **Form Validation**
+ *    - Title is required
+ *    - Content is required
+ *    - Category is required
+ *    - URL validation for links
+ *    - Image optimization before upload
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * **Endpoints:**
+ *   GET /api/v1/categories/ — Fetch available post categories
+ *   GET /api/v1/tags/ — Fetch available tags for autocomplete
+ *   POST /api/v1/posts/ — Create new blog post
+ *   GET /api/v1/posts/{postId}/ — Fetch post data for editing
+ *   PUT /api/v1/posts/{postId}/ — Update existing post
+ *   POST /api/v1/posts/{postId}/publish/ — Publish draft post
+ *   POST /api/v1/posts/image-upload/ — Upload featured image
+ * 
+ * **Post Data Structure:**
+ *   - title, slug, content (HTML from TipTap)
+ *   - excerpt (summary text)
+ *   - featuredImage (Cloudinary URL)
+ *   - category, tags (relationship to taxonomies)
+ *   - status (draft, published, scheduled)
+ *   - publishedAt, scheduledFor (publication timing)
+ *   - isFeatured (boolean for homepage display)
+ *   - seoTitle, seoDescription, seoCanonical (SEO fields)
+ *   - ogImage, twitterImage (social media images)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE MANAGEMENT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Local state:
+ * - isEditMode: boolean (create vs edit)
+ * - postData: { title, slug, content, category, tags, excerpt, etc. }
+ * - featuredImage: File object or URL string
+ * - categories: Array from API
+ * - tags: Array from API
+ * - loading: boolean (initial fetch for edit mode)
+ * - saving: boolean (save in progress)
+ * - error: string | null (error messages)
+ * - showPreview: boolean (preview toggle)
+ * - autoSaveTimer: interval reference
+ * 
+ * Redux state:
+ * - currentUser: from user reducer (verify author permissions)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * AUTO-SAVE WORKFLOW
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Draft mode (status = 'draft'):
+ *   - Auto-save fires every 30 seconds
+ *   - Saves to /api/v1/posts/ as draft
+ *   - No notification (silent save)
+ *   - Draft indicator shows \"Last saved: 2 minutes ago\"
+ * 
+ * Publish mode:
+ *   - No auto-save (manual publish required)
+ *   - Can save as draft first, then publish
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * KEYBOARD SHORTCUTS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * TipTap Editor supports standard formatting shortcuts:
+ * - Ctrl+B / Cmd+B: Bold
+ * - Ctrl+I / Cmd+I: Italic
+ * - Ctrl+U / Cmd+U: Underline
+ * - Ctrl+` : Code
+ * - Ctrl+S / Cmd+S: Save draft
+ * 
  * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ * // In App.jsx router:
+ * <Route path=\"/posts/create\" element={<PostEditorPage />} />
+ * <Route path=\"/posts/:postId/edit\" element={<PostEditorPage />} />
+ * 
+ * // Navigation:
+ * navigate('/posts/create'); // Create new
+ * navigate(`/posts/${postId}/edit`); // Edit existing
  */
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';

@@ -1,7 +1,69 @@
+"""
+═══════════════════════════════════════════════════════════════════════════════
+SEED FAQS — Django management command for FAQ data seeding.
+
+Populates course FAQs (Frequently Asked Questions) with common questions and
+answers for different course types. Provides common course questions and
+type-specific FAQ content.
+
+═══════════════════════════════════════════════════════════════════════════════
+USAGE
+═══════════════════════════════════════════════════════════════════════════════
+
+python manage.py seed_faqs
+
+This command:
+  1. Queries all courses from the database
+  2. Categorizes them by type (EIA, EA, Compliance, Training, etc.)
+  3. Applies type-specific FAQ content (questions and answers)
+  4. Saves updated course records to database
+
+═══════════════════════════════════════════════════════════════════════════════
+FAQ CATEGORIES
+═══════════════════════════════════════════════════════════════════════════════
+
+General FAQs (All courses):
+  - Course access duration
+  - Certificate upon completion
+  - Self-paced learning
+  - Q&A and support
+  - Beginner-friendliness
+
+Compliance-Specific FAQs:
+  - Licensing/permit timeline
+  - Required documentation
+  - Renewal processes
+  - Penalties for non-compliance
+  - Regulatory requirements
+
+Audit-Specific FAQs:
+  - Audit frequency/schedule
+  - Audit scope and methodology
+  - Cost implications
+  - Finding remediation
+
+Training-Specific FAQs:
+  - Workshop formats
+  - Group vs individual training
+  - Certification validity
+  - Follow-up support
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
 from django.core.management.base import BaseCommand
 from courses.models import Course
 
 class Command(BaseCommand):
+    """
+    Django management command for seeding course FAQs.
+    
+    Populates FAQ content for courses based on their category/type.
+    FAQs help prospective students understand course details and requirements.
+    
+    Command: python manage.py seed_faqs
+    """
+    
     help = 'Seed FAQs data for courses'
 
     def handle(self, *args, **options):

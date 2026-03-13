@@ -1,3 +1,41 @@
+/**
+ * CallToAction Component — Flexible CTA sections with newsletter, buttons, and messaging
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * Renders customizable call-to-action sections for converting users. Supports
+ * multiple CTA types (blog, service, course) with optional newsletter signup,
+ * buttons, messaging, and icon displays.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * 1. **CTA Types**
+ *    - Blog: Post-related CTAs
+ *    - Service: Service promotion CTAs
+ *    - Course: Course enrollment CTAs
+ *    - Custom: Fully configurable text and buttons
+ *
+ * 2. **Newsletter Integration**
+ *    - Optional newsletter signup form
+ *    - Email validation
+ *    - API submission to /api/v1/messages/newsletter/subscribe
+ *    - Success/error states with feedback messages
+ *    - Auto-clear after 5-8 seconds
+ *
+ * 3. **Visual Elements**
+ *    - Gradient backgrounds (theme-aware)
+ *    - Icon display (optional context icons)
+ *    - Primary and secondary buttons
+ *    - Responsive layout (2 columns → 1 column on mobile)
+ *    - Dark mode support
+ *
+ * 4. **Button Handling**
+ *    - Primary button with arrow icon\n *    - Secondary button (outline style)\n *    - Custom navigation or onClick handlers\n *    - Disabled states\n *\n * 5. **State Management**\n *    - Email input state\n *    - Newsletter status (subscribing, success, error)\n *    - Auto-dismiss notifications\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * PROPS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * - type: 'blog' | 'service' | 'course' (determines default messaging)\n * - title: string (section headline)\n * - subtitle: string (supporting text)\n * - primaryButtonText: string (main CTA button label)\n * - secondaryButtonText: string (secondary button label)\n * - serviceName: string (service name for context)\n * - showNewsletter: boolean (default: false, show email signup)\n * - className: string (additional CSS classes)\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * API INTEGRATION\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * **Endpoints:**\n *   POST /api/v1/messages/newsletter/subscribe\n *     Body: { email: string }\n *     Response: { success: boolean, message: string }\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * STATE & BEHAVIOR\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * Local state:\n * - email: string (user email input)\n * - newsletterStatus: '' | 'subscribing' | 'success' | 'error'\n *\n * Newsletter flow:\n *   1. User enters email\n *   2. Click Subscribe → status = 'subscribing'\n *   3. API call to /api/v1/messages/newsletter/subscribe\n *   4. On success: status = 'success', email cleared, message shown\n *   5. On error: status = 'error', message shown\n *   6. Auto-dismiss after 5-8 seconds\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n * @example\n *   // Service-related CTA with newsletter\n *   <CallToAction\n *     type=\"service\"\n *     serviceName=\"Environmental Audit\"\n *     showNewsletter={true}\n *     primaryButtonText=\"Get Started\"\n *   />\n *\n *   // Course enrollment CTA\n *   <CallToAction\n *     type=\"course\"\n *     title=\"Ready to Learn?\"\n *     primaryButtonText=\"Enroll Now\"\n *   />\n */
+
 import React, { useState } from 'react';
 import { Button } from 'flowbite-react';
 import { Link } from 'react-router-dom';

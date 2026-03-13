@@ -1,3 +1,43 @@
+"""
+═══════════════════════════════════════════════════════════════════════════════
+COURSE SERIALIZERS — REST API serialization for course data.
+
+Provides serializers for course hierarchy: courses → modules → lessons → assignments.
+Includes nested relationships for full course structure, instructor details, and
+enrollment metadata. Backward-compatible with frontend camelCase field aliases.
+
+═══════════════════════════════════════════════════════════════════════════════
+SERIALIZER HIERARCHY
+═══════════════════════════════════════════════════════════════════════════════
+
+CourseSerializer (Main)
+  ├─ InstructorSerializer (Nested instructor)
+  └─ ModuleSerializer (Many modules)
+      ├─ PublicLessonSerializer (Lessons)
+      ├─ AssignmentSerializer (Assignments)
+      ├─ LiveSessionSerializer (Live sessions)
+      └─ ResourceModelSerializer (Resources)
+
+FullModuleSerializer (Full module details with complete lessons)
+  ├─ FullLessonSerializer (Complete lesson content)
+  ├─ AssignmentSerializer (Assignments)
+  ├─ LiveSessionSerializer (Live sessions)
+  └─ ResourceModelSerializer (Resources)
+
+═══════════════════════════════════════════════════════════════════════════════
+FIELD ALIASES (Frontend Compatibility)
+═══════════════════════════════════════════════════════════════════════════════
+
+CourseSerializer provides both snake_case (DRF default) and camelCase aliases:
+  - _id: Alias for id (primary key)
+  - instructor: Full instructor object (nested)
+  - instructor_name: Computed instructor display name
+  - enrollment_count: Computed number of enrollments
+  - curriculum: Computed curriculum structure
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -7,38 +47,147 @@ User = get_user_model()
 
 
 class InstructorSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for instructor details on course cards."""
-    class Meta:
-        model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'profile_picture', 'bio']
-        read_only_fields = fields
+    """
+    InstructorSerializer — Lightweight instructor representation.
+    
+    Used for displaying instructor info on course cards and course details.
+    
+    Fields:
+      id: Instructor user ID
+      first_name: Instructor's first name
+      last_name: Instructor's last name
+      email: Instructor's email address
+      profile_picture: URL to instructor profile image (Cloudinary)
+      bio: Instructor biography/description
+    
+    Usage: Nested in CourseSerializer for instructor details
+    
+    @serializer InstructorSerializer
+    """
 
 class AssignmentSerializer(serializers.ModelSerializer):
+    """
+    AssignmentSerializer — Assignment metadata for courses.
+    
+    Lightweight serializer for lesson assignments (quizzes, projects, etc.).
+    
+    Fields:
+      id: Assignment ID
+      title: Assignment title
+      description: Assignment description/instructions
+      due_date: Deadline for assignment
+      resource_url: URL to assignment resources/attachments
+    
+    @serializer AssignmentSerializer
+    """
     class Meta:
         model = Assignment
         fields = ['id', 'title', 'description', 'due_date', 'resource_url']
 
 class LiveSessionSerializer(serializers.ModelSerializer):
+    """
+    LiveSessionSerializer — Live class/session metadata.
+    
+    Serializer for scheduled live sessions (webinars, Q&A, live classes).
+    
+    Fields:
+      id: Session ID
+      title: Session title
+      description: Session description
+      date_time: Scheduled start time
+      zoom_link: Zoom or video conference URL
+      recording_url: Link to recorded session
+    
+    @serializer LiveSessionSerializer
+    """
     class Meta:
         model = LiveSession
         fields = ['id', 'title', 'description', 'date_time', 'zoom_link', 'recording_url']
 
 class ResourceModelSerializer(serializers.ModelSerializer):
+    """
+    ResourceModelSerializer — Downloadable course resources.
+    
+    Serializer for course materials: PDFs, documents, code snippets, etc.
+    
+    Fields:
+      id: Resource ID
+      title: Resource title
+      description: Resource description
+      file_url: URL to download resource
+      resource_type: Type of resource (pdf, code, document, etc.)
+    
+    @serializer ResourceModelSerializer
+    """
     class Meta:
         model = Resource
         fields = ['id', 'title', 'description', 'file_url', 'resource_type']
 
 class PublicLessonSerializer(serializers.ModelSerializer):
+    """
+    PublicLessonSerializer — Lightweight lesson info (preview).
+    
+    Used in module listings to show lesson metadata without full content.
+    
+    Fields:
+      id: Lesson ID
+      title: Lesson title
+      duration: Video duration in minutes
+      is_free_preview: Whether lesson available for free preview
+      order: Lesson position within module
+    
+    @serializer PublicLessonSerializer
+    """
     class Meta:
         model = Lesson
         fields = ['id', 'title', 'duration', 'is_free_preview', 'order']
 
 class FullLessonSerializer(serializers.ModelSerializer):
+    """
+    FullLessonSerializer — Complete lesson content.
+    
+    Full lesson details including video content and complete metadata.
+    
+    Fields:
+      id: Lesson ID
+      title: Lesson title
+      content: Lesson HTML content/description
+      video_url: Video URL (YouTube, Vimeo, or self-hosted)
+      duration: Video duration in minutes
+      is_free_preview: Whether accessible for non-enrolled users
+      order: Lesson position within module
+    
+    @serializer FullLessonSerializer
+    """
     class Meta:
         model = Lesson
         fields = ['id', 'title', 'content', 'video_url', 'duration', 'is_free_preview', 'order']
 
 class ModuleSerializer(serializers.ModelSerializer):
+    """
+    ModuleSerializer — Course module with nested lessons.
+    
+    Module representation with nested serialization of all contained elements
+    (lessons, assignments, live sessions, resources).
+    
+    Fields:
+      id: Module ID
+      title: Module title
+      description: Module description
+      order: Position within course
+      lessons: List of PublicLessonSerializer (preview mode)
+      assignments: List of assignments in module
+      live_sessions: List of scheduled live sessions
+      resources: List of downloadable resources
+    
+    Nested Serializers:
+      - lessons: PublicLessonSerializer (lightweight)
+      - assignments: AssignmentSerializer
+      - live_sessions: LiveSessionSerializer
+      - resources: ResourceModelSerializer
+    
+    @serializer ModuleSerializer
+    """
     lessons = PublicLessonSerializer(many=True, read_only=True)
     assignments = AssignmentSerializer(many=True, read_only=True)
     live_sessions = LiveSessionSerializer(many=True, read_only=True)
@@ -49,6 +198,32 @@ class ModuleSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'order', 'lessons', 'assignments', 'live_sessions', 'resources']
 
 class FullModuleSerializer(serializers.ModelSerializer):
+    """
+    FullModuleSerializer — Module with complete lesson content.
+    
+    Full module representation with detailed lesson content for enrolled users.
+    Uses FullLessonSerializer for complete lesson information.
+    
+    Fields:
+      id: Module ID
+      title: Module title
+      description: Module description
+      order: Position within course
+      lessons: List of FullLessonSerializer (with full content)
+      assignments: List of assignments in module
+      live_sessions: List of scheduled live sessions
+      resources: List of downloadable resources
+    
+    Nested Serializers:
+      - lessons: FullLessonSerializer (includes content + video_url)
+      - assignments: AssignmentSerializer
+      - live_sessions: LiveSessionSerializer
+      - resources: ResourceModelSerializer
+    
+    Usage: Used when user is enrolled or course is being updated by instructor
+    
+    @serializer FullModuleSerializer
+    """
     lessons = FullLessonSerializer(many=True, read_only=True)
     assignments = AssignmentSerializer(many=True, read_only=True)
     live_sessions = LiveSessionSerializer(many=True, read_only=True)
@@ -59,6 +234,55 @@ class FullModuleSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'order', 'lessons', 'assignments', 'live_sessions', 'resources']
 
 class CourseSerializer(serializers.ModelSerializer):
+    """
+    CourseSerializer — Complete course REST serialization.
+    
+    Full course representation with nested module structure, instructor info,
+    and enrollment metadata. Provides backward-compatible camelCase aliases.
+    
+    Fields (Core):
+      id, _id: Course ID (pk and alias)
+      title: Course title
+      slug: URL slug (unique)
+      short_description: Brief course summary
+      full_description: Complete course description
+      image: Featured image URL
+      
+    Fields (Pricing & Status):
+      price: Course price (decimal)
+      is_free: Boolean flag for free courses
+      category: Course category/subject
+      level: Difficulty level (beginner, intermediate, advanced)
+      is_live: Whether course is currently available
+      is_popular: Featured course flag
+      
+    Fields (Content):
+      modules: List of ModuleSerializer (complete course structure)
+      curriculum: Computed curriculum tree structure
+      resources: Associated resources
+      
+    Fields (Educational):
+      format: Delivery format (online, hybrid, self-paced)
+      features: Course features (array)
+      faqs: FAQ entries (array)
+      target_audience: Who should take this course
+      has_certificate: Whether completion certificate awarded
+      pacing_type: Pacing strategy (instructor-paced, self-paced)
+      
+    Fields (Metadata):
+      instructor: InstructorSerializer (full instructor object)
+      instructor_name: Computed instructor display name
+      enrollment_count: Count of enrolled students
+      created_at, updated_at: Timestamps
+    
+    Computed Fields:
+      - instructor_name: Formatted display name or email
+      - enrollment_count: Total enrollments (uses annotation if available)
+      - curriculum: Nested curriculum tree (modules → lessons)
+    
+    @serializer CourseSerializer
+    @version 1.0.0
+    """
     modules = ModuleSerializer(many=True, read_only=True)
     _id = serializers.IntegerField(source='id', read_only=True)
     instructor = InstructorSerializer(read_only=True)
@@ -83,7 +307,7 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_instructor_name(self, obj):
         if obj.instructor:
             name = f"{obj.instructor.first_name} {obj.instructor.last_name}".strip()
-            return name or obj.instructor.email
+            return name if name else obj.instructor.email
         return None
 
     def get_enrollment_count(self, obj):
@@ -208,6 +432,9 @@ class CourseContentSerializer(CourseSerializer):
                     resource_type=r_data.get('resource_type', 'link'),
                 )
 
+        # Refresh from DB with select_related so the response serializer
+        # has full instructor data (first_name, last_name, etc.)
+        course.refresh_from_db()
         return course
 
     @transaction.atomic
@@ -341,6 +568,8 @@ class CourseContentSerializer(CourseSerializer):
                     else:
                         Resource.objects.create(module=module, **r_kwargs)
 
+        # Refresh from DB so the response serializer has up-to-date data
+        instance.refresh_from_db()
         return instance
 
 class EnrollmentSerializer(serializers.ModelSerializer):

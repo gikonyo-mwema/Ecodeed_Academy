@@ -1,18 +1,81 @@
 /**
  * Dashboard Sidebar Component
  * 
- * Role-aware navigation sidebar for admin and instructor dashboards.
+ * Responsive role-aware navigation sidebar for admin and instructor dashboards.
+ * Intelligently shows/hides menu items based on user role to prevent unauthorized access.
  * 
- * Admin sees:  Overview → All Courses / All Enrollments → Posts, Users,
- *              Comments, Newsletter, Announcement, Services
- * Instructor:  Overview → My Courses / My Students
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * ROLE-BASED MENU STRUCTURE
+ * ═══════════════════════════════════════════════════════════════════════════════════
  * 
- * Assignments, Live Sessions, and Resources are accessed via the
- * course drill-down (CourseDetailView) — NOT as top-level sidebar items.
+ * ADMIN USERS see (complete menu):
+ * ├─ Overview (dashboard)
+ * ├─ Profile (settings)
+ * ├─ Teaching (collapsible)
+ * │  ├─ All Courses
+ * │  └─ All Enrollments
+ * └─ Platform Management (admin-only tabs)
+ *    ├─ Posts (moderation)
+ *    ├─ Users (role management)
+ *    ├─ Comments (discussion moderation)
+ *    ├─ Newsletter (bulk email)
+ *    ├─ Announcement (platform announcements)
+ *    └─ Services (service management)
+ * └─ Sign Out
+ * 
+ * INSTRUCTOR USERS see (teaching-focused menu):
+ * ├─ Overview (personal dashboard)
+ * ├─ Profile (settings)
+ * ├─ Teaching (collapsible)
+ * │  ├─ My Courses
+ * │  ├─ My Students
+ * │  └─ My Earnings
+ * └─ Sign Out
+ * 
+ * (Admin-only sections are completely hidden from instructors)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * RESPONSIVE BEHAVIOR
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * DESKTOP (md and above):
+ * - Sidebar is sticky, always visible
+ * - Collapse toggle button in bottom-right corner
+ * - When collapsed: icons only, text hidden, tooltips on hover
+ * - When expanded: full width (w-56) with text labels
+ * 
+ * MOBILE (below md):
+ * - Hamburger menu toggle in fixed position (top-left)
+ * - Sidebar slides in from left with z-40 stacking
+ * - Semi-transparent overlay behind sidebar
+ * - Auto-closes when clicking a menu item or overlay
+ * - Full width when open
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Active State Indication:
+ * - Current tab highlighted with active styling
+ * - Teaching section expands automatically if viewing course tabs
+ * 
+ * Tooltips:
+ * - Appear on hover when sidebar is collapsed (desktop)
+ * - Text labels disappear when collapsed for cleaner UI
+ * 
+ * Sign Out:
+ * - Dispatches Redux signOut action
+ * - Redirects to /sign-in on success
+ * - Error handling with console logging
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
  *
  * @component
  * @version 2.0.0
  * @author Gikonyo Mwema
+ * @example
+ * // Renders role-aware navigation sidebar for admin/instructor dashboard
+ * <DashSidebar />
  */
 
 import React, { useEffect, useState } from "react";
@@ -43,13 +106,19 @@ export default function DashSidebar() {
   
   const { currentUser } = useSelector((state) => state.user);
   
-  const [tab, setTab] = useState("");
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  // ════════════════ STATE ════════════════
+  const [tab, setTab] = useState("");              // Currently active tab from URL
+  const [collapsed, setCollapsed] = useState(false); // Desktop collapse state
+  const [mobileOpen, setMobileOpen] = useState(false); // Mobile sidebar open state
 
-  const isAdmin = currentUser?.isAdmin;
-  const isInstructor = currentUser?.isInstructor;
+  // ════════════════ ROLE CHECKS ════════════════
+  const isAdmin = currentUser?.isAdmin;           // Admin permission flag
+  const isInstructor = currentUser?.isInstructor; // Instructor permission flag
 
+  /**
+   * SYNC URL WITH TAB STATE
+   * Parses URL query parameter to highlight active menu item
+   */
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const tabFromUrl = urlParams.get("tab");
@@ -58,6 +127,39 @@ export default function DashSidebar() {
     }
   }, [location.search]);
 
+  /**
+   * HANDLE TAB NAVIGATION
+   * Navigates to tab by setting URL query parameter
+   * On mobile: closes sidebar after navigation
+   * 
+   * @param {string} tabName - Tab identifier (e.g., 'posts', 'users', 'courses')
+   */
+  const handleTabClick = (tabName) => {
+    navigate(`/dashboard?tab=${tabName}`);
+    // Close mobile sidebar after selection
+    if (window.innerWidth < 768) {
+      setMobileOpen(false);
+    }
+  };
+
+  /**
+   * TOGGLE SIDEBAR
+   * - Desktop: Toggles collapsed state (w-56 → w-20)
+   * - Mobile: Toggles mobile sidebar visibility
+   */
+  const toggleSidebar = () => {
+    if (window.innerWidth < 768) {
+      setMobileOpen(!mobileOpen);
+    } else {
+      setCollapsed(!collapsed);
+    }
+  };
+
+  /**
+   * SIGN OUT HANDLER
+   * Dispatches Redux signOut action and redirects to login
+   * Handles errors gracefully with console logging
+   */
   const handleSignOut = async () => {
     try {
       await dispatch(signOut()).unwrap();
@@ -67,22 +169,8 @@ export default function DashSidebar() {
     }
   };
 
-  const handleTabClick = (tabName) => {
-    navigate(`/dashboard?tab=${tabName}`);
-    if (window.innerWidth < 768) {
-      setMobileOpen(false);
-    }
-  };
-
-  const toggleSidebar = () => {
-    if (window.innerWidth < 768) {
-      setMobileOpen(!mobileOpen);
-    } else {
-      setCollapsed(!collapsed);
-    }
-  };
-
-  /* ── Admin-only platform management tabs ── */
+  // ════════════════ ADMIN-ONLY MENU ITEMS ════════════════
+  // These tabs only appear for users with isAdmin=true
   const adminTabs = [
     { id: "posts", name: "Posts", icon: HiDocumentText },
     { id: "users", name: "Users", icon: HiOutlineUserGroup },
@@ -92,7 +180,8 @@ export default function DashSidebar() {
     { id: "services", name: "Services", icon: HiClipboardCheck },
   ];
 
-  /* ── Course sub-tabs: role-aware ── */
+  // ════════════════ ROLE-AWARE COURSE TABS ════════════════
+  // Admin sees "All Courses/Enrollments", Instructor sees "My Courses/Students/Earnings"
   const courseTabs = isAdmin
     ? [
         { id: "courses", name: "All Courses", icon: HiAcademicCap },
@@ -104,12 +193,18 @@ export default function DashSidebar() {
         { id: "my-earnings", name: "My Earnings", icon: HiCurrencyDollar },
       ];
 
-  /* Is the current tab inside the course collapse? Also match course-detail-* */
+  /**
+   * DETECT IF COURSE TABS SECTION IS ACTIVE
+   * Returns true if current tab is one of the course tabs
+   * or if tab starts with 'course-detail-' (drill-down view)
+   * This keeps the Teaching collapse open when inside course views
+   */
   const isCourseTabActive = courseTabs.some(t => t.id === tab) || tab?.startsWith('course-detail');
 
   return (
     <>
-      {/* Mobile menu toggle button */}
+      {/* ════════════════ MOBILE MENU TOGGLE ════════════════ */}
+      {/* Hamburger button visible only on mobile */}
       <button 
         onClick={toggleSidebar}
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-200 dark:bg-gray-700"
@@ -118,6 +213,7 @@ export default function DashSidebar() {
         <HiOutlineViewGrid className="w-6 h-6" />
       </button>
 
+      {/* ════════════════ SIDEBAR CONTAINER ════════════════ */}
       <Sidebar 
         className={`w-full md:w-56 fixed md:relative z-40 transition-all duration-300 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
@@ -127,7 +223,8 @@ export default function DashSidebar() {
         <Sidebar.Items>
           <Sidebar.ItemGroup className="flex flex-col gap-1">
 
-            {/* ── Overview — first item for both roles ── */}
+            {/* ─────────────── OVERVIEW (First Item) ─────────────── */}
+            {/* Dashboard overview — available to both admins and instructors */}
             <Tooltip content="Overview" placement="right" trigger={collapsed ? "hover" : null}>
               <Sidebar.Item
                 active={tab === "dash"}
@@ -140,7 +237,8 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Tooltip>
 
-            {/* ── Profile ── */}
+            {/* ─────────────── PROFILE ─────────────── */}
+            {/* User profile settings with role label */}
             <Tooltip content="Profile" placement="right" trigger={collapsed ? "hover" : null}>
               <Sidebar.Item
                 active={tab === "profile"}
@@ -155,7 +253,8 @@ export default function DashSidebar() {
               </Sidebar.Item>
             </Tooltip>
 
-            {/* ── Course Management — visible to admins AND instructors ── */}
+            {/* ─────────────── COURSE MANAGEMENT COLLAPSE ─────────────── */}
+            {/* Visible to admins and instructors — contains role-specific options */}
             {(isAdmin || isInstructor) && (
               <Sidebar.Collapse 
                 icon={HiAcademicCap} 
@@ -177,7 +276,8 @@ export default function DashSidebar() {
               </Sidebar.Collapse>
             )}
 
-            {/* ── Admin-only tabs — hidden from instructors ── */}
+            {/* ─────────────── ADMIN-ONLY MANAGEMENT TABS ─────────────── */}
+            {/* These sections only appear for admin users */}
             {isAdmin && adminTabs.map((item) => (
               <Tooltip key={item.id} content={item.name} placement="right" trigger={collapsed ? "hover" : null}>
                 <Sidebar.Item
@@ -192,7 +292,8 @@ export default function DashSidebar() {
               </Tooltip>
             ))}
 
-            {/* ── Sign out ── */}
+            {/* ─────────────── SIGN OUT ─────────────── */}
+            {/* Logout button with sign-out action */}
             <Tooltip content="Sign Out" placement="right" trigger={collapsed ? "hover" : null}>
               <Sidebar.Item
                 icon={HiArrowSmRight}
@@ -206,7 +307,8 @@ export default function DashSidebar() {
           </Sidebar.ItemGroup>
         </Sidebar.Items>
 
-        {/* Desktop collapse toggle button */}
+        {/* ════════════════ DESKTOP COLLAPSE TOGGLE ════════════════ */}
+        {/* Floating button in bottom-right corner for expanding/collapsing sidebar */}
         {!mobileOpen && (
           <button 
             onClick={toggleSidebar}
@@ -222,7 +324,9 @@ export default function DashSidebar() {
         )}
       </Sidebar>
 
-      {/* Mobile overlay to close sidebar when clicking outside */}
+      {/* ════════════════ MOBILE OVERLAY ════════════════ */}
+      {/* Semi-transparent backdrop that appears when mobile sidebar is open */}
+      {/* Click to close sidebar (improves UX on mobile) */}
       {mobileOpen && (
         <div 
           className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"

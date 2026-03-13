@@ -1,7 +1,35 @@
 """
-URL configuration for the Messages & Newsletter app.
+═══════════════════════════════════════════════════════════════════════════════
+MESSAGE URLS — Newsletter and contact endpoints.
 
-These URLs are mounted at /api/v1/messages/ in config/urls.py
+URL routing for newsletter subscriptions, contact forms, broadcasts, and site
+announcements. Mounted at /api/v1/messages/ in config/urls.py.
+
+═══════════════════════════════════════════════════════════════════════════════
+ENDPOINTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Newsletter:
+  POST   /newsletter/subscribe       - Subscribe to newsletter
+  POST   /newsletter/confirm         - Confirm subscription (via email token)
+  POST   /newsletter/unsubscribe     - Unsubscribe from newsletter
+  GET    /newsletter/stats           - Newsletter statistics (admin)
+
+Contact Form:
+  POST   /contact                    - Submit contact form
+
+Broadcast (Admin):
+  POST   /broadcast/                 - Send email broadcast to course students
+
+Announcements:
+  GET    /announcements/active       - Get currently active announcement
+  GET    /announcements/             - List all announcements (admin)
+  POST   /announcements/             - Create announcement (admin)
+  GET    /announcements/{id}/        - Get announcement details
+  PUT    /announcements/{id}/        - Update announcement (admin)
+  DELETE /announcements/{id}/        - Delete announcement (admin)
+
+═══════════════════════════════════════════════════════════════════════════════
 """
 
 from django.urls import path

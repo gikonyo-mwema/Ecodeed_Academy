@@ -1,3 +1,42 @@
+/**
+ * OAuth Component - Social Authentication Button
+ * 
+ * Provides OAuth authentication via Google using Firebase.
+ * 
+ * Features:
+ * - Google Sign In via Firebase popup
+ * - Friendly error messages for popup/network issues
+ * - Loading state while authenticating
+ * - Toast notifications for user feedback
+ * - Automatic redirect to dashboard on success
+ * - Redux dispatch for user state management
+ * 
+ * OAuth Flow:
+ * 1. User clicks Google button
+ * 2. Firebase popup opens with Google consent screen
+ * 3. User approves → Firebase returns ID token
+ * 4. Frontend sends token to backend POST /api/v1/auth/google/
+ * 5. Backend validates & returns user + JWT token
+ * 6. Redux stores user data in localStorage
+ * 7. User redirected to dashboard
+ * 
+ * Error Handling:
+ * - Popup blocked by browser
+ * - Popup closed by user
+ * - Network connection failures
+ * - Firebase availability checks
+ * 
+ * Dependencies:
+ * - Firebase SDK for authentication
+ * - Redux for state management
+ * - React Toastify for notifications
+ * 
+ * @component
+ * @returns {JSX.Element} Button with Google OAuth option
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Button } from 'flowbite-react';
 import { AiFillGoogleCircle } from 'react-icons/ai';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -8,9 +47,16 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useCallback } from 'react';
 
-/* ────────────────────────────────────────────────────────
-   Shared error handler
-   ──────────────────────────────────────────────────────── */
+/**
+ * Convert Firebase auth errors to user-friendly messages
+ * 
+ * Handles common Firebase authentication errors and provides
+ * meaningful messages that users can understand and act upon.
+ * 
+ * @param {Error} error - Firebase auth error object with code property
+ * @returns {string} Human-readable error message
+ * @private
+ */
 const friendlyError = (error) => {
   if (error?.code === 'auth/popup-closed-by-user')
     return 'Sign-in window was closed. Please try again.';

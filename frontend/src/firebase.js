@@ -1,3 +1,76 @@
+/**
+ * Firebase Configuration & Initialization — Optional analytics and auth setup.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Initializes Firebase with credentials from environment variables. Provides optional
+ * Firebase Authentication and Google Analytics support. Gracefully disables when
+ * credentials are missing (fallback to JWT auth). Validates config before initialization.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * ENVIRONMENT VARIABLES REQUIRED
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * VITE_FIREBASE_API_KEY           - Firebase API key (>10 chars)
+ * VITE_FIREBASE_AUTH_DOMAIN       - Auth domain (e.g., project.firebaseapp.com)
+ * VITE_FIREBASE_PROJECT_ID        - Firebase project ID
+ * VITE_FIREBASE_STORAGE_BUCKET    - Storage bucket (optional)
+ * VITE_FIREBASE_MESSAGING_SENDER_ID - Sender ID
+ * VITE_FIREBASE_APP_ID            - App ID
+ * VITE_FIREBASE_MEASUREMENT_ID    - GA4 measurement ID (G-XXXXXXXXXX format)\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * INITIALIZATION RULES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * • Firebase initialization: Required VITE_FIREBASE_API_KEY (valid format)
+ * • Authentication setup: Automatic if API key valid; emulator in development
+ * • Analytics initialization: Production only + valid measurement ID (G- prefix)
+ *   Disabled on localhost/127.0.0.1 regardless of production flag\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * EXPORTED FUNCTIONS & OBJECTS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * app: Firebase app instance (null if init failed)
+ * auth: Firebase Authentication instance (null if init failed)
+ * analytics: Google Analytics instance (null if not initialized)
+ * isFirebaseAvailable(): Returns boolean - true if app & auth initialized
+ * getAuthInstance(): Returns auth instance or null
+ * trackEvent(eventName, parameters): Safe async event tracking (production only)\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * CONFIGURATION VALIDATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * hasValidApiKey():
+ *   • Checks length > 10
+ *   • Rejects placeholder values ('your_firebase_api_key_here')
+ *   • Prevents accidental public key exposure
+ *
+ * hasValidAnalyticsConfig():
+ *   • Checks GA4 format (starts with 'G-')
+ *   • Rejects placeholder values
+ *   • Prevents invalid measurement IDs\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * // Check if Firebase is available
+ * import { isFirebaseAvailable, trackEvent } from '@/firebase';
+ *
+ * if (isFirebaseAvailable()) {
+ *   // Use Firebase authentication
+ *   const auth = getAuthInstance();
+ *   signInWithGoogle(auth);
+ * }
+ *
+ * // Track analytics event
+ * trackEvent('page_view', { page_title: 'Home' });\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FALLBACK BEHAVIOR
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * If Firebase is not configured:
+ * • JWT authentication is used (primary method)
+ * • App continues to function normally
+ * • Console warnings guide configuration (no errors)\n *
+ * @module FirebaseConfig
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -20,6 +93,11 @@ let app = null;
 let analytics = null;
 let auth = null;
 
+/**
+ * Validates Firebase API key format and prevents placeholder values
+ * @returns {boolean} True if API key is valid and configured
+ * @private
+ */
 const hasValidApiKey = () => {
   const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
   return apiKey && 
@@ -28,6 +106,11 @@ const hasValidApiKey = () => {
          apiKey.length > 10; // Basic length validation
 };
 
+/**
+ * Validates Google Analytics GA4 measurement ID format
+ * @returns {boolean} True if measurement ID is valid GA4 format
+ * @private
+ */
 const hasValidAnalyticsConfig = () => {
   const measurementId = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID;
   return measurementId && 
@@ -71,6 +154,13 @@ try {
 }
 
 // Helper function to safely track analytics events
+/**
+ * Safely track analytics events (async import)
+ * Silently fails if analytics not available or in development
+ * @param {string} eventName - GA4 event identifier
+ * @param {object} [parameters={}] - Event properties/dimensions
+ * @returns {void}
+ */
 const trackEvent = (eventName, parameters = {}) => {
   if (analytics && typeof window !== 'undefined') {
     try {
@@ -83,12 +173,18 @@ const trackEvent = (eventName, parameters = {}) => {
   }
 };
 
-// Helper function to check if Firebase is available
+/**
+ * Checks if Firebase is fully initialized and available
+ * @returns {boolean} True if app and auth instances exist
+ */
 const isFirebaseAvailable = () => {
   return app !== null && auth !== null;
 };
 
-// Helper function to get auth instance
+/**
+ * Retrieves Firebase Authentication instance
+ * @returns {object|null} Firebase auth instance or null if unavailable
+ */
 const getAuthInstance = () => {
   return auth;
 };

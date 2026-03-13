@@ -1,4 +1,37 @@
-import React, { useState } from "react";
+/**
+ * Contact Page — Contact form and communication channels
+ *
+ * @component
+ * @purpose
+ *   Provides multiple contact methods for users (contact form, links to social media,
+ *   calendar booking for consultations, email, and phone). Includes service routing
+ *   from Services page to pre-fill subject.
+ * @features
+ *   - Contact form (name, email, subject, message)
+ *   - Subject pre-fill from navigation state (e.g., from Services page)
+ *   - Social media links (Facebook, Instagram, LinkedIn, Twitter)
+ *   - Calendar link for meeting scheduling
+ *   - Phone number and email display
+ *   - Form validation and error handling
+ *   - Success message on submission
+ *   - Responsive design with dark mode support
+ * @api
+ *   POST /api/v1/messages/contact — Submit contact form
+ * @state
+ *   - formData: { name, email, subject, message }
+ *   - status: { message, type } (success/error feedback)
+ *   - isSubmitting: boolean (form submission in progress)
+ * @routing
+ *   Optionally receives serviceTitle via location.state from Services page
+ *   to pre-populate the subject field
+ * @example
+ *   // From Services page:
+ *   navigate('/contact', { state: { serviceTitle: 'Environmental Auditing' } });
+ *   
+ *   <Route path=\"/contact\" element={<Contact />} />
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { apiFetch } from "../utils/api";

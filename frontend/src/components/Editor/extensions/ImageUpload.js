@@ -1,4 +1,87 @@
 /**
+ * Image Upload Extension for TipTap Editor — Multi-method image insertion with upload.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Extends TipTap's built-in Image node with rich upload capabilities:
+ * drag-and-drop, paste from clipboard, file picker, and URL insertion.
+ * Handles upload progress with placeholder SVG, automatic Cloudinary uploads,
+ * and graceful error handling with cleanup.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * UPLOAD METHODS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 1. Drag & Drop: Drop images directly onto editor
+ * 2. Paste: Ctrl+V / Cmd+V or paste from clipboard data
+ * 3. File Picker: toolbar button → opens native file dialog
+ * 4. URL Paste: Paste raw image URL (Unsplash, Pexels, etc.)\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * UPLOAD FLOW
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 1. File validation: Check MIME type (image/*), size (5 MB max)
+ * 2. Placeholder insertion: Insert SVG loading indicator
+ * 3. API upload: POST to /api/v1/upload/upload with FormData
+ * 4. URL replacement: Replace placeholder with Cloudinary secure URL
+ * 5. Error cleanup: Remove placeholder if upload fails\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API ENDPOINT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * POST /api/v1/upload/upload
+ *
+ * Request: FormData with file field 'image'
+ * Response: { secureUrl: 'https://res.cloudinary.com/...' }
+ *
+ * Max file size: 5 MB (enforced client + server)\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * EDITOR COMMANDS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * editor.chain().focus().uploadImage().run()
+ *   → Opens native file picker, uploads multiple images
+ *
+ * editor.chain().focus().setImageFromUrl(url).run()
+ *   → Inserts image by URL (no upload)\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PLACEHOLDER RENDERING
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Data URL SVG while uploading:
+ *   <svg>
+ *     <rect fill="#f3f4f6" rx="8"/> (Tailwind gray-100)
+ *     <text "Uploading…" fill="#9ca3af"/> (Tailwind gray-400)
+ *   </svg>\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * ERROR HANDLING
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * • MIME type check: Only image/* files accepted
+ * • Size validation: 5 MB max (with helpful error message)
+ * • Upload failure: Removes placeholder, throws error to parent
+ * • No URL returned: Throws error if Cloudinary response missing\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE IN EDITOR COMPONENT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * import ImageUpload from '@/components/Editor/extensions/ImageUpload';
+ * import { useEditor, EditorContent } from '@tiptap/react';
+ *
+ * const editor = useEditor({
+ *   extensions: [ImageUpload, ...otherExtensions],
+ * });
+ *
+ * // Toolbar button for file picker:
+ * <button onClick={() => editor.chain().focus().uploadImage().run()}>
+ *   📷 Upload Image
+ * </button>\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HTML ATTRIBUTES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * • loading="lazy": Deferred image loading
+ * • decoding="async": Async image decode (non-blocking)\n *
+ * @extension ImageUploadExtension
+ * @type {TipTap Node Extension}
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * @tiptap-api https://tiptap.dev/guide/extending-nodes
+ */
+
+/**
  * Custom TipTap Image Extension — Drag-and-drop, paste, and file-picker upload.
  *
  * Extends the built-in Image node to add:

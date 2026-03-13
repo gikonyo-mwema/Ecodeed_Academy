@@ -2,6 +2,78 @@ import { useState, useCallback } from 'react';
 import { apiFetch } from '../../../../utils/api';
 
 /**
+ * useServices Hook — Complete service management with CRUD, retry logic, and alerts.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Provides full service lifecycle management for admin dashboard. Handles all CRUD
+ * operations (Create, Read, Update, Delete), bulk operations, version control, and
+ * API error handling with exponential backoff retry mechanism.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * CORE OPERATIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * • fetchServices(params): GET /api/v1/services/ with optional filters
+ * • createService(data): POST /api/v1/services/
+ * • updateService(id, data): PUT /api/v1/services/{id}/
+ * • deleteService(id): DELETE /api/v1/services/{id}/
+ * • duplicateService(id): POST /api/v1/services/{id}/duplicate
+ * • bulkDeleteServices(ids[]): Batch delete with fallback handling\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * ADVANCED FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Retry Mechanism: Exponential backoff (1s, 2s, 3s) on API failures, max 3 retries
+ * Field Mapping: Converts camelCase (frontend) ↔ snake_case (backend)
+ * Alert System: Auto-hiding notifications (5s default) with success/failure types
+ * Loading States: Fine-grained control for table, operation, bulk, history views\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FIELD MAPPING (Frontend → Backend)
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * shortDescription ↔ short_description
+ * fullDescription/description ↔ full_description
+ * isPublished ↔ is_published
+ * priceSuffix ↔ price_suffix
+ * processSteps ↔ process\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HOOK STATE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * {
+ *   services: object[],         // Array of service objects
+ *   loading: {                  // Fine-grained loading states
+ *     table: bool,              // Main list is loading
+ *     operation: bool,          // Single CRUD operation in progress
+ *     bulk: bool,               // Bulk operations in progress
+ *     history: bool             // Version history loading
+ *   },
+ *   alert: {                    // Alert/toast notification state
+ *     show: bool,               // Visibility flag
+ *     message: string,          // Message text
+ *     type: 'success'|'failure',// Alert type/severity
+ *     duration: number          // Auto-hide timeout (ms)
+ *   }
+ * }\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * const { services, loading, alert, fetchServices, createService, deleteService }
+ *   = useServices();
+ *
+ * useEffect(() => { fetchServices(); }, []);
+ *
+ * const handleCreate = async () => {
+ *   try {
+ *     await createService({ title: 'New Service', ... });
+ *   } catch (err) {
+ *     console.error(err);
+ *   }
+ * };\n *
+ * @hook useServices
+ * @returns {object} { services, loading, alert, fetchServices, createService, updateService, deleteService, duplicateService, bulkDeleteServices, showAlert }
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+
+/**
  * Custom hook for managing services in the admin panel.
  * Handles CRUD, bulk operations, version history, alerts, and retry mechanisms.
  */

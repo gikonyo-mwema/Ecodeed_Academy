@@ -1,3 +1,28 @@
+/**
+ * Services Listing Page — Professional services showcase and discovery
+ *
+ * @component
+ * @purpose
+ *   Displays all published services offered by Ecodeed Consulting. Services are
+n *   fetched from the API and displayed as cards with filtering by category.
+ * @features
+ *   - Grid display of service cards (responsive)
+ *   - Category filtering
+ *   - Loading skeleton during fetch
+ *   - Error state with retry button
+ *   - Empty state when no services found
+ * @api
+ *   GET /api/v1/services/?isPublished=true — Fetch published services
+ * @state
+ *   - services: Array of service objects
+ *   - loading: boolean (fetch in progress)
+ *   - error: string | null (error message)
+ *   - selectedCategory: string (active filter)
+ * @example
+ *   <Route path=\"/services\" element={<Services />} />
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ServiceCard from '../components/ServiceCard';

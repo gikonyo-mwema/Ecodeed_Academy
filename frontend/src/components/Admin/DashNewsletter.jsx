@@ -1,14 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import { Table, Button, Alert, Badge, Spinner, Select, TextInput, Modal } from 'flowbite-react';
-import {
-  HiMail, HiUsers, HiTrendingUp, HiDownload,
-  HiPaperAirplane, HiPencilAlt, HiClock, HiCheckCircle,
-  HiExclamationCircle, HiEye, HiChevronDown, HiChevronUp,
-} from 'react-icons/hi';
-import DOMPurify from 'dompurify';
-import { apiFetch } from '../../utils/api';
-import TipTapEditor from '../Editor/TipTapEditor';
+/**\n * Dashboard Newsletter Management Component\n *\n * Admin interface for managing email newsletters and broadcast campaigns.\n * Compose emails, segment audiences, send broadcasts, track campaign history.\n *\n * Features:\n * - Statistics Dashboard: Subscriber counts, growth metrics, recent subscribers list\n * - Newsletter Compose: Rich text editor with TipTap for HTML email content\n * - Audience Segmentation: 6 audience types (newsletter, all users, students, instructors, course-specific)\n * - Campaign History: Past broadcasts with status tracking (draft/sending/sent/failed)\n * - CSV Export: Download subscriber list for external tools\n * - Campaign Preview: Full-text view before sending\n * - Status Badges: Visual indicators for campaign states\n *\n * API Endpoints:\n * - GET /api/v1/messages/newsletter/stats: Fetch subscriber statistics\n * - GET /api/v1/messages/broadcast/: Fetch campaign history\n * - POST /api/v1/messages/broadcast/: Send broadcast campaign\n * - GET /api/v1/courses/: Fetch courses for audience filtering\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\n\nimport React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';\nimport { useSelector } from 'react-redux';\nimport { Table, Button, Alert, Badge, Spinner, Select, TextInput, Modal } from 'flowbite-react';\nimport {\n  HiMail, HiUsers, HiTrendingUp, HiDownload,\n  HiPaperAirplane, HiPencilAlt, HiClock, HiCheckCircle,\n  HiExclamationCircle, HiEye, HiChevronDown, HiChevronUp,\n} from 'react-icons/hi';\nimport DOMPurify from 'dompurify';\nimport { apiFetch } from '../../utils/api';\nimport TipTapEditor from '../Editor/TipTapEditor';
 
 const AUDIENCE_OPTIONS = [
   { value: '', label: 'Select audience...' },

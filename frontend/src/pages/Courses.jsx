@@ -1,3 +1,97 @@
+/**
+ * Courses Listing Page — Multi-category course discovery and enrollment
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Displays all available courses organized by category (Specialized, Compliance,
+ * Masterclass, Webinar, Coaching). Users can browse courses, view course cards with
+ * metadata, and click to view detailed course information.
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * 1. **Multi-Section Display**
+ *    - Courses grouped by category (section-based display)
+ *    - Each section has custom title, subtitle, gradient background
+ *    - Category-specific icons and color themes
+ * 
+ * 2. **Course Cards**
+ *    - Course image with overlay
+ *    - Title and short description
+ *    - Enrollment count badge
+ *    - Duration metadata (calculated from lesson durations)
+ *    - Difficulty level (Beginner, Intermediate, Advanced)
+ *    - Popular/Featured badge for promoted courses
+ *    - Certificate indicator
+ * 
+ * 3. **Responsive Design**
+ *    - Mobile: 1-2 columns
+ *    - Tablet: 2-3 columns
+ *    - Desktop: 3 columns per row
+ * 
+ * 4. **Error Handling**
+ *    - Loading skeleton for initial fetch
+ *    - Error state with message
+ *    - Empty state when no courses available
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * **Endpoints:**
+ *   GET /api/v1/courses/by-category/ — Fetches all courses grouped by category
+ * 
+ * **Response Format:**
+ *   Array or { results: [...] } containing course objects with:
+ *   - id, title, slug, short_description, full_description
+ *   - image, price, is_free, isFree
+ *   - is_popular, has_certificate, hasCertificate
+ *   - students, rating, reviews (enrollment metrics)
+ *   - modules/curriculum (for duration calculation)
+ *   - category (for section assignment)
+ *   - updated_at (for \"Last Updated\" display)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE MANAGEMENT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Local state (component level):
+ * - courses: Array of normalized course objects
+ * - loading: boolean (true during initial fetch)
+ * - error: string | null (API error message)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HELPER FUNCTIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * formatEnrollCount(count: number | undefined): string | null
+ *   Converts enrollment count to human-readable format
+ *   Examples: 0 → null, 150 → \"150 enrolled\", 1250 → \"1.2k+ enrolled\"
+ * 
+ * calcDuration(course: object): string | null
+ *   Sums lesson durations from course modules/curriculum
+ *   Returns formatted duration (\"45 min\", \"2h 30m\", \"3 hours\")
+ *   Returns null if no modules or duration data available
+ * 
+ * normalize(course: object): object
+ *   Converts snake_case API fields to camelCase
+ *   Fills missing fields with defaults
+ *   Calculates metadata (duration, enrollCount)
+ * 
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ * // In App.jsx router:
+ * <Route path=\"/courses\" element={<Courses />} />
+ * 
+ * // Users navigate from Header or Home page
+ * navigate('/courses');
+ */
+
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { 
@@ -152,7 +246,7 @@ export default function Courses() {
       {/* All Courses */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pb-20">
         {courses.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
             {courses.map((course, index) => (
               <CourseCard 
                 key={course.id || index} 
@@ -178,7 +272,7 @@ function CourseCard({ course, category, index }) {
   
   return (
     <div 
-      className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 animate-fade-in-up"
+      className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 animate-fade-in-up h-full flex flex-col"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Card Header with Gradient */}
@@ -205,8 +299,8 @@ function CourseCard({ course, category, index }) {
       </div>
 
       {/* Card Content */}
-      <div className="p-6">
-        <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3 group-hover:text-brand-green dark:group-hover:text-brand-yellow transition-colors">
+      <div className="p-6 flex flex-col flex-1">
+        <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-3 group-hover:text-brand-green dark:group-hover:text-brand-yellow transition-colors line-clamp-2 min-h-[3.5rem]">
           {course.title}
         </h3>
         
@@ -232,15 +326,15 @@ function CourseCard({ course, category, index }) {
 
         {/* Features */}
         {(course.features || []).length > 0 && (
-          <div className="mb-6">
+          <div className="mb-4">
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               What you'll learn:
             </h4>
             <ul className="space-y-2">
-              {course.features.slice(0, 3).map((feature, idx) => (
+              {course.features.slice(0, 2).map((feature, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <HiOutlineBadgeCheck className="w-4 h-4 text-brand-green flex-shrink-0 mt-0.5" />
-                  <span>{feature}</span>
+                  <span className="line-clamp-2">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -248,24 +342,24 @@ function CourseCard({ course, category, index }) {
         )}
 
         {/* Price and CTA */}
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-          <div>
+        <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-baseline flex-wrap gap-x-1 gap-y-1">
             {course.price > 0 && !course.isFree ? (
               <>
                 <span className="text-2xl font-bold text-gray-800 dark:text-white">
                   Ksh {Number(course.price).toLocaleString()}
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">one-time</span>
+                <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">one-time</span>
               </>
             ) : (
               <span className="text-2xl font-bold text-green-600 dark:text-green-400">Free</span>
             )}
           </div>
           
-          <Link to={`/courses/${course.slug}`}>
+          <Link to={`/courses/${course.slug}`} className="w-full sm:w-auto">
             <Button
               color="none"
-              className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 hover:shadow-lg transition-all transform hover:-translate-y-0.5 px-6"
+              className="w-full sm:w-auto whitespace-nowrap bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 hover:shadow-lg transition-all transform hover:-translate-y-0.5 px-4"
               size="md"
             >
               View More →

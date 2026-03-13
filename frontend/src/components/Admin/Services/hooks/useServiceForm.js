@@ -1,3 +1,79 @@
+/**
+ * useServiceForm Hook — Complex service form state management with nested arrays.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Manages intricate service form state with support for multiple nested arrays
+ * (features, benefits, social links, process steps). Provides add/edit/remove
+ * handlers for array fields, basic validation, and form reset capabilities.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FORM SCHEMA
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * {
+ *   title: string (required),
+ *   description: string (required),
+ *   shortDescription?: string,
+ *   contactInfo?: { email, phone, address },
+ *   processSteps?: { title, description, order }[],
+ *   benefits?: { title, description, icon }[],
+ *   features?: { title, description }[],
+ *   socialLinks?: { platform, url }[],
+ *   examples?: string[],
+ *   projectTypes?: string[]
+ * }\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * ARRAY FIELD OPERATIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Each array field (processSteps, benefits, features, socialLinks, examples, projectTypes)
+ * has 3 handler functions:
+ *   - handleXxxChange(index, field, value): Update specific field in item
+ *   - addXxx(): Append new empty item to array
+ *   - removeXxx(index): Remove item by index\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HOOK STATE & UTILITIES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * formData: Current form values
+ * errors: Validation errors { field: message }
+ * isValid: Boolean validation status
+ * resetForm(): Reset to initialData
+ * updateFormData(updates): Merge updates into formData
+ * validateForm(): Check required fields, return boolean
+ * handleChange(e): Standard input field handler\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * VALIDATION RULES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * • title: Required, non-empty
+ * • description: Required, non-empty
+ * • Each benefit/feature/step: Optional but validate if present\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * const {
+ *   formData,
+ *   handleChange,
+ *   handleBenefitChange, addBenefit, removeBenefit,
+ *   handleFeatureChange, addFeature, removeFeature,
+ *   validateForm,
+ *   resetForm
+ * } = useServiceForm(initialService);
+ *
+ * <input name="title" value={formData.title} onChange={handleChange} />
+ * {formData.benefits.map((b, i) => (
+ *   <input
+ *     key={i}
+ *     value={b.title}
+ *     onChange={(e) => handleBenefitChange(i, 'title', e.target.value)}
+ *   />
+ * ))}
+ * <button onClick={addBenefit}>+ Add Benefit</button>\n *
+ * @hook useServiceForm
+ * @param {object} initialData - Initial form data (required)
+ * @returns {object} Form state and handlers for all fields
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useState, useCallback } from 'react';
 
 export const useServiceForm = (initialData) => {

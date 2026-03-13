@@ -1,3 +1,52 @@
+/**
+ * Pagination Component — Navigation control for paginated content
+ *
+ * @component
+ * @purpose
+ *   Provides page navigation buttons for paginated content. Shows page numbers
+ *   with smart ellipsis handling and smooth scrolling to top on page change.
+ *
+ * @features
+ *   - Previous/Next buttons with disabled states
+ *   - Numbered page buttons
+ *   - Smart ellipsis (...) when pages exceed max visible
+ *   - Current page highlighting
+ *   - Auto-scroll to top on page change (smooth behavior)
+ *   - Accessibility: aria-label, button roles
+ *   - Responsive: adapts to screen size
+ *   - Keyboard navigation support
+ *
+ * @props
+ *   - currentPage: number (1-indexed current page)
+ *   - totalPages: number (total number of pages)
+ *   - onPageChange: function(page: number) → callback on page selection
+ *
+ * @behavior
+ *   1. Shows max 5 consecutive page numbers
+ *   2. Ellipsis inserted when jumping pages
+ *   3. Always shows first and last page when pages > 7
+ *   4. Smooth scroll to top with requestAnimationFrame
+ *   5. Previous button disabled on page 1
+ *   6. Next button disabled on last page
+ *
+ * @styling
+ *   - Tailwind CSS classes
+ *   - Brand colors for active page
+ *   - Dark mode support
+ *   - Hover states and transitions
+ *
+ * @example
+ *   const [page, setPage] = useState(1);
+ *   <Pagination
+ *     currentPage={page}
+ *     totalPages={10}
+ *     onPageChange={setPage}
+ *   />
+ *
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React from 'react';
 
 export default function Pagination({ currentPage, totalPages, onPageChange }) {

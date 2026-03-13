@@ -1,3 +1,49 @@
+/**
+ * usePostActions Hook — Manages post deletion and edit workflows with confirmation modal.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Provides post CRUD action handlers for the admin dashboard. Manages modal state
+ * for delete confirmation, handles API calls for post deletion, and coordinates
+ * edit form display. Calls optional callback on successful deletion.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HOOK STATE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * - showModal (bool): Delete confirmation modal visibility
+ * - postIdToDelete (string): ID of post pending deletion
+ * - publishError (string|null): Last operation error message\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * OPERATIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 1. handleDeleteClick(postId): Opens delete confirmation modal
+ * 2. handleDeletePost(): Sends DELETE to /api/v1/posts/{id}/, calls onDeleteSuccess callback
+ * 3. handleEditPost(post): Loads post into edit form via setCurrentPost, shows form\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * function PostsAdmin() {
+ *   const { showModal, postIdToDelete, handleDeleteClick, handleDeletePost, handleEditPost }
+ *     = usePostActions(currentUser, setShowEditForm, setCurrentPost, () => fetchPosts());
+ *   
+ *   return (
+ *     <>
+ *       <button onClick={() => handleDeleteClick(post.id)}>Delete</button>
+ *       <button onClick={() => handleEditPost(post)}>Edit</button>
+ *       {showModal && <ConfirmModal onConfirm={handleDeletePost} />}
+ *     </>
+ *   );
+ * }\n *
+ * @hook usePostActions
+ * @param {object} currentUser - Current authenticated user (for context)
+ * @param {function} setShowEditForm - Callback to show edit form
+ * @param {function} setCurrentPost - Callback to set current post data
+ * @param {function} onDeleteSuccess - Callback to refresh posts after deletion
+ * @returns {object} Hook state: { showModal, postIdToDelete, handleDeleteClick, handleDeletePost, handleEditPost, publishError, setPublishError }
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useState } from 'react';
 import { apiFetch } from '../../../../utils/api';
 

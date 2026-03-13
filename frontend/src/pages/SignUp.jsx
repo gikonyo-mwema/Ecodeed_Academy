@@ -1,3 +1,39 @@
+/**
+ * Sign Up Page
+ * 
+ * User registration page for creating new accounts.
+ * Features:
+ * - Multi-field registration form (first name, last name, email, password)
+ * - Password confirmation with match validation
+ * - Redux-based authentication flow
+ * - OAuth integration (Google, Facebook, Twitter)
+ * - Client-side and server-side validation
+ * - Responsive layout (desktop + mobile)
+ * - Loading states and error handling
+ * - Auto-redirect to dashboard on successful signup
+ * - Link to sign in for existing users
+ * 
+ * Form Validation:
+ * - All fields required
+ * - Email format validation (RFC 5322 basic)
+ * - Password: minimum 6 characters
+ * - Password confirmation must match
+ * 
+ * State Management:
+ * - Redux user slice for auth state and error messages
+ * - Local state for form data and client-side validation
+ * 
+ * API Endpoints Used:
+ * - POST /api/v1/auth/register/ (email/password signup)
+ * - POST /api/v1/auth/google/ (OAuth signup via Google)
+ * - POST /api/v1/auth/facebook/ (OAuth signup via Facebook)
+ * 
+ * @component
+ * @returns {JSX.Element} Sign up page with registration form and OAuth options
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -5,6 +41,12 @@ import { useDispatch, useSelector } from "react-redux";
 import OAuth from "../components/OAuth";
 import { signUp } from "../redux/user/userSlice";
 
+/**
+ * SignUp Component
+ * Main registration page for new user accounts
+ * 
+ * @returns {JSX.Element} Renders registration form with two-column layout
+ */
 export default function SignUp() {
   const [formData, setFormData] = useState({
      firstName: "",

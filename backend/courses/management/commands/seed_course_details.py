@@ -1,7 +1,57 @@
+"""
+═══════════════════════════════════════════════════════════════════════════════
+SEED COURSE DETAILS — Django management command for course data seeding.
+
+Populates course models with comprehensive course details including descriptions,
+features, target audience, resources, and FAQs. Used during initial setup to
+provide realistic course data for different course types.
+
+═══════════════════════════════════════════════════════════════════════════════
+USAGE
+═══════════════════════════════════════════════════════════════════════════════
+
+python manage.py seed_course_details
+
+This command:
+  1. Queries all courses from the database
+  2. Categorizes them by type (EIA, EA, Compliance, Training, etc.)
+  3. Applies type-specific course content (descriptions, features, etc.)
+  4. Saves updated course records to database
+
+═══════════════════════════════════════════════════════════════════════════════
+DATA STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+Each course receives:
+  - full_description: Comprehensive course overview (multiple paragraphs)
+  - features: Array of course features/benefits
+  - target_audience: Array of ideal student personas
+  - resources: Array of resource types available
+  - faqs: FAQ entries for common questions
+
+Course Categories:
+  - General: Foundational environmental course content
+  - Compliance: Regulatory compliance and licensing guidance
+  - Audit: Environmental audit and assessment procedures
+  - Training: Professional skills and training programs
+  - Custom: Custom course descriptions
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
 from django.core.management.base import BaseCommand
 from courses.models import Course
 
 class Command(BaseCommand):
+    """
+    Django management command for seeding comprehensive course details.
+    
+    Populates course metadata (descriptions, features, audience) for all
+    courses in the database based on their category/type.
+    
+    Command: python manage.py seed_course_details
+    """
+    
     help = 'Seed course details data (description, features, target audience, resources)'
 
     def handle(self, *args, **options):

@@ -1,13 +1,130 @@
+/**
+ * Search Page — Advanced blog post search with dynamic filters
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Provides comprehensive search functionality for blog posts with multiple filter
+ * options. Users can search by keywords, filter by category and tags, set date
+ * ranges, and sort results. Search state is managed via URL query parameters for
+ * bookmarking and sharing filtered results.
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * 1. **Search Filters**
+ *    - Keyword search with autocomplete suggestions
+ *    - Category dropdown (loaded from API)
+ *    - Tag multi-select (API-driven)
+ *    - Date range picker (from/to dates)
+ *    - Sort options (newest, oldest, most viewed, trending)
+ * 
+ * 2. **Autocomplete Suggestions**
+ *    - Real-time search suggestions as user types
+ *    - Shows 5-10 matching results
+ *    - Click suggestion to select
+ *    - Debounced API calls (300ms delay to avoid spam)
+ * 
+ * 3. **Results Display**
+ *    - Grid of PostCard components
+ *    - Skeleton loaders while fetching
+ *    - \"No results\" message when search yields nothing
+ *    - Result count display (\"12 results found\")
+ * 
+ * 4. **Load More**
+ *    - \"Show More\" button when more results available
+ *    - Appends to existing results (pagination)
+ *    - Shows loading state while fetching
+ * 
+ * 5. **Mobile Responsiveness**
+ *    - Collapsible filter sidebar on mobile
+ *    - Hamburger menu to toggle filters
+ *    - Full-width search bar
+ *    - Single column results on mobile
+ * 
+ * 6. **URL State Management**
+ *    - All filters stored in URL query parameters
+ *    - User can bookmark/share filtered searches
+ *    - Browser back/forward navigate through search history
+ *    - Example: /search?q=sustainability&category=environment&sort=desc
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * **Endpoints:**
+ *   GET /api/v1/categories/ — Fetch available categories
+ *   GET /api/v1/tags/ — Fetch available tags
+ *   GET /api/v1/posts/?q={query}&category={cat}&tag={tag}&dateFrom={from}&dateTo={to}&sort={sort}
+ *     — Search posts with filters (pagination: limit=9, offset=0)
+ *   GET /api/v1/posts/search/autocomplete?q={query} — Autocomplete suggestions
+ * 
+ * **Query Parameters:**
+ *   - q: Search query string
+ *   - category: Category slug filter
+ *   - tag: Tag slug filter
+ *   - dateFrom: Start date (YYYY-MM-DD)
+ *   - dateTo: End date (YYYY-MM-DD)
+ *   - sort: 'desc' (newest) or 'asc' (oldest)
+ *   - limit: Results per page (default 9)
+ *   - offset: Pagination offset (default 0)
+ * 
+ * **Response Format:**
+ *   { data: { posts: [...], totalPosts: 42 } }
+ *   OR { posts: [...], totalPosts: 42 }
+ *   OR { results: [...], count: 42 }
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE MANAGEMENT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Local state:
+ * - sidebarData: { searchTerm, sort, category, tag, dateFrom, dateTo }
+ * - posts: Array of search results
+ * - totalResults: number (total matching posts)
+ * - loading: boolean (fetch in progress)
+ * - error: string | null (error message)
+ * - mobileFiltersOpen: boolean (mobile filter visibility)
+ * - categories: Array (from API)
+ * - tags: Array (from API)
+ * - suggestions: Array (autocomplete results)
+ * - showSuggestions: boolean (dropdown visibility)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * AUTOCOMPLETE BEHAVIOR
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * User types in search box:
+ *   1. onChange triggers suggestion fetch (debounced 300ms)
+ *   2. Suggestions dropdown appears
+ *   3. User can click suggestion to search
+ *   4. Or press Enter to search for typed text
+ *   5. Clicking outside closes suggestions
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ * // In App.jsx router:
+ * <Route path=\"/search\" element={<Search />} />
+ * 
+ * // Navigation from Header:
+ * navigate('/search?q=environmental+compliance');
+ * 
+ * // With filters:
+ * navigate('/search?q=courses&category=education&sort=desc');
+ */
+
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Button, Select, TextInput, Spinner, Alert, Badge } from 'flowbite-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PostCard, { PostCardSkeleton } from '../components/PostCard';
 import { FiSearch, FiFilter, FiChevronDown, FiX, FiCalendar } from 'react-icons/fi';
 import { apiFetch } from '../utils/api';
-
-// ---------------------------------------------------------------------------
-// Search page — dynamic categories + tags, date range, autocomplete
-// ---------------------------------------------------------------------------
 export default function Search() {
     // --- filter state ---
     const [sidebarData, setSidebarData] = useState({

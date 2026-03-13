@@ -1,3 +1,82 @@
+"""
+═══════════════════════════════════════════════════════════════════════════════
+COURSE API VIEWS — Course management and enrollment endpoints.
+
+Provides REST endpoints for course browsing, creation, enrollment, and module
+content retrieval. Includes permission-based access control (instructors can
+manage courses, students can enroll and access content).
+
+═══════════════════════════════════════════════════════════════════════════════
+KEY ENDPOINTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Courses:
+  GET    /api/v1/courses/                 - List published courses (paginated)
+  POST   /api/v1/courses/                 - Create course (instructors/admins)
+  GET    /api/v1/courses/{id}/            - Retrieve course details + modules
+  PUT    /api/v1/courses/{id}/            - Update course (instructor only)
+  PATCH  /api/v1/courses/{id}/            - Partial update
+  DELETE /api/v1/courses/{id}/            - Delete course (instructor only)
+  GET    /api/v1/courses/{id}/content/    - Get full curriculum (enrolled users)
+  GET    /api/v1/courses/{id}/enroll/     - Enroll current user
+
+Enrollments:
+  GET    /api/v1/enrollments/             - List user's enrollments
+  GET    /api/v1/enrollments/{id}/        - Get enrollment details
+
+Modules:
+  GET    /api/v1/modules/{id}/            - Get module + lessons
+  POST   /api/v1/modules/                 - Create module (instructor)
+
+═══════════════════════════════════════════════════════════════════════════════
+PERMISSIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Course Visibility:
+  - Public (is_live=true): Visible to all users
+  - Draft (is_live=false):
+    * Instructor creator: Can see and edit
+    * Admin: Can see and edit
+    * Others: Hidden
+
+Course Editing:
+  - Instructor: Can edit/delete own courses
+  - Admin: Can edit/delete any course
+  - Others: Read-only access
+
+Enrollment:
+  - Authenticated users: Can enroll in published courses
+  - Enrolled users: Can access course content
+  - Non-enrolled: Limited content access (preview only)
+
+═══════════════════════════════════════════════════════════════════════════════
+QUERY OPTIMIZATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Uses select_related and prefetch_related to prevent N+1 queries:
+  - select_related('instructor'): Course creator (FK)
+  - prefetch_related('modules__lessons'): Module lessons (reverse FK)
+  - prefetch_related('modules__assignments'): Module assignments
+  - prefetch_related('modules__live_sessions'): Module live sessions
+  - prefetch_related('modules__resources'): Module resources
+  - annotate(_enrollment_count=Count('enrollments')): Enrollment count
+
+═══════════════════════════════════════════════════════════════════════════════
+PAGINATION
+═══════════════════════════════════════════════════════════════════════════════
+
+List endpoints use CoursePageNumberPagination (default: 10 per page, max: 50)
+Response format:
+  {
+    "count": 150,
+    "next": "http://api.example.com/courses/?page=2",
+    "previous": null,
+    "results": [...]
+  }
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -13,6 +92,35 @@ from .serializers import (
 from .permissions import IsInstructorOrReadOnly, IsModuleContentInstructor
 
 class CourseViewSet(viewsets.ModelViewSet):
+    """
+    CourseViewSet — REST API for course management and enrollment.
+    
+    Provides CRUD operations for courses with role-based access control.
+    Instructors can create/edit their own courses; students can enroll
+    and access content.
+    
+    Permissions:
+      - Anonymous: GET (list published courses)
+      - Authenticated: GET, POST (create), GET detail
+      - Instructor: Can edit/delete own courses
+      - Admin: Can edit/delete any course
+    
+    Serializers:
+      - Read: CourseSerializer (minimal course info)
+      - Write: CourseContentSerializer (includes curriculum, sessions, resources)
+    
+    Methods:
+      list(): List published courses with filtering
+      create(): Create new course (instructor/admin only)
+      retrieve(): Get course details with modules
+      content(): Get full curriculum content (enrolled users only)
+      enroll(): Enroll current user in course
+      stats(): Get course engagement metrics (admin only)
+    
+    @viewset CourseViewSet
+    @version 1.0.0
+    """
+    
     serializer_class = CourseSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 

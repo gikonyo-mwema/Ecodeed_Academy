@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * Unsubscribe Page — Email unsubscription confirmation\n *\n * @component\n * @purpose Unsubscribe user from newsletter and email communications\n * @features\n *   - Token validation from URL parameter\n *   - Loading state during unsubscribe processing\n *   - Success/error messages\n *   - Multiple status states (loading, success, error, not-found)\n *   - Navigation back to home\n *   - Responsive design\n * @api\n *   GET /api/v1/messages/newsletter/unsubscribe?token={token} — Process unsubscribe\n * @state\n *   - status: 'loading' | 'success' | 'error' | 'not-found'\n *   - message: string (confirmation or error message)\n *   - token: from URL query params\n * @flow\n *   User receives unsubscribe email link → Clicks link → API validates token\n *   → Removes user from newsletter list → Shows success/error message\n * @example\n *   /unsubscribe?token=abc123def456xyz\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Button, Alert, Spinner } from 'flowbite-react';

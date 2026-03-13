@@ -1,11 +1,52 @@
 /**
- * API Utility Functions
- * Provides consistent API URL handling across the application
+ * API Utility Functions — Core HTTP/fetch abstraction layer.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Provides consistent API URL handling and fetch wrapping across the application.
+ * Centralizes authentication token management, error handling, and URL construction.
+ * Supports both relative URLs (Render unified deployment) and explicit API URLs.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FUNCTIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * - getApiBaseUrl(): Get configured API base URL from environment or current origin
+ * - buildApiUrl(endpoint): Construct complete API URL from endpoint path
+ * - apiFetch(endpoint, options): Fetch with auth headers and error handling
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * AUTHENTICATION FLOW
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 1. Token lookup: localStorage → cookies → none
+ * 2. Authorization header: Set "Authorization: Bearer {token}" if token exists
+ * 3. Credentials: Always include='include' for cookie-based auth fallback
+ * 4. Error handling: Network errors, auth errors, response parsing
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * import { apiFetch } from '@/utils/api';\n * // Simple GET
+ * const users = await apiFetch('/api/v1/auth/users/');\n * // POST with body
+ * const post = await apiFetch('/api/v1/posts/', {
+ *   method: 'POST',
+ *   body: JSON.stringify({ title: 'Hello', content: 'World' })
+ * });\n * // DELETE with ID
+ * await apiFetch('/api/v1/posts/123/', { method: 'DELETE' });\n * @module APIUtils
+ * @version 2.0.0
+ * @author Gikonyo Mwema
  */
 
 /**
- * Get the API base URL from environment variables
- * For unified Render deployment, always use relative URLs
+ * Get the API base URL from environment variables.
+ * For unified Render deployment, always use relative URLs.
+ * For separate deployments, use VITE_API_URL from environment.
+ *
+ * Resolution order:
+ * 1. VITE_API_URL environment variable (if set and not empty)
+ * 2. window.location.origin (current domain, same-origin requests)
+ * 3. Empty string (relative URLs)
+ *
+ * @returns {string} Base URL for API requests (may be empty for relative URLs)
  */
 export const getApiBaseUrl = () => {
   // Prefer explicit base URL if provided (supports split frontend/backend)

@@ -1,4 +1,18 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * UserCourses Component — Student enrolled courses table with progress tracking
+ *
+ * @component
+ * @purpose
+ *   Displays a list of courses the student is enrolled in with progress,
+ *   enrollment dates, and links to continue learning. Can receive courses as
+ *   prop or fetch from API (/api/v1/enrollments/my-courses).
+ *
+ * @features
+ *   - Responsive table with dark mode support
+ *   - Course title, progress percentage, enrollment date
+ *   - \"Continue Learning\" button with arrow icon
+ *   - Progress bar visualization
+n *   - Loading spinner during fetch\n *   - Empty state message\n *   - Mobile-responsive design\n *   - Course thumbnail/image (if available)\n *\n * @props\n *   - purchasedCourses: Array (optional)\n *     Pre-loaded courses array. If provided, skips API fetch.\n *     If not provided, fetches from /api/v1/enrollments/my-courses\n *\n * @api\n *   GET /api/v1/enrollments/my-courses\n *     Fetch student's enrolled courses if not provided as prop\n *     Response: Array of enrollment objects with course details\n *\n * @state\n *   - courses: Array of enrollment/course objects\n *   - loading: boolean (fetch in progress)\n *\n * @example\n *   // With pre-loaded courses (from parent)\n *   <UserCourses purchasedCourses={coursesFromParent} />\n *\n *   // Fetch from API\n *   <UserCourses />\n *\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\n\nimport React, { useState, useEffect } from 'react';
 import { Table, Badge, Button, Spinner, Progress } from 'flowbite-react';
 import { HiOutlineBookOpen, HiOutlinePlay } from 'react-icons/hi';
 import { apiFetch } from '../utils/api';

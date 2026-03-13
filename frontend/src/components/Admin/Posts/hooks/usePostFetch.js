@@ -1,3 +1,50 @@
+/**
+ * usePostFetch Hook — Fetches paginated posts with deduplication and load-more support.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Manages post fetching for admin dashboard with offset-based pagination.
+ * Handles automatic deduplication when loading more posts, loading states,
+ * and error handling. Requires admin user authentication.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HOOK STATE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * - userPosts (Post[]): Array of fetched posts with deduplication
+ * - loading (bool): Fetch in progress
+ * - pagination (object): { page: number, limit: number }
+ * - showMore (bool): True if more posts available beyond current page
+ * - error (string|null): Last fetch error message\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PAGINATION STRATEGY
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Backend API: GET /api/v1/posts/?startIndex=X&limit=10
+ * - Offset-based pagination: startIndex = (page - 1) * limit
+ * - Default limit: 10 posts per page
+ * - Deduplication: Filters by post.id to prevent duplicates on "Load More"
+ * - Total posts: Backend returns totalPosts to calculate hasMore\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * function PostsAdmin() {
+ *   const currentUser = useSelector(state => state.user.currentUser);
+ *   const { userPosts, loading, showMore, handleShowMore } = usePostFetch(currentUser);
+ *   
+ *   return (
+ *     <div>
+ *       {userPosts.map(post => <PostItem key={post.id} post={post} />)}
+ *       {showMore && <button onClick={handleShowMore}>Load More</button>}
+ *       {loading && <Spinner />}
+ *     </div>
+ *   );
+ * }\n *
+ * @hook usePostFetch
+ * @param {object} currentUser - Current authenticated user object with isAdmin flag
+ * @returns {object} Hook state: { userPosts, loading, showMore, pagination, error, handleShowMore, fetchPosts }
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../../../../utils/api';
 

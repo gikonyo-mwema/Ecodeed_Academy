@@ -1,16 +1,35 @@
 /**
- * FeaturedImageUpload — Drag-and-drop + URL + file picker for featured images.
+ * FeaturedImageUpload Component — Drag-drop + paste + URL + file picker for images
  *
- * Industry standard (Ghost, WordPress, Substack):
- *  - Drag-and-drop zone with visual feedback
- *  - Paste from clipboard
- *  - Paste URL (Unsplash, Pexels, any CDN)
- *  - File picker fallback
- *  - Live preview with remove button
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
  *
- * @component
- */
-import { useState, useCallback, useRef } from 'react';
+ * Professional image upload component for featured images with multiple input methods.
+ * Handles drag-and-drop, paste from clipboard, URL input, and file picker. Integrates
+ * with Cloudinary for storage and optimization.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * 1. **Multiple Upload Methods**
+ *    - Drag-and-drop zone with visual feedback
+ *    - Paste image from clipboard (Cmd+V, Ctrl+V)
+ *    - Paste image URL (from Unsplash, Pexels, etc.)
+ *    - File picker (click to browse)
+ *    - Hidden file input for accessibility
+ *
+ * 2. **Visual Feedback**
+ *    - Drag-over highlight state
+ *    - Upload progress/loading spinner
+ *    - Live preview with thumbnail
+ *    - Remove button to clear selection
+ *    - Error messages for invalid files
+ *
+ * 3. **Image Validation**
+ *    - File type check (image/* only)
+ *    - File size limits\n *    - Valid URL detection\n *    - Error feedback\n *\n * 4. **Upload Process**\n *    - Cloudinary integration via uploadImage()\n *    - Auto-optimization and transformation\n *    - CDN storage with high availability\n *    - Returns optimized URL\n *\n * 5. **Responsive**\n *    - Mobile-friendly touch targets\n *    - Works on all devices\n *    - Accessible keyboard navigation\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * PROPS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * - value: string (current image URL)\n * - onChange: function(url: string) → Called when image uploaded/URL entered\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * STATE MANAGEMENT\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * Local state:\n * - isDragging: boolean (drag-over state)\n * - isUploading: boolean (upload in progress)\n * - error: string | null (error message)\n * - showUrlInput: boolean (URL input form visible)\n * - urlValue: string (URL input textarea value)\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * UPLOAD FLOW\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * **File Upload:**\n *   1. User drops file or selects via picker\n *   2. Validate: Must be image/* type\n *   3. Call uploadImage(file) → Cloudinary upload\n *   4. On success: onChange(url), clear error\n *   5. On error: Display error message\n *\n * **URL Input:**\n *   1. Click \"Or paste URL\" link\n *   2. Enter image URL in textarea\n *   3. Click \"Add Image\"\n *   4. onChange(url) called with URL\n *   5. Form hides, preview shows\n *\n * **Clipboard Paste:**\n *   1. User pastes image (Ctrl+V/Cmd+V)\n *   2. Browser provides File object\n *   3. uploadImage() processes file\n *   4. URL stored and preview shown\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * ERROR HANDLING\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * - Invalid file type: \"Please select an image file\"\n * - Upload failed: Error message from uploadImage()\n * - Network error: Caught and displayed\n * - User feedback: Displayed below upload zone, auto-clear after dismiss\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n * @example\n *   const [image, setImage] = useState('');\n *\n *   <FeaturedImageUpload\n *     value={image}\n *     onChange={setImage}\n *   />\n */\n\nimport { useState, useCallback, useRef } from 'react';
 import { FiImage, FiUploadCloud, FiX, FiLink } from 'react-icons/fi';
 import { uploadImage } from './extensions/ImageUpload';
 

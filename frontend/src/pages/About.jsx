@@ -1,4 +1,34 @@
-import React from "react";
+/**
+ * About Page — Company mission, values, founder story, and team
+ *
+ * @component
+ * @purpose
+ *   Showcases Ecodeed Consulting's mission, vision, leadership, and impact.
+ *   Tells the company story with founder background and organizational values.
+ * @features
+ *   - Hero section with company mission statement
+ *   - Mission & vision statements
+ *   - Founder biography with photo
+ *   - Core values (Integrity, Innovation, Impact, Excellence)
+ *   - Impact statistics (clients, projects, results)
+ *   - Leadership team showcase
+ *   - Call-to-action to services/courses
+ * @sections
+ *   - Hero: Headline and logo
+ *   - Mission: Company values and purpose
+ *   - Founder: Story and background
+ *   - Values: Core principles visualization
+ *   - Impact: Key metrics and achievements
+ *   - Team: Leadership profiles (if available)
+ * @styles
+ *   - Brand colors: Blue (#051836), Green (#008037), Yellow (#F8BF0F)
+ *   - Responsive grid layout
+ *   - Dark mode support
+ * @example
+ *   <Route path=\"/about\" element={<About />} />
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */import React from "react";
 import { Link } from "react-router-dom";
 import { FaHandshake, FaLightbulb, FaShieldAlt, FaChartLine } from "react-icons/fa";
 

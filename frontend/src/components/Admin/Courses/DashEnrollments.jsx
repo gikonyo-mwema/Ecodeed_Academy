@@ -1,3 +1,28 @@
+/**
+ * Dashboard Enrollments Management Component
+ *
+ * Admin/Instructor interface for managing student course enrollments.
+ * Displays all enrollment records with student info, course details, and status.
+ * Allows admins/instructors to delete enrollments and manage student access.
+ *
+ * Features:
+ * - Enrollment Table: Shows all student-course enrollment pairs
+ * - Search/Filter: Real-time search by student username, email, or course title
+ * - Enrollment Data: Display student name, course, enrollment date, status
+ * - Delete Enrollments: Remove student access to courses (with confirmation modal)
+ * - Loading States: Spinner during initial data fetch
+ * - Responsive Design: Mobile-optimized table layout
+ * - Permission Gating: Only admins/instructors can view enrollments
+ *
+ * API Endpoints:
+ * - GET /api/v1/enrollments/: Fetch all enrollment records
+ * - DELETE /api/v1/enrollments/{enrollmentId}/: Delete specific enrollment
+ *
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Table, Button, Modal, Badge, TextInput } from 'flowbite-react';

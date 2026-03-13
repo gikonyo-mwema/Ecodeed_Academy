@@ -1,5 +1,51 @@
+/**
+ * Category Utilities — Badge styling and label formatting for content categories.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Provides category mapping, Tailwind CSS classes, and label formatting utilities.
+ * Supports 24+ environmental categories with dark/light mode Tailwind styling.
+ * Used throughout the app for category badges, filters, and display.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * SUPPORTED CATEGORIES (24)
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Core Environmental:
+ *   - Climate Change, Renewable Energy, Sustainable Agriculture, Conservation
+ *   - Zero Waste, Ocean Preservation, Green Tech, Biodiversity
+ *   - Water Resources, Energy Policy
+ *
+ * Cross-Cutting:
+ *   - Environmental Policy, Politics, History, Governance
+ *   - Regulation, Environmental Law, Public Health, Climate Justice
+ *   - Environmental Economics, Urban Planning, Indigenous Knowledge
+ *   - Sustainable Cities, Eco Tourism
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════\n * FUNCTIONS\n * ═══════════════════════════════════════════════════════════════════════════════════\n * - getCategoryKey(value): Normalize category value to slug key
+ * - getCategoryColorClass(value): Get Tailwind CSS class for category badge
+ * - formatCategoryLabel(value): Convert slug to title-case display label
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * import { getCategoryColorClass, formatCategoryLabel } from '@/utils/categories';\n * // Get Tailwind classes for badge styling
+ * const badgeClass = getCategoryColorClass('Climate Change');
+ * // Result: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'\n * // Format category for display
+ * const label = formatCategoryLabel('renewable-energy');
+ * // Result: 'Renewable Energy'\n * @module CategoryUtils
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 // Category utilities: mapping, normalization, and label formatting
 
+/**
+ * Tailwind CSS classes for category badges in light and dark modes.
+ * Each category maps to a color scheme with text and background variants.
+ * Includes light mode (bg-COLOR-100 text-COLOR-800) and dark mode equivalents.
+ * Default fallback uses brand colors (yellow/blue).\n * @type {Object<string, string>}
+ */
 // Tailwind classes for category badges in light/dark modes
 export const categoryColors = {
   'climate-change': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',

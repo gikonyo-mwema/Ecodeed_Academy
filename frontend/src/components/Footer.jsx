@@ -1,3 +1,97 @@
+/**
+ * Footer Component — Global footer with links, services, courses, and contact info
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * Renders the global site footer displayed at the bottom of every page. Includes
+ * company branding, featured services/courses, navigation links, social media,
+ * contact information, and newsletter signup.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * 1. **Company Information Section**
+ *    - Ecodeed logo (light/dark theme variants)
+ *    - Company mission statement
+ *    - Social media links (Facebook, Instagram, LinkedIn, Twitter)
+ *    - Contact information (email, phone, website)
+ *
+ * 2. **Featured Content**
+ *    - Recent services (up to 4 items from API)
+ *    - Featured courses (up to 4 items from API)
+ *    - Dynamic fetching from backend
+ *    - Graceful fallback on API errors
+ *
+ * 3. **Navigation Sections**
+ *    - Courses section with links
+ *    - Services section with links
+ *    - Resources section (documentation, etc.)
+ *    - Legal section (Privacy, Terms, etc.)
+ *
+ * 4. **Newsletter Signup**
+ *    - Email input field
+ *    - Subscribe button
+ *    - Responsive layout
+ *
+ * 5. **Theme Support**
+ *    - Light theme: White background with brand green border
+ *    - Dark theme: Brand blue background with brand yellow border
+ *    - Logo switches based on theme
+ *    - Text color adapts to theme
+ *
+ * 6. **Responsive Design**
+ *    - Grid layout: 1 column (mobile) → 2 columns (tablet) → 5 columns (desktop)
+ *    - Stacked on small screens
+ *    - Full-width on mobile
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * **Endpoints:**
+ *   GET /api/v1/services/?isPublished=true — Fetch published services (limit 4)
+ *   GET /api/v1/courses/ — Fetch courses (limit 4)
+ *
+ * **Data Handling:**
+ *   - Gracefully handles array, { results: [] }, or { data: { services: [] } }
+ *   - Silently fails if API is unavailable
+ *   - Shows partial content if one endpoint fails
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE MANAGEMENT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * Local state:
+ * - services: Array of service objects (up to 4)
+ * - totalServices: number (total services count)
+ * - courses: Array of course objects (up to 4)
+ * - totalCourses: number (total courses count)
+ *
+ * Redux state:
+ * - theme: from themeReducer (light | dark)
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * CONSTANTS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * - FOOTER_SERVICE_LIMIT = 4  (max services to display)
+ * - FOOTER_COURSE_LIMIT = 4   (max courses to display)
+ *
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ * // In main App layout:
+ * <Layout>
+ *   <Header />
+ *   <main>{/* pages */}</main>
+ *   <Footer />
+ * </Layout>
+ */
+
 import React, { useState, useEffect } from 'react';
 import { BsFacebook, BsInstagram, BsLinkedin, BsTwitter } from 'react-icons/bs';
 import { FaPhoneAlt, FaEnvelope, FaGlobe } from 'react-icons/fa';

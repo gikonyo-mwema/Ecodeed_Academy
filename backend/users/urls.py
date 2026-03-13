@@ -1,3 +1,39 @@
+"""
+═══════════════════════════════════════════════════════════════════════════════
+USER URLS — Authentication and profile management endpoints.
+
+URL routing for user-related API endpoints including registration, login,
+profile management, and social authentication (Google, Facebook, Twitter).
+
+═══════════════════════════════════════════════════════════════════════════════
+ENDPOINTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Authentication:
+  POST   /users/register/              - Register new user
+  POST   /users/login/                 - Login with email/password
+  POST   /users/logout/                - Logout (invalidate tokens)
+  
+Profile Management:
+  GET    /users/profile/               - Get current user profile
+  PUT    /users/profile/update/        - Update profile (name, picture, bio)
+
+User Management (Admin):
+  GET    /users/                       - List all users
+  GET    /users/{id}/                  - Get user details
+  PATCH  /users/updateRole/{id}/       - Update user role
+  DELETE /users/delete/{id}/           - Delete user account
+
+Social Authentication:
+  POST   /users/google/                - Google OAuth login
+  POST   /users/facebook/              - Facebook OAuth login
+  POST   /users/twitter/login/         - Twitter OAuth step 1
+  GET    /users/twitter/callback/      - Twitter OAuth step 2
+  POST   /users/twitter/complete/      - Twitter OAuth step 3
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views

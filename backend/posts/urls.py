@@ -1,16 +1,40 @@
 """
-Posts URL configuration.
+═══════════════════════════════════════════════════════════════════════════════
+POST URLS — Blog post management endpoints.
 
-All endpoints live under /api/v1/ (mounted in config/urls.py):
-  - /api/v1/posts/            — paginated list + CRUD (DRF router)
-  - /api/v1/posts/<pk>/       — retrieve / update / delete
-  - /api/v1/posts/stats/      — admin dashboard stats
-  - /api/v1/posts/trending/   — top posts by views
-  - /api/v1/posts/recommended/<id>/  — same-category recommendations
-  - /api/v1/posts/<pk>/like/  — toggle like
-  - /api/v1/categories/       — CRUD (admin) / list (public)
-  - /api/v1/tags/             — read-only listing
-  - /api/v1/upload/upload     — image upload
+URL configuration for blog content including posts, comments, categories, tags,
+and image uploads. All endpoints mounted under /api/v1/ in config/urls.py.
+
+═══════════════════════════════════════════════════════════════════════════════
+ENDPOINTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Posts:
+  GET    /posts/                    - List published posts (paginated)
+  POST   /posts/                    - Create post (admin)
+  GET    /posts/{id}/               - Get post details
+  PUT    /posts/{id}/               - Update post (admin/author)
+  DELETE /posts/{id}/               - Delete post (admin/author)
+  GET    /posts/stats/              - Admin dashboard stats
+  GET    /posts/trending/           - Top posts by views
+  GET    /posts/{id}/recommended/   - Get recommended posts (same category)
+  POST   /posts/{id}/like/          - Like/unlike post
+
+Categories:
+  GET    /categories/               - List all categories (public)
+  POST   /categories/               - Create category (admin)
+  GET    /categories/{id}/          - Get category details
+  PUT    /categories/{id}/          - Update category (admin)
+  DELETE /categories/{id}/          - Delete category (admin)
+
+Tags:
+  GET    /tags/                     - List all tags (read-only)
+  GET    /tags/{id}/                - Get tag details
+
+Images:
+  POST   /upload/upload             - Upload post image
+
+═══════════════════════════════════════════════════════════════════════════════
 """
 
 from django.urls import include, path

@@ -1,3 +1,117 @@
+/**
+ * CourseDetails Page — Comprehensive course information and enrollment
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Displays detailed course information including full description, curriculum,
+ * features, FAQs, target audience, and resources. Handles course enrollment with
+ * payment modal for paid courses and direct enrollment for free courses.
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * 1. **Course Information Sections**
+ *    - Hero section with course image and title
+ *    - Course metadata (rating, reviews, students, language, duration)
+ *    - Tabs for Different content areas (Overview, Curriculum, FAQs, Reviews)
+ *    - Full course description with expandable text
+ * 
+ * 2. **Curriculum Display**
+ *    - Weekly/Module structure view
+ *    - Lessons within each module with duration
+ *    - Expandable sections for mobile
+ *    - Lesson count and total course duration
+ * 
+ * 3. **Enrollment System**
+ *    - Checks current enrollment status for logged-in users
+ *    - \"Enroll\" button triggers payment modal for paid courses
+ *    - Paid courses use Paystack payment integration (PaymentModal)
+ *    - Free courses bypass payment and enroll directly
+ *    - Progress bar showing personal course progress (if enrolled)
+ * 
+ * 4. **Additional Content**
+ *    - Target audience: Who should take this course
+ *    - Course features: Key learning outcomes
+ *    - FAQs: Accordion-based frequently asked questions
+ *    - Resources: Downloadable course materials
+ *    - Certificate: Badge if course offers certification
+ * 
+ * 5. **Responsive Tabs**
+ *    - Overview: Description, features, audience, resources
+ *    - Curriculum: Full course structure with modules and lessons
+ *    - FAQs: Accordion with common questions
+ *    - Reviews: Student testimonials and ratings
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * **Endpoints:**
+ *   GET /api/v1/courses/{slug}/ — Fetch course details by slug
+ *   GET /api/v1/enrollments/check/?userId={id}&courseSlug={slug} — Check enrollment
+ *   POST /api/v1/enrollments/ — Enroll in free course
+ *   POST /api/v1/payments/ — Process payment for paid courses (via PaymentModal)
+ * 
+ * **Course Data Structure:**
+ *   - id, slug, title, category
+ *   - short_description, full_description (with HTML)
+ *   - price (0 = free, >0 = paid)
+ *   - is_free, isFree (boolean flags)
+ *   - image (featured image URL)
+ *   - rating, reviews (student feedback)
+ *   - students (enrollment count)
+ *   - language, duration (course metadata)
+ *   - has_certificate, hasCertificate (boolean)
+ *   - is_popular (featured status)
+ *   - modules/curriculum (lessons structure)
+ *   - features, target_audience (learning outcomes)
+ *   - faqs, resources (additional content)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE MANAGEMENT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * Local state:
+ * - course: normalized course object
+ * - isEnrolled: boolean (enrollment status)
+ * - loading: boolean (initial fetch)
+ * - error: string | null (error message)
+ * - activeTab: number (current tab index)
+ * - showPaymentModal: boolean (payment modal visibility)
+ * - processing: boolean (enrollment in progress)
+ * - showFullDescription: boolean (description expanded)
+ * 
+ * Redux state:
+ * - currentUser: from user reducer (for enrollment checks)
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PAYMENT FLOW
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 
+ * FREE COURSES:
+ *   User clicks \"Enroll\" → Direct enrollment → Redirect to /dashboard
+ * 
+ * PAID COURSES:
+ *   User clicks \"Enroll\" → PaymentModal shows → Paystack payment processing
+ *   On success: Create enrollment → Redirect to /dashboard
+ *   On cancel: Modal closes, user remains on course page
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ * // In App.jsx router:
+ * <Route path=\"/courses/:slug\" element={<CourseDetails />} />
+ * 
+ * // Navigation from course card:
+ * navigate(`/courses/${course.slug}`);
+ */
+
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -172,6 +286,31 @@ export default function CourseDetails() {
   );
   if (!course) return <div className="text-center py-12">Course not found</div>;
 
+  const formatLessonDuration = (seconds) => {
+    const totalSeconds = Number(seconds) || 0;
+    if (totalSeconds <= 0) return '—';
+    if (totalSeconds < 60) return `${totalSeconds}s`;
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins} min`;
+  };
+
+  // Prefer explicit curriculum payload; gracefully fall back to modules/lessons
+  const curriculumSections = (
+    Array.isArray(course.curriculum) && course.curriculum.length > 0
+      ? course.curriculum
+      : Array.isArray(course.modules)
+        ? course.modules.map((module) => ({
+            ...module,
+            items: Array.isArray(module.items) ? module.items : (module.lessons || []),
+          }))
+        : []
+  ).map((section) => ({
+    ...section,
+    items: Array.isArray(section.items) ? section.items : [],
+  }));
+  const totalLessons = curriculumSections.reduce((total, section) => total + section.items.length, 0);
+
   // Dynamic icon based on course category
   const getCourseIcon = () => {
     switch(course.category) {
@@ -190,7 +329,7 @@ export default function CourseDetails() {
   const IconComponent = courseIcon.icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-brand-blue dark:to-gray-900">
       {/* Hero Section */}
       <div className={`relative overflow-hidden bg-gradient-to-r ${courseIcon.color} text-white`}>
         <div className="absolute inset-0 bg-black opacity-10"></div>
@@ -241,14 +380,14 @@ export default function CourseDetails() {
 
             {/* Price Card - Desktop */}
             <div className="hidden lg:block">
-              <div className="bg-white rounded-2xl shadow-2xl p-6">
+              <div className="bg-white dark:bg-brand-blue rounded-2xl shadow-2xl border border-gray-200 dark:border-brand-yellow/20 p-6">
                 <div className="text-center mb-6">
                   {!course.isFree ? (
                     <>
-                      <span className="text-4xl font-bold text-gray-800">
+                      <span className="text-4xl font-bold text-gray-800 dark:text-white">
                         Ksh {course.price?.toLocaleString()}
                       </span>
-                      <span className="text-gray-500 ml-2">one-time</span>
+                      <span className="text-gray-500 dark:text-gray-300 ml-2">one-time</span>
                     </>
                   ) : (
                     <span className="text-4xl font-bold text-green-600">Free</span>
@@ -273,7 +412,7 @@ export default function CourseDetails() {
                       )}
                     </Button>
 
-                    <div className="space-y-3 text-sm text-gray-600">
+                    <div className="space-y-3 text-sm text-gray-600 dark:text-gray-200">
                       <p className="flex items-center">
                           <HiOutlineCheckCircle className="mr-2 text-brand-green w-5 h-5" />
                         Lifetime access
@@ -312,7 +451,7 @@ export default function CourseDetails() {
           {/* Left Column - Course Content */}
           <div className="lg:col-span-2">
             {/* Tabs */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <div className="bg-white dark:bg-brand-blue rounded-xl shadow-sm border border-gray-200 dark:border-brand-yellow/20 mb-8">
               <Tabs.Group
                 aria-label="Course tabs"
                 style="underline"
@@ -320,35 +459,38 @@ export default function CourseDetails() {
               >
                 <Tabs.Item title="Overview" active={activeTab === 0}>
                   <div className="p-6">
-                    <div className="prose max-w-none">
-                      <h2 className="text-2xl font-bold text-gray-800 mb-4">About This Course</h2>
-                      <p className="text-gray-600 leading-relaxed">
+                    <div className="prose max-w-none dark:prose-invert">
+                      <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">About This Course</h2>
+                      <p className="text-gray-600 dark:text-gray-200 leading-relaxed">
                         {showFullDescription ? course.fullDescription : `${course.fullDescription?.substring(0, 300)}...`}
                       </p>
                       {course.fullDescription?.length > 300 && (
                         <button
                           onClick={() => setShowFullDescription(!showFullDescription)}
-                          className="text-brand-green font-medium hover:text-brand-green/70 mt-2"
+                          className="text-brand-green dark:text-brand-yellow font-medium hover:text-brand-green/70 dark:hover:text-brand-yellow/80 mt-2"
                         >
                           {showFullDescription ? 'Show less' : 'Read more'}
                         </button>
                       )}
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-800 mt-8 mb-4">What You'll Learn</h3>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mt-8 mb-4">What You'll Learn</h3>
                     <div className="grid md:grid-cols-2 gap-3">
                       {course.features?.map((feature, index) => (
-                        <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg">
+                        <div key={index} className="flex items-start p-3 bg-gray-50 dark:bg-white/5 border border-transparent dark:border-white/10 rounded-lg">
                           <HiOutlineCheckCircle className="h-5 w-5 text-brand-green mr-3 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-700">{feature}</span>
+                          <span className="text-gray-700 dark:text-gray-100">{feature}</span>
                         </div>
                       ))}
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-800 mt-8 mb-4">Who This Course Is For</h3>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mt-8 mb-4">Who This Course Is For</h3>
                     <div className="flex flex-wrap gap-2">
                       {course.targetAudience?.map((audience, index) => (
-                        <Badge key={index} color="indigo" className="px-3 py-1 text-sm">
+                        <Badge
+                          key={index}
+                          className="px-3 py-1 text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-white/10 dark:text-brand-yellow dark:border-brand-yellow/30"
+                        >
                           {audience}
                         </Badge>
                       ))}
@@ -358,58 +500,101 @@ export default function CourseDetails() {
 
                 <Tabs.Item title="Curriculum" active={activeTab === 1}>
                   <div className="p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-2xl font-bold text-gray-800">Course Curriculum</h2>
-                      <Badge color="success">{course.curriculum?.length} sections</Badge>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Course Curriculum</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
+                          Learn in bite-sized sections with clear lesson flow
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-brand-green/10 text-brand-green dark:bg-brand-yellow/20 dark:text-brand-yellow">
+                          {curriculumSections.length} sections
+                        </span>
+                        <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-white/10 dark:text-blue-200">
+                          {curriculumSections.reduce((total, s) => total + s.items.length, 0)} lessons
+                        </span>
+                      </div>
                     </div>
-                    
-                    <Accordion alwaysOpen={true} className="border-none">
-                      {course.curriculum?.map((section, index) => (
-                        <Accordion.Panel key={index}>
-                          <Accordion.Title className="bg-gray-50 hover:bg-gray-100 focus:ring-0">
-                            <div className="flex items-center justify-between w-full">
-                              <span className="font-medium">Section {index + 1}: {section.title}</span>
-                              <Badge color="gray">{section.items?.length} lessons</Badge>
-                            </div>
-                          </Accordion.Title>
-                          <Accordion.Content>
-                            <ul className="space-y-3">
-                              {section.items?.map((item, itemIndex) => (
-                                <li key={itemIndex} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                  <div className="flex items-center">
-                                    {item.type === 'video' ? (
-                                      <HiOutlinePlay className="h-4 w-4 text-red-500 mr-3" />
-                                    ) : item.type === 'interactive' ? (
-                                      <HiOutlineCog className="h-4 w-4 text-purple-500 mr-3" />
-                                    ) : (
-                                      <HiOutlineBookOpen className="h-4 w-4 text-blue-500 mr-3" />
-                                    )}
-                                    <span className="text-gray-700">{typeof item === 'object' ? item.title : item}</span>
-                                  </div>
-                                  <span className="text-sm text-gray-500">{item.duration || '10 min'}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </Accordion.Content>
-                        </Accordion.Panel>
-                      ))}
-                    </Accordion>
+
+                    {curriculumSections.length === 0 ? (
+                      <Alert color="info" className="rounded-lg dark:!bg-white/5 dark:!text-blue-100 dark:!border-blue-400/30">
+                        Curriculum is being updated. Please check back shortly.
+                      </Alert>
+                    ) : (
+                      <Accordion alwaysOpen={true} className="border-none space-y-3">
+                        {curriculumSections.map((section, index) => (
+                          <Accordion.Panel
+                            key={section.id || index}
+                            className="border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden bg-white dark:bg-white/5"
+                          >
+                            <Accordion.Title className="!bg-gray-50 hover:!bg-gray-100 dark:!bg-brand-blue/70 dark:hover:!bg-brand-blue/90 focus:!ring-0">
+                              <div className="flex items-center justify-between w-full">
+                                <span className="font-medium text-gray-800 dark:text-white pr-3">
+                                  Section {index + 1}: {section.title}
+                                </span>
+                                <span className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold bg-white text-gray-700 border border-gray-200 dark:bg-white/10 dark:text-gray-100 dark:border-white/20">
+                                  {section.items.length} lessons
+                                </span>
+                              </div>
+                            </Accordion.Title>
+                            <Accordion.Content className="!bg-white dark:!bg-brand-blue/40">
+                              <ul className="space-y-2">
+                                {section.items.map((item, itemIndex) => {
+                                  const isObjectItem = typeof item === 'object' && item !== null;
+                                  const itemTitle = isObjectItem ? item.title : item;
+                                  const itemType = isObjectItem
+                                    ? (item.type || (item.video_url ? 'video' : 'reading'))
+                                    : 'reading';
+                                  const durationText = isObjectItem
+                                    ? formatLessonDuration(item.duration)
+                                    : '—';
+
+                                  return (
+                                    <li
+                                      key={item.id || itemIndex}
+                                      className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-gray-50/80 dark:border-white/10 dark:bg-white/5"
+                                    >
+                                      <div className="flex items-center min-w-0">
+                                        {itemType === 'video' ? (
+                                          <HiOutlinePlay className="h-4 w-4 text-brand-yellow mr-3 flex-shrink-0" />
+                                        ) : itemType === 'interactive' ? (
+                                          <HiOutlineCog className="h-4 w-4 text-brand-green mr-3 flex-shrink-0" />
+                                        ) : (
+                                          <HiOutlineBookOpen className="h-4 w-4 text-blue-500 mr-3 flex-shrink-0" />
+                                        )}
+                                        <span className="text-gray-700 dark:text-gray-100 truncate">
+                                          {itemTitle || `Lesson ${itemIndex + 1}`}
+                                        </span>
+                                      </div>
+                                      <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300 ml-3 whitespace-nowrap">
+                                        {durationText}
+                                      </span>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </Accordion.Content>
+                          </Accordion.Panel>
+                        ))}
+                      </Accordion>
+                    )}
                   </div>
                 </Tabs.Item>
 
                 <Tabs.Item title="FAQs" active={activeTab === 2}>
                   <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Frequently Asked Questions</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Frequently Asked Questions</h2>
                     <div className="space-y-4">
                       {course.faqs?.map((faq, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                        <div key={index} className="border border-gray-200 dark:border-white/10 rounded-lg overflow-hidden bg-white dark:bg-white/5">
                           <details className="group">
-                            <summary className="flex items-center justify-between p-4 cursor-pointer bg-gray-50 hover:bg-gray-100">
-                              <h3 className="font-medium text-gray-800">{faq.question}</h3>
-                              <HiOutlineChevronRight className="w-5 h-5 text-gray-500 group-open:rotate-90 transition-transform" />
+                            <summary className="flex items-center justify-between p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-brand-blue/70 dark:hover:bg-brand-blue/90">
+                              <h3 className="font-medium text-gray-800 dark:text-gray-100">{faq.question}</h3>
+                              <HiOutlineChevronRight className="w-5 h-5 text-gray-500 dark:text-gray-300 group-open:rotate-90 transition-transform" />
                             </summary>
-                            <div className="p-4 bg-white">
-                              <p className="text-gray-600">{faq.answer}</p>
+                            <div className="p-4 bg-white dark:bg-brand-blue/40">
+                              <p className="text-gray-600 dark:text-gray-200">{faq.answer}</p>
                             </div>
                           </details>
                         </div>
@@ -425,14 +610,14 @@ export default function CourseDetails() {
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-6">
               {/* Price Card - Mobile/Tablet */}
-              <div className="lg:hidden bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+              <div className="lg:hidden bg-white dark:bg-brand-blue rounded-xl shadow-lg border border-gray-200 dark:border-brand-yellow/20 p-6">
                 <div className="text-center mb-6">
                   {!course.isFree ? (
                     <>
-                      <span className="text-4xl font-bold text-gray-800">
+                      <span className="text-4xl font-bold text-gray-800 dark:text-white">
                         Ksh {course.price?.toLocaleString()}
                       </span>
-                      <span className="text-gray-500 ml-2">one-time</span>
+                      <span className="text-gray-500 dark:text-gray-300 ml-2">one-time</span>
                     </>
                   ) : (
                     <span className="text-4xl font-bold text-green-600">Free</span>
@@ -457,7 +642,7 @@ export default function CourseDetails() {
                       )}
                     </Button>
 
-                    <div className="space-y-2 text-sm text-gray-600">
+                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-200">
                       <p className="flex items-center">
                         <HiOutlineCheckCircle className="mr-2 text-brand-green" />
                         Lifetime access
@@ -487,37 +672,37 @@ export default function CourseDetails() {
               </div>
 
               {/* Course Details Card */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Course Details</h3>
+              <div className="bg-white dark:bg-brand-blue rounded-xl shadow-lg border border-gray-200 dark:border-brand-yellow/20 p-6">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Course Details</h3>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Last updated</span>
-                    <span className="font-medium text-gray-800">{course.lastUpdated}</span>
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-white/10">
+                    <span className="text-gray-600 dark:text-gray-300">Last updated</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{course.lastUpdated}</span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Total duration</span>
-                    <span className="font-medium text-gray-800">{course.duration}</span>
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-white/10">
+                    <span className="text-gray-600 dark:text-gray-300">Total duration</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{course.duration}</span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                    <span className="text-gray-600">Language</span>
-                    <span className="font-medium text-gray-800">{course.language}</span>
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-white/10">
+                    <span className="text-gray-600 dark:text-gray-300">Language</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-100">{course.language}</span>
                   </div>
                   {course.certificate && (
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-600">Certificate</span>
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-white/10">
+                      <span className="text-gray-600 dark:text-gray-300">Certificate</span>
                       <Badge color="success">Yes</Badge>
                     </div>
                   )}
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-gray-600">Access</span>
-                    <span className="font-medium text-gray-800">Lifetime</span>
+                    <span className="text-gray-600 dark:text-gray-300">Access</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-100">Lifetime</span>
                   </div>
                 </div>
               </div>
 
               {/* Instructor Card */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Course Instructor</h3>
+              <div className="bg-white dark:bg-brand-blue rounded-xl shadow-lg border border-gray-200 dark:border-brand-yellow/20 p-6">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Course Instructor</h3>
                 <div className="flex items-center gap-4">
                   {course.instructor?.profile_picture ? (
                     <img 
@@ -536,14 +721,14 @@ export default function CourseDetails() {
                     </div>
                   )}
                   <div>
-                    <h4 className="font-bold text-gray-800">
+                    <h4 className="font-bold text-gray-800 dark:text-gray-100">
                       {course.instructor_name || 
                        (course.instructor?.first_name && course.instructor?.last_name 
                          ? `${course.instructor.first_name} ${course.instructor.last_name}` 
                          : course.instructor?.email || 'Ecodeed')}
                     </h4>
                     {course.instructor?.bio && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {course.instructor.bio.length > 80 
                           ? `${course.instructor.bio.substring(0, 80)}...` 
                           : course.instructor.bio}
@@ -554,23 +739,23 @@ export default function CourseDetails() {
               </div>
 
               {/* What's Included */}
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">This course includes:</h3>
+              <div className="bg-white dark:bg-brand-blue rounded-xl shadow-lg border border-gray-200 dark:border-brand-yellow/20 p-6">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">This course includes:</h3>
                 <ul className="space-y-3">
-                  <li className="flex items-center text-gray-600">
-                    <HiOutlinePlay className="w-5 h-5 text-teal-500 mr-3" />
-                    {course.curriculum?.length} on-demand videos
+                  <li className="flex items-center text-gray-600 dark:text-gray-200">
+                    <HiOutlinePlay className="w-5 h-5 text-brand-yellow mr-3" />
+                    {totalLessons} on-demand videos
                   </li>
-                  <li className="flex items-center text-gray-600">
-                    <HiOutlineDownload className="w-5 h-5 text-teal-500 mr-3" />
+                  <li className="flex items-center text-gray-600 dark:text-gray-200">
+                    <HiOutlineDownload className="w-5 h-5 text-brand-green mr-3" />
                     Downloadable resources
                   </li>
-                  <li className="flex items-center text-gray-600">
-                    <HiOutlineClock className="w-5 h-5 text-teal-500 mr-3" />
+                  <li className="flex items-center text-gray-600 dark:text-gray-200">
+                    <HiOutlineClock className="w-5 h-5 text-brand-yellow mr-3" />
                     Lifetime access
                   </li>
-                  <li className="flex items-center text-gray-600">
-                    <HiOutlineQuestionMarkCircle className="w-5 h-5 text-teal-500 mr-3" />
+                  <li className="flex items-center text-gray-600 dark:text-gray-200">
+                    <HiOutlineQuestionMarkCircle className="w-5 h-5 text-brand-green mr-3" />
                     Q&A support
                   </li>
                 </ul>

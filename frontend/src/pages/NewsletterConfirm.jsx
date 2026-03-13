@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * NewsletterConfirm Page — Email subscription confirmation page\n *\n * @component\n * @purpose Confirms newsletter subscription via email token\n * @features\n *   - Token validation from URL parameter\n *   - Loading state during confirmation\n *   - Success/error messages\n *   - Navigation back to home after confirmation\n *   - Responsive design\n * @api\n *   GET /api/v1/messages/newsletter/confirm?token={token} — Confirm subscription\n * @state\n *   - status: 'loading' | 'success' | 'error'\n *   - message: string (confirmation or error message)\n *   - token: from URL query params\n * @flow\n *   User receives email with confirmation link → Clicks link → API validates token\n *   → Shows success/error message → Can navigate back to home\n * @example\n *   /newsletter/confirm?token=abc123def456\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Button, Spinner } from 'flowbite-react';

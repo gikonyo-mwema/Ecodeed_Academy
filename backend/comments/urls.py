@@ -1,3 +1,38 @@
+"""
+═══════════════════════════════════════════════════════════════════════════════
+COMMENT URLS — Blog and lesson comment endpoints.
+
+URL routing for threaded comments on blog posts and lesson content.
+
+═══════════════════════════════════════════════════════════════════════════════
+ENDPOINTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Blog Comments (DRF Router):
+  GET    /comments/                 - List all comments
+  POST   /comments/                 - Create comment
+  GET    /comments/{id}/            - Get comment details
+  PUT    /comments/{id}/            - Update comment
+  DELETE /comments/{id}/            - Delete comment
+  
+Lesson Comments (DRF Router):
+  GET    /lesson-comments/          - List all lesson comments
+  POST   /lesson-comments/          - Create lesson comment
+  GET    /lesson-comments/{id}/     - Get comment details
+  PUT    /lesson-comments/{id}/     - Update comment
+  DELETE /lesson-comments/{id}/     - Delete comment
+
+Legacy Blog Comment Routes (Backward Compatible):
+  POST   /create                    - Create comment
+  GET    /getPostComments/{postId}  - Get comments for post
+  PUT    /likeComment/{id}          - Like/unlike comment
+  PUT    /editComment/{id}          - Edit comment
+  DELETE /deleteComment/{id}        - Delete comment
+  GET    /getComments               - Get all comments
+
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import CommentViewSet, LessonCommentViewSet

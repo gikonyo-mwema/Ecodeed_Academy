@@ -1,18 +1,107 @@
 #!/usr/bin/env python3
 """
-Utility script to transform and validate MongoDB posts.json for Django import.
+═══════════════════════════════════════════════════════════════════════════════
+TRANSFORM MONGODB POSTS — Data migration utility script.
 
-This script reads the MongoDB JSON export and creates a cleaned version suitable
-for seeding into Django MySQL database. It handles:
-- Date transformations (MongoDB extended JSON to ISO format)
-- Category mapping
-- Slug generation and uniqueness
-- Data validation and cleansing
+Transforms MongoDB JSON export to Django-compatible format for bulk importing
+blog posts into PostgreSQL database. Handles date parsing, category mapping,
+slug generation, and comprehensive data validation.
 
-Usage:
-    python transform_mongodb_posts.py ../posts.json
-    python transform_mongodb_posts.py ../posts.json --output transformed_posts.json
-    python transform_mongodb_posts.py ../posts.json --validate-only
+═══════════════════════════════════════════════════════════════════════════════
+USAGE
+═══════════════════════════════════════════════════════════════════════════════
+
+python transform_mongodb_posts.py <input_file> [options]
+
+Options:
+  --output FILE          - Output file path (default: transformed_posts.json)
+  --validate-only        - Validate without transforming
+  --strict              - Fail on any validation error (default: skip invalid)
+  --verbose             - Print detailed transformation logs
+
+Examples:
+  python transform_mongodb_posts.py ../posts.json
+  python transform_mongodb_posts.py ../posts.json --output transformed.json
+  python transform_mongodb_posts.py ../posts.json --validate-only --verbose
+
+═══════════════════════════════════════════════════════════════════════════════
+TRANSFORMATIONS PERFORMED
+═══════════════════════════════════════════════════════════════════════════════
+
+Date Format:
+  Input:  MongoDB extended JSON - {"$date": "2025-09-18T08:15:25.675Z"}
+  Output: ISO 8601 - "2025-09-18T08:15:25+00:00"
+
+Categories:
+  Maps MongoDB category strings to Django Category IDs
+  Fallback: "uncategorized" for unknown categories
+
+Slugs:
+  Generates URL-safe slugs from post title
+  Ensures uniqueness by appending counter if needed
+  Format: "post-title" or "post-title-2"
+
+Images:
+  Validates image URLs (must start with http/https)
+  Converts image data to cloudinary URLs if applicable
+  Defaults to fallback image if invalid
+
+Status Mapping:
+  draft → draft (unpublished)
+  published → published (live)
+  scheduled → scheduled (future publish)
+  archived → archived (removed from active)
+
+═══════════════════════════════════════════════════════════════════════════════
+VALIDATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Required Fields:
+  - title (string, 1-255 chars)
+  - content (string, HTML allowed)
+  - user/author (required, maps to user ID)
+
+Optional Fields:
+  - excerpt (auto-generated from content if missing)
+  - image (validated URL)
+  - published_at (parsed date)
+  - status (defaults to draft if invalid)
+  - category (defaults to uncategorized)
+  - tags (array of tag names)
+
+Validation Errors:
+  - Missing required fields: Skipped (logged)
+  - Invalid dates: Set to current time
+  - Invalid URLs: Set to fallback
+  - Duplicate slugs: Appended with counter
+  - Invalid user ID: Skipped with warning
+
+═══════════════════════════════════════════════════════════════════════════════
+OUTPUT FORMAT
+═══════════════════════════════════════════════════════════════════════════════
+
+JSON array suitable for Django fixture loading or bulk import:
+
+[
+  {
+    "title": "Post Title",
+    "slug": "post-title",
+    "content": "<p>HTML content...</p>",
+    "excerpt": "Plain text excerpt",
+    "image": "https://example.com/image.jpg",
+    "category": "Technology",
+    "category_fk": 3,
+    "status": "published",
+    "published_at": "2025-09-18T08:15:25+00:00",
+    "user": 1,
+    "tags": ["tag1", "tag2"],
+    "featured": false,
+    "created_at": "2025-09-18T08:15:25+00:00",
+    "updated_at": "2025-09-18T08:15:25+00:00"
+  }
+]
+
+═══════════════════════════════════════════════════════════════════════════════
 """
 
 import json
@@ -34,7 +123,20 @@ def slugify(text):
 
 
 def parse_mongodb_date(date_obj):
-    """Parse MongoDB date format to ISO datetime string."""
+    """
+    Parse MongoDB date format to ISO datetime string.
+    
+    Handles multiple formats:
+      - MongoDB extended JSON: {"$date": "2025-09-18T08:15:25.675Z"}
+      - ISO strings: "2025-09-18T08:15:25Z"
+      - Native datetime objects
+    
+    Args:
+      date_obj: Date in various formats
+      
+    Returns:
+      ISO 8601 string or None if parsing fails
+    """
     if isinstance(date_obj, dict) and '$date' in date_obj:
         # MongoDB extended JSON: {"$date": "2025-09-18T08:15:25.675Z"}
         date_str = date_obj['$date']

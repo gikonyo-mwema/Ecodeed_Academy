@@ -1,3 +1,61 @@
+/**
+ * usePostForm Hook — Manages post creation and editing with form state and validation.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Provides form state management for creating and editing posts. Handles field
+ * updates, form submission, validation (title/content required), and error handling.
+ * Supports both POST (create) and PUT (edit) workflows with trailing slash URLs.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FORM SCHEMA
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * {
+ *   title: string (required, non-empty),
+ *   content: string (required, non-empty, not just HTML tags),
+ *   category: string (default: 'uncategorized'),
+ *   image: string (URL, optional)
+ * }\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HOOK STATE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * - formData (object): Current form field values
+ * - isSubmitting (bool): Form submission in progress
+ * - error (string|null): Validation or API error message\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API ENDPOINTS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Create: POST /api/v1/posts/
+ * Edit:   PUT /api/v1/posts/{id}/\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * VALIDATION RULES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * • Title must be non-empty after trim
+ * • Content must be non-empty after trim AND not be just HTML tags (<p><br></p>)
+ * • Category optional (defaults to 'uncategorized')
+ * • Image optional (must be valid URL if provided)\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * USAGE EXAMPLE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * const { formData, setFormData, isSubmitting, error, handleSubmit }
+ *   = usePostForm(editingPost || null, isEdit, currentUser, () => fetchPosts());
+ *
+ * <form onSubmit={handleSubmit}>
+ *   <input value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} />
+ *   <Editor value={formData.content} onChange={(html) => setFormData({...formData, content: html})} />
+ *   <button disabled={isSubmitting}>{isEdit ? 'Update' : 'Create'}</button>
+ *   {error && <Alert>{error}</Alert>}
+ * </form>\n *
+ * @hook usePostForm
+ * @param {object|null} initialPost - Post object for editing (null for creation)
+ * @param {boolean} isEdit - True if editing existing post, false if creating new
+ * @param {object} currentUser - Current authenticated user object
+ * @param {function} onSuccess - Callback after successful form submission
+ * @returns {object} { formData, setFormData, isSubmitting, error, handleSubmit }
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../../../../utils/api';
 

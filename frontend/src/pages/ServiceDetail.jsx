@@ -1,4 +1,9 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * ServiceDetail Page — Individual service showcase with full details and CTA
+ *
+ * @component
+ * @purpose
+ *   Displays comprehensive information about a specific service including description,\n *   features, benefits, pricing, and contact call-to-action.\n * @features\n *   - Full service description (rich HTML)\n *   - Service features and benefits listed\n *   - Pricing information\n *   - Services offered under parent category\n *   - Side navigation dots for section anchoring\n *   - \"Get Quote\" form modal\n *   - Responsive design with dark mode support\n *   - Contact button with service context\n * @api\n *   GET /api/v1/services/{slug}/ — Fetch service details by slug\n * @state\n *   - service: service object with full details\n *   - loading: boolean (fetch in progress)\n *   - error: string | null (error message)\n * @example\n *   <Route path=\"/services/:slug\" element={<ServiceDetail />} />\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { apiFetch } from '../utils/api';

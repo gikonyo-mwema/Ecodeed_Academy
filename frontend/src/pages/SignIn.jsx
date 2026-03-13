@@ -1,3 +1,36 @@
+/**
+ * Sign In Page
+ * 
+ * User login page with email/password authentication.
+ * Features:
+ * - Email & password form validation
+ * - Redux-based authentication flow
+ * - OAuth integration (Google, Facebook, Twitter)
+ * - Responsive layout (desktop + mobile)
+ * - Loading states and error handling
+ * - Auto-redirect to dashboard on successful login
+ * - Link to sign up for new users
+ * 
+ * Form Validation:
+ * - Email format: RFC 5322 basic validation
+ * - Password: minimum 6 characters
+ * - Both fields required
+ * 
+ * State Management:
+ * - Redux user slice for auth state
+ * - Local state for form data and validation errors
+ * 
+ * API Endpoints Used:
+ * - POST /api/v1/auth/login/ (email/password)
+ * - POST /api/v1/auth/google/ (via OAuth)
+ * - POST /api/v1/auth/facebook/ (via OAuth)
+ * 
+ * @component
+ * @returns {JSX.Element} Sign in page with form and OAuth options
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -5,6 +38,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { signIn } from "../redux/user/userSlice";
 import OAuth from "../components/OAuth";
 
+/**
+ * SignIn Component
+ * Main login page for user authentication
+ * 
+ * @returns {JSX.Element} Renders sign in form with two-column layout
+ */
 export default function SignIn() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [validationError, setValidationError] = useState(null);

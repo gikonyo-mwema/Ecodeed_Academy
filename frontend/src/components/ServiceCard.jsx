@@ -1,4 +1,47 @@
-import React from 'react';
+/**
+ * ServiceCard Component — Individual service display card with icon and details
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * Renders a single service card with animated entrance, icon, title, description,
+ * features list, and call-to-action link. Supports both emoji and SVG icon formats.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * 1. **Icon Rendering**
+ *    - Emoji icons (primary, Unicode regex-validated)
+ *    - Legacy SVG icon fallback (EIA, audit, policy, climate)
+ *    - Graceful fallback to generic box icon
+ *    - Responsive sizing and styling
+ *
+ * 2. **Visual Design**
+ *    - Framer Motion animations (entrance, hover)
+ *    - Gradient top border (blue to green)
+ *    - Hover shadow elevation
+ *    - Icon background with gradient
+ *    - Smooth transitions (500ms)
+ *    - Y-axis lift on hover (-5px)
+ *
+ * 3. **Content Sections**
+ *    - Service title (prominent heading)
+ *    - Brief description text
+ *    - Features list (up to 5 items)
+ *    - Price/rate information (optional)
+ *    - \"Learn More\" CTA link
+ *
+ * 4. **Theme Support**
+ *    - Dark mode aware colors
+ *    - Brand color consistency (blue, green, yellow)
+ *    - Text color adaptation
+ *
+ * 5. **Responsive**
+ *    - Grid-friendly container
+ *    - Full height flex layout
+ *    - Mobile-optimized touch targets\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * PROPS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * - service: object\n *   - id: unique identifier\n *   - title: service name\n *   - description: short description\n *   - icon: emoji string or legacy icon filename\n *   - features: Array<string> (feature list)\n *   - price: string (rate or pricing info)\n *   - slug: URL slug for detail page\n *\n * - className: string (optional, additional CSS classes)\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * HELPER FUNCTIONS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * getIconComponent(iconName: string): ReactNode\n *   Returns the appropriate icon component based on format:\n *   - Emoji regex test for Unicode emoji characters\n *   - Legacy SVG mapping for old icon filenames\n *   - Default box icon fallback\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n * @example\n *   <ServiceCard service={serviceObj} className=\"col-span-1\" />\n */\n\nimport React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {

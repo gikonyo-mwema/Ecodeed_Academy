@@ -1,4 +1,31 @@
-import React from 'react';
+/**
+ * CommentSection Component — Blog post comments display and submission
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * Renders the complete comments interface for blog posts. Handles comment display,
+ * submission, editing, deletion, and liking. Includes authentication checks and
+ * form validation.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * 1. **Comment Submission**
+ *    - Textarea for new comment input (max 200 chars)
+ *    - Authentication required (login prompt if needed)
+ *    - Form validation before submission
+ *    - Error messages for failures
+ *    - Auto-clear on success
+ *
+ * 2. **Comment Display**
+ *    - Nested Comment components for each comment
+ *    - Author info (username, avatar, timestamp)
+ *    - Comment content
+ *    - Like counts
+ *    - Relative timestamps (\"2 days ago\")\n *\n * 3. **Comment Management**\n *    - Edit comment (author only)\n *    - Delete comment with confirmation modal\n *    - Like comment (increment count)\n *    - Threads/nested comments (if supported)\n *\n * 4. **Loading States**\n *    - Initial comment fetch on mount\n *    - Loading spinner while fetching\n *    - Empty state message\n *\n * 5. **Error Handling**\n *    - Auth required message\n *    - Length validation (max 200 chars)\n *    - API error messages\n *    - Graceful fallback\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * PROPS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * - postId: string | number (blog post ID)\n *   Used to fetch and submit comments for this post\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * STATE MANAGEMENT\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * Local state:\n * - comment: string (textarea value)\n * - commentError: string | null (validation/submission error)\n * - comments: Array of comment objects (fetched from API)\n * - showModal: boolean (delete confirmation modal)\n * - commentToDelete: object | null (comment pending deletion)\n *\n * Redux state:\n * - currentUser: from user reducer (authentication check)\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * API INTEGRATION\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * **Endpoints:**\n *   GET /api/v1/posts/{postId}/comments — Fetch post comments\n *   POST /api/v1/comments/create — Submit new comment\n *   DELETE /api/v1/comments/{commentId} — Delete comment\n *\n * **Comment Object:**\n *   - _id: comment ID\n *   - content: comment text\n *   - user: { username, profilePicture, _id }\n *   - createdAt: ISO timestamp\n *   - likes: number\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * SUBMISSION FLOW\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * 1. User types comment in textarea\n * 2. Click \"Post Comment\" button\n * 3. Validations:\n *    - User must be logged in\n *    - Comment must not exceed 200 characters\n * 4. POST to /api/v1/comments/create with content, postId, userId\n * 5. On success:\n *    - Add new comment to comments array (prepend)\n *    - Clear textarea\n *    - Clear error message\n * 6. On error:\n *    - Display error message\n *    - Keep textarea content\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n * @example\n *   <CommentSection postId={post._id} />\n */\n\nimport React from 'react';
 import { Alert, Button, Modal, Textarea } from 'flowbite-react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';

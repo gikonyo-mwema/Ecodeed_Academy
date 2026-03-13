@@ -1,3 +1,82 @@
+/**
+ * RightSidebar Component — Contextual sidebar for blog & content discovery.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Displays trending posts, recent posts, category filters, and newsletter signup.
+ * Typically mounted alongside main content on PostPage and Search views.
+ * Uses multi-section layout responsive to mobile (hidden on xs, visible lg+).
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * 1. Categories section — Top 6 categories by post count, clickable search links
+ * 2. Recent posts — Latest 5 posts with quick view links
+ * 3. Trending posts — Most-viewed posts (only shown if data available)
+ * 4. Newsletter signup — Email capture with validation, success/error feedback
+ * 5. Skeleton loading — Placeholder animations while data fetches
+ * 6. Dark mode support — Theme-aware card backgrounds, text colors
+ * 7. Responsive design — Width: full on mobile, fixed 320px on lg+
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * GET /api/v1/posts/trending/
+ *   Response: { posts: [ { id, title, slug, views } ] }
+ *   Purpose: Fetch top-viewed posts
+ *
+ * GET /api/v1/posts/?limit=5&order=desc
+ *   Response: { posts: [ { id, title, slug, createdAt } ] }
+ *   Purpose: Fetch 5 most recent posts
+ *
+ * GET /api/v1/categories/?limit=6
+ *   Response: { results: [ { name, slug, post_count } ] }
+ *   Purpose: Fetch categories with post counts, sorted by popularity
+ *
+ * POST /api/v1/messages/newsletter/subscribe
+ *   Body: { email: string }
+ *   Response: { status: 'pending' | 'confirmed' }
+ *   Purpose: Subscribe email to newsletter (confirmation sent to inbox)
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE MANAGEMENT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Local State:
+ *   - trendingPosts (array) — Posts sorted by view count
+ *   - recentPosts (array) — Latest 5 posts chronologically
+ *   - categories (array) — Sorted by post_count descending
+ *   - loading (bool) — Fetching flag for recent/categories (trending loads separately)
+ *   - email (string) — Newsletter email input value
+ *   - subscribeStatus (string) — '' | 'subscribing' | 'success' | 'error'
+ *
+ * Effects:
+ *   1. fetchTrendingPosts — On mount, fetch trending data
+ *   2. fetchData — On mount, fetch recent posts + categories
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STYLING & LAYOUT
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * - Container: w-full lg:w-80 (full width on mobile, 320px on lg+)
+ * - Cards: bg-white dark:bg-gray-800, shadow-md, rounded-lg, p-6, gap: mb-6
+ * - Links: Hover bg-gray-100 dark:bg-gray-700, smooth transition
+ * - Icons: React Icons (HiEye, HiClock, HiTag)
+ * - Brand colors: Buttons use brand-green → brand-yellow gradient
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * EXAMPLE USAGE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * // In PostPage or Search:
+ * <div className="flex gap-6">
+ *   <main className="flex-1">...</main>
+ *   <RightSidebar />
+ * </div>
+ *
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HiEye, HiClock, HiTag } from 'react-icons/hi';

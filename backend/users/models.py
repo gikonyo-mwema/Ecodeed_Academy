@@ -1,13 +1,44 @@
 """
-Custom User Models for Ecodeed Academy
+═══════════════════════════════════════════════════════════════════════════════
+CUSTOM USER MODELS FOR ECODEED ACADEMY
 
 This module defines a custom user model that extends Django's AbstractBaseUser
 and PermissionsMixin to provide email-based authentication instead of the
 default username-based authentication.
 
-Models:
-    - CustomUser: The main user model with different user types (Student, Mentor, Admin, Reader)
-    - UserManager: Custom manager for creating regular users and superusers
+═══════════════════════════════════════════════════════════════════════════════
+MODELS OVERVIEW
+═══════════════════════════════════════════════════════════════════════════════
+
+CustomUser:
+  - Main user model with role-based access control
+  - Email-based authentication (no username field)
+  - Supports multiple user types: Student, Mentor/Instructor, Admin, Reader
+  - Tracks enrollment status and certificate tracking
+  - Integration with social authentication
+
+UserManager:
+  - Custom manager for user creation and management
+  - Email-based user creation (not username-based)
+  - Superuser creation with elevated permissions
+
+═══════════════════════════════════════════════════════════════════════════════
+USER ROLES & PERMISSIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Fields that determine user role:
+  - is_superuser: Full admin access to entire platform
+  - is_staff: Access to Django admin interface
+  - is_admin: Platform admin (manages users, courses, content)
+  - is_instructor: Can create and teach courses
+  - has_enrollments: Student flag (enrolled in at least one course)
+
+Role Hierarchy:
+  Admin (is_admin) > Instructor (is_instructor) > Student (has_enrollments) > Reader
+
+Each role has specific permissions enforced at the view level.
+
+═══════════════════════════════════════════════════════════════════════════════
 """
 
 from django.db import models
@@ -17,63 +48,84 @@ from django.utils import timezone
 
 class UserManager(BaseUserManager):
     """
-    Custom manager for CustomUser model.
+    ═════════════════════════════════════════════════════════════════════════════
+    CUSTOM USER MANAGER
     
-    This manager provides methods to create regular users and superusers
-    using email as the unique identifier instead of username.
+    Manages user creation using email as the unique identifier instead of username.
+    Provides methods for creating regular users and superusers.
     
-    Methods:
-        create_user: Creates and saves a regular user with the given email and password.
-        create_superuser: Creates and saves a superuser with elevated permissions.
+    ═════════════════════════════════════════════════════════════════════════════
     """
     
     def create_user(self, email, password=None, **extra_fields):
         """
-        Create and save a regular user with the given email and password.
+        CREATE REGULAR USER
+        
+        Creates and saves a regular user with the given email and password.
+        This method handles password hashing and email normalization.
         
         Args:
-            email (str): The user's email address (required, must be unique).
-            password (str, optional): The user's password. Will be hashed before storage.
-            **extra_fields: Additional fields to be set on the user model.
+            email (str): 
+              - User's email address (required, must be unique)
+              - Will be normalized (lowercased) before storage
+            password (str, optional): 
+              - User's password (will be hashed with PBKDF2)
+              - Can be None for social authentication users
+            **extra_fields: 
+              - Additional user model fields (e.g., username, first_name, last_name)
         
         Returns:
-            CustomUser: The newly created user instance.
+            CustomUser: The newly created and saved user instance
         
         Raises:
-            ValueError: If the email field is not provided.
+            ValueError: If email field is not provided
+        
+        Example:
+            user = User.objects.create_user(
+                email='student@example.com',
+                password='securepass123'
+            )
         """
         if not email:
             raise ValueError('The Email field must be set')
         
-        # Normalize email by lowercasing the domain part
+        # Normalize email: lowercase domain part (user@EXAMPLE.COM → user@example.com)
         email = self.normalize_email(email)
         
         # Create user instance with provided fields
         user = self.model(email=email, **extra_fields)
         
-        # Hash the password before saving (handles None passwords for social auth)
+        # Hash password using Django's password hasher
+        # set_password(None) is safe and creates an unusable password
         user.set_password(password)
         
-        # Save to database using the current database connection
+        # Save to database (using allows testing with multiple databases)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
         """
-        Create and save a superuser with the given email and password.
+        CREATE SUPERUSER
         
-        Superusers have full access to the admin interface and all permissions.
+        Creates and saves a superuser with full platform access.
+        Superusers have is_staff and is_superuser flags set to True.
         
         Args:
-            email (str): The superuser's email address (required).
-            password (str, optional): The superuser's password.
-            **extra_fields: Additional fields to be set on the user model.
+            email (str): Superuser's email address (required)
+            password (str, optional): Superuser's password
+            **extra_fields: Additional user model fields
         
         Returns:
-            CustomUser: The newly created superuser instance.
+            CustomUser: The newly created superuser instance
         
         Raises:
-            ValueError: If is_staff or is_superuser is not True.
+            ValueError: If is_staff or is_superuser is not True
+        
+        Example:
+            admin = User.objects.create_superuser(
+                email='admin@example.com',
+                password='adminpass123'
+            )
         """
         # Set default values for superuser permissions
         extra_fields.setdefault('is_staff', True)

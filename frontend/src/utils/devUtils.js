@@ -1,6 +1,56 @@
 /**
- * Development utilities for handling browser-specific issues
- * Particularly useful for Firefox WebSocket and CORS handling
+ * Development Utilities — Browser-specific error suppression and CORS handling.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * Provides development-only utilities for suppressing noisy browser errors that
+ * don't affect application functionality. Particularly handles Firefox WebSocket
+ * connection errors, deprecation warnings, and SameSite cookie warnings that clutter
+ * the console during development.\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * • WebSocket Error Suppression: Filters out ws://localhost connection failures
+ * • Browser Warning Filtering: Suppresses findDOMNode, MozInputSource deprecations
+ * • CORS Image Error Handling: Fallback image support for blocked images
+ * • Console Grouping: Enhanced API validation error logging with grouped output
+ * • Event Cleanup: Restores original console methods on page unload\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * EXPORTED FUNCTIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * - suppressWebSocketErrors(): Install console.error/warn interceptors
+ * - handleImageError(event, fallbackUrl): Fallback image on load failure
+ * - initDevUtils(): Initialize all development utilities\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * import { initDevUtils } from '@/utils/devUtils';
+ * 
+ * // In main.jsx or App.jsx (development only):
+ * if (import.meta.env.DEV) {
+ *   initDevUtils();
+ * }\n *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FILTERED ERRORS (Development Only)
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * WebSocket errors:
+ *   - WebSocket connection failed
+ *   - ws://localhost connection attempts
+ *   - "An invalid or illegal string was specified"
+ *
+ * Deprecation warnings:
+ *   - findDOMNode (React)
+ *   - mozInputSource (Firefox)
+ *   - DOMNodeInserted (Chrome)
+ *   - scroll-linked positioning effects
+ *
+ * Security warnings:
+ *   - SameSite cookie warnings\n *
+ * @module DevUtils
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * @environment development
  */
 
 /**

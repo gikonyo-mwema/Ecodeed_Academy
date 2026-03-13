@@ -1,4 +1,5 @@
-import React from 'react';
+/**
+ * PrivacyPolicy Page — Legal privacy policy documentation\n *\n * @component\n * @purpose Display Ecodeed Consulting's privacy policy and data handling practices\n * @sections\n *   1. Introduction - Company privacy commitment\n *   2. Information We Collect - Personal data and usage data\n *   3. How We Use Your Data - Purpose for data collection\n *   4. Data Security - Encryption and protection measures\n *   5. Your Rights - GDPR and data subject rights\n *   6. Third-Party Services - Integrations (Firebase, Cloudinary, Paystack)\n *   7. Contact Us - Privacy inquiry contact information\n * @features\n *   - Styled prose/markdown-like formatting\n *   - Dark mode support\n *   - Responsive layout\n *   - Last updated date tracking\n *   - Internal links (e.g., to Terms)\n * @content\n *   Static HTML content (no API calls)\n *   Last updated: 5 March 2026\n * @example\n *   <Route path=\"/privacy\" element={<PrivacyPolicy />} />\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React from 'react';
 import { Link } from 'react-router-dom';
 
 const LAST_UPDATED = '5 March 2026';
