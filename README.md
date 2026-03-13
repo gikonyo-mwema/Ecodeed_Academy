@@ -11,6 +11,10 @@ This project includes extensive documentation to help developers understand and 
 
 ### Quick Navigation
 
+**Dashboard Components Documentation:**
+- [**DASHBOARD_DOCUMENTATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/DASHBOARD_DOCUMENTATION.md) - Student, Instructor & Admin dashboards
+- [**DASHBOARD_QUICK_REFERENCE.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/DASHBOARD_QUICK_REFERENCE.md) - Dashboard quick reference guide
+
 **For Frontend Developers:**
 - [**FRONTEND_DOCUMENTATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_DOCUMENTATION.md) - Complete React component architecture and patterns
 - [**FRONTEND_QUICK_REFERENCE.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_QUICK_REFERENCE.md) - Cheat sheet and quick lookup
@@ -58,11 +62,18 @@ Ecodeed_Academy/
 
 ## 🚀 Features
 
+### User Dashboards
+- **Student Dashboard**: Personalized learning experience with enrolled courses, progress tracking, week-based curriculum navigation
+- **Instructor Dashboard**: Teaching tools including course management, student roster, earnings tracking, live session scheduling
+- **Admin Dashboard**: Platform management with user administration, content moderation, statistics, newsletter management, announcement system
+
+### Core Features
 - **User Authentication**: JWT-based auth with social login (Google, Facebook, Twitter)
-- **Course Management**: Create, browse, and enroll in courses
-- **Blog System**: Educational content and articles
-- **Admin Dashboard**: Administrative controls for content management
-- **Responsive Design**: Mobile-friendly interface with Tailwind CSS
+- **Course Management**: Create, browse, and enroll in courses with multi-level hierarchy (course → modules → lessons)
+- **Blog System**: Educational content and articles with comments, categories, and tags
+- **Learning System**: Video lessons, assignments, resources, live Zoom sessions, progress tracking
+- **Admin Tools**: Content moderation, user management, analytics, newsletter campaigns
+- **Responsive Design**: Mobile-friendly interface with Tailwind CSS and dark mode support
 
 ## 🛠️ Tech Stack
 
@@ -224,13 +235,31 @@ API documentation is available at:
 
 ### Key Endpoints
 
+#### Authentication
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/auth/register/` | POST | User registration |
-| `/api/auth/login/` | POST | User login |
-| `/api/auth/logout/` | POST | User logout |
-| `/api/auth/profile/` | GET | Get user profile |
-| `/api/auth/token/refresh/` | POST | Refresh JWT token |
+| `/api/v1/auth/register/` | POST | User registration |
+| `/api/v1/auth/login/` | POST | User login |
+| `/api/v1/auth/logout/` | POST | User logout |
+| `/api/v1/auth/profile/` | GET/PUT | Get/update user profile |
+| `/api/v1/auth/jwt/refresh/` | POST | Refresh JWT token |
+
+#### Courses & Learning
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/courses/` | GET/POST | List/create courses |
+| `/api/v1/enrollments/my-courses/` | GET | Get enrolled courses (Student Dashboard) |
+| `/api/v1/lessons/{id}/complete/` | POST | Mark lesson as complete |
+| `/api/v1/assignments/{id}/submit/` | POST | Submit assignment |
+
+#### Admin Operations
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/auth/users/getUsers/` | GET | Get all users (Admin Dashboard) |
+| `/api/v1/posts/` | GET/POST | Blog posts management |
+| `/api/v1/comments/` | GET/POST | Comments management |
+| `/api/v1/messages/newsletter/` | POST | Newsletter campaigns (Admin) |
+| `/api/v1/announcements/` | GET/POST | Site announcements |
 
 ## 💡 Getting Help
 
