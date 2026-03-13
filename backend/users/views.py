@@ -689,11 +689,7 @@ class LogoutView(APIView):
                 {"message": "Successfully logged out"},
                 status=status.HTTP_205_RESET_CONTENT
             )
-<<<<<<< HEAD
         except Exception:
-=======
-        except Exception as e:
->>>>>>> origin/develop
             # Even if blacklist fails, logout succeeds on frontend
             # Frontend still needs to delete tokens and redirect
             return Response(
