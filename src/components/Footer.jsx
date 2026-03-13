@@ -1,3 +1,34 @@
+/**
+ * Footer Component
+ * 
+ * Application footer with company information, navigation links,
+ * social media integration, and contact information.
+ * 
+ * Features:
+ * - Responsive multi-column layout
+ * - Social media links (Facebook, Instagram, YouTube, LinkedIn, Twitter)
+ * - Quick navigation links
+ * - Services directory
+ * - Contact information
+ * - Theme-aware styling (light/dark mode)
+ * - Brand logo and company info
+ * - Newsletter signup (optional)
+ * 
+ * Sections:
+ * - Company Info: Logo, tagline, about text
+ * - Services: Quick links to service pages
+ * - Company: Links to main pages
+ * - Resources: Documentation and support links
+ * - Contact: Email, phone, social media
+ * 
+ * Usage:
+ * <FooterComponent />
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React from 'react';
 import { BsFacebook, BsInstagram, BsYoutube, BsLinkedin, BsTwitter } from 'react-icons/bs';
 import { FaPhoneAlt, FaEnvelope, FaGlobe } from 'react-icons/fa';
@@ -5,6 +36,11 @@ import { Footer } from 'flowbite-react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
+/**
+ * FooterComponent - Main application footer
+ * 
+ * @returns {JSX.Element} Complete footer with navigation and contact info
+ */
 export default function FooterComponent() {
     const { theme } = useSelector((state) => state.theme);
     const services = [

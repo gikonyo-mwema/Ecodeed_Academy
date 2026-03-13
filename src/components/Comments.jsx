@@ -1,3 +1,35 @@
+/**
+ * Comment Component
+ * 
+ * Displays individual comments with editing and deletion capabilities.
+ * Shows comment author, content, timestamp, and interaction options.
+ * 
+ * Features:
+ * - Inline comment editing
+ * - User information display (profile picture, name)
+ * - Timestamp formatting with moment.js
+ * - Like functionality
+ * - Delete and edit actions (for comment authors)
+ * - Asynchronous API operations
+ * 
+ * Props:
+ * - comment: Comment object with content, userId, _id, etc.
+ * - onLike: Callback function for like action
+ * - onEdit: Callback function for edit action
+ * - onDelete: Callback function for delete action
+ * 
+ * Usage:
+ * <Comment 
+ *   comment={commentData}
+ *   onLike={handleLike}
+ *   onEdit={handleEdit}
+ *   onDelete={handleDelete}
+ * />
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 
 import React, { useEffect, useState } from 'react';
 
@@ -7,6 +39,16 @@ import { useSelector } from 'react-redux';
 import { Button, Textarea } from 'flowbite-react';
 import { apiFetch } from '../utils/api';
 
+/**
+ * Individual Comment Display Component
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.comment - Comment data object
+ * @param {Function} props.onLike - Like callback
+ * @param {Function} props.onEdit - Edit callback
+ * @param {Function} props.onDelete - Delete callback
+ * @returns {JSX.Element} Rendered comment with actions
+ */
 export default function Comment({ comment, onLike, onEdit, onDelete }) {
   const [user, setUser] = useState({});
   const [isEditing, setIsEditing] = useState(false);

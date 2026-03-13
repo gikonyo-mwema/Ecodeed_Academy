@@ -1,7 +1,38 @@
+/**
+ * User Courses Component
+ * 
+ * Displays all courses that the authenticated user has purchased/enrolled in.
+ * Shows course information in a table or grid format with status and action buttons.
+ * 
+ * Features:
+ * - Table display of purchased courses
+ * - Course name and description
+ * - Course status badges (Active, Completed, etc.)
+ * - Action buttons (View, Continue, etc.)
+ * - Responsive design
+ * - Empty state when no courses purchased
+ * - Course metadata (duration, instructor, etc.)\n * 
+ * Props:
+ * - purchasedCourses: Array of course objects with id, name, status, etc.
+ * 
+ * Usage:
+ * const [courses, setCourses] = useState([]);\n * <UserCourses purchasedCourses={courses} />
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React from 'react';
 import { Table, Badge, Button } from 'flowbite-react';
 import { HiOutlineBookOpen } from 'react-icons/hi';
 
+/**
+ * UserCourses - Display user's purchased/enrolled courses
+ * 
+ * @param {Object} props - Component props
+ * @param {Array} props.purchasedCourses - Array of course objects
+ * @returns {JSX.Element} Table of user's courses\n */
 const UserCourses = ({ purchasedCourses }) => {
   return (
     <div className="p-4">

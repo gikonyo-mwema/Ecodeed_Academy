@@ -1,4 +1,1 @@
-// A reusable component for managing process steps
-const ProcessStepInput = ({ steps, onChange }) => {
-  // Implementation for adding/removing/editing steps
-};
+/**\n * Process Step Input Component\n * \n * Form component for managing sequential process steps in services.\n * Allows creation, editing, deletion, and reordering of process steps.\n * \n * Features:\n * - Add new steps dynamically\n * - Edit existing step titles and descriptions\n * - Delete steps with confirmation\n * - Drag-to-reorder steps\n * - Step numbering\n * - Real-time validation\n * - Image/file uploads per step\n * \n * Props:\n * - steps: Array of step objects {title, description, image, order}\n * - onChange: Callback when steps array is modified\n * \n * Usage:\n * const [processSteps, setProcessSteps] = useState([]);\n * <ProcessStepInput \n *   steps={processSteps}\n *   onChange={setProcessSteps}\n * />\n * \n * @component\n * @version 1.0.0\n * @author Gikonyo Mwema\n */\n\nconst ProcessStepInput = ({ steps, onChange }) => {\n  // Implementation for adding/removing/editing steps\n};

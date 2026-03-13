@@ -1,8 +1,54 @@
+/**
+ * Dashboard Newsletter Management Component
+ * 
+ * Manages newsletter subscriptions and tracks subscriber metrics for the platform.
+ * Provides administrators with insights into newsletter engagement, subscriber growth,
+ * and tools for newsletter management and subscriber export.
+ * 
+ * Features:
+ * - Newsletter subscription statistics and analytics
+ * - Subscriber growth tracking and trends
+ * - Recent subscriber list with subscription dates
+ * - Newsletter performance metrics
+ * - CSV export of subscriber data
+ * - Email campaign tracking
+ * - Engagement rate monitoring
+ * 
+ * Statistics Tracked:
+ * - Total subscribers and active subscriptions
+ * - Month-over-month growth rate
+ * - Recent subscribers list with signup dates
+ * - Newsletter open rates and click-through rates
+ * - Unsubscribe tracking and reasons
+ * 
+ * Admin Features:
+ * - View subscriber demographics
+ * - Export subscriber list as CSV
+ * - Monitor newsletter health
+ * - Track campaign performance
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * 
+ * @example
+ * ```jsx
+ * <DashNewsletter />
+ * ```
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Table, Button, Alert, Badge, Spinner } from 'flowbite-react';
 import { HiMail, HiUsers, HiTrendingUp, HiDownload } from 'react-icons/hi';
 
+/**
+ * DashNewsletter
+ * 
+ * Main newsletter management component for admin dashboard
+ * 
+ * @returns {JSX.Element} Newsletter management interface with stats and subscriber data
+ */
 export default function DashNewsletter() {
   const { currentUser } = useSelector((state) => state.user);
   const [stats, setStats] = useState(null);

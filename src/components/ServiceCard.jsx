@@ -1,3 +1,37 @@
+/**
+ * Service Card Component
+ * 
+ * Displays a reusable card for showcasing individual services.
+ * Shows service information, description, features, and pricing.
+ * 
+ * Features:
+ * - Service image/icon display
+ * - Service name and description
+ * - List of service features/benefits
+ * - Pricing information
+ * - Call-to-action button with hover effects
+ * - Theme-aware styling (light/dark mode)
+ * - Responsive grid layout
+ * - Animation effects with framer-motion
+ * - Icon representation of services
+ * 
+ * Props:
+ * - service: Service object with:
+ *   - name: Service name
+ *   - description: Service description
+ *   - icon or image: Visual representation
+ *   - features: Array of feature strings
+ *   - price: Pricing information
+ *   - slug or id: For linking
+ * 
+ * Usage:
+ * <ServiceCard service={serviceData} />
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';

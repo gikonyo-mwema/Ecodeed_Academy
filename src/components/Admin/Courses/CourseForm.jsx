@@ -1,3 +1,60 @@
+/**
+ * Course Form Component
+ * 
+ * Comprehensive form component for creating and editing environmental courses.
+ * Provides a rich interface for all course properties and configuration options.
+ * 
+ * Features:
+ * - Multiple form sections for organized data entry
+ * - Dynamic feature list management
+ * - Icon selection for course representation
+ * - Price and payment configuration
+ * - Course metadata (slug, category, level)
+ * - Form validation and error display
+ * - Loading indicators during submission
+ * - Cancel/Back navigation option
+ * - Responsive design for all screen sizes
+ * 
+ * Form Sections:
+ * - Basic Information: Title, slug, descriptions
+ * - Pricing & Payment: Price, payment options
+ * - Features: Dynamic list of course features
+ * - Course Details: Category, level, icon selection
+ * - Links: External URLs and resources
+ * - Settings: Visibility, popularity flags
+ * 
+ * Props:
+ * - formData: Current form values object
+ * - onSubmit: Callback for form submission
+ * - loading: Loading state indicator
+ * - error: Error message to display
+ * - onCancel: Callback for cancel button
+ * - isEdit: Boolean indicating edit mode
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.formData - Current form data
+ * @param {Function} props.onSubmit - Form submission callback
+ * @param {boolean} props.loading - Loading state
+ * @param {string} props.error - Error message
+ * @param {Function} props.onCancel - Cancel callback
+ * @param {boolean} props.isEdit - Edit mode flag
+ * @returns {JSX.Element} Course form with all input fields
+ * 
+ * @example
+ * ```jsx
+ * <CourseForm 
+ *   formData={courseData}
+ *   onSubmit={handleSubmit}
+ *   loading={isLoading}
+ *   isEdit={false}
+ * />
+ * ```
+ */
+
 import React from 'react';
 import { 
   Button, 

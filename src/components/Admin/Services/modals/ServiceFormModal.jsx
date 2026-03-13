@@ -1,3 +1,66 @@
+/**
+ * Service Form Modal Component
+ * 
+ * Modal dialog for creating and editing services.
+ * Provides a comprehensive form interface with validation and status indicators.
+ * 
+ * Features:
+ * - Create new services
+ * - Edit existing services
+ * - Real-time form validation
+ * - Validation status indicators
+ * - Error message display
+ * - Loading states during submission
+ * - Service preview before saving
+ * - History access for edits
+ * - Tab-based form organization
+ * - Required field indicators
+ * 
+ * Modal Sections:
+ * - Service Details: Title, description, category
+ * - Pricing & Features: Price, features list
+ * - Contact Information: Email, phone, address
+ * - Media: Images and attachments
+ * - Settings: Visibility, metadata
+ * 
+ * Props:
+ * - show: Modal visibility toggle
+ * - onClose: Close modal callback
+ * - editMode: Boolean indicating edit or create mode
+ * - currentService: Service object for editing
+ * - formData: Current form values
+ * - onViewHistory: Callback to view version history
+ * - onSubmit: Form submission callback
+ * - loading: Loading state object
+ * - categories: Available service categories
+ * - errors: Field error messages
+ * - formHandlers: Form change handlers
+ * - currentUser: User authentication info
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.show - Modal visibility
+ * @param {Function} props.onClose - Close callback
+ * @param {boolean} props.editMode - Edit mode flag
+ * @param {Object} props.currentService - Service being edited
+ * @param {Object} props.formData - Current form values
+ * @param {Function} props.onSubmit - Submit callback
+ * @returns {JSX.Element} Service form modal dialog
+ * 
+ * @example
+ * ```jsx
+ * <ServiceFormModal 
+ *   show={showForm}
+ *   editMode={isEditing}
+ *   formData={serviceData}
+ *   onSubmit={handleSubmit}
+ * />
+ * ```
+ */
+
 import { Modal, Button, Badge, Tooltip } from 'flowbite-react';
 import { HiOutlineClock, HiOutlineExclamation, HiOutlineCheck } from 'react-icons/hi';
 import { useEffect, useState } from 'react';

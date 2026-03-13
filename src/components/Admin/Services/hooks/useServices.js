@@ -1,3 +1,60 @@
+/**
+ * useServices Hook
+ * 
+ * Custom React hook for managing services in the admin panel.
+ * Handles all service CRUD operations, bulk actions, version history, and error management.
+ * 
+ * Features:
+ * - Fetch services list with pagination
+ * - Create new services
+ * - Update existing services
+ * - Delete services with confirmation
+ * - Bulk delete operations
+ * - Version history tracking
+ * - Retry mechanisms for failed requests
+ * - Error handling with alerts
+ * - Loading state management
+ * - Network request cancellation
+ * 
+ * Data Management:
+ * - Services array with metadata
+ * - Loading states for different operations
+ * - Error tracking and display
+ * - Alert notifications for user feedback
+ * - Version history for rollbacks
+ * 
+ * API Integration:
+ * - GET /api/services - Fetch services
+ * - POST /api/services - Create service
+ * - PUT /api/services/:id - Update service
+ * - DELETE /api/services/:id - Delete service
+ * - GET /api/services/:id/history - Get version history
+ * 
+ * @hook
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * 
+ * @returns {Object} Hook object with services data and handlers
+ *   @returns {Array} services - Array of service objects
+ *   @returns {Object} loading - Loading states for different operations
+ *   @returns {Object} errors - Error messages by operation
+ *   @returns {Array} alerts - Alert notifications
+ *   @returns {Function} fetchServices - Fetch services from API
+ *   @returns {Function} createService - Create new service
+ *   @returns {Function} updateService - Update existing service
+ *   @returns {Function} deleteService - Delete single service
+ *   @returns {Function} bulkDeleteServices - Delete multiple services
+ *   @returns {Function} getServiceHistory - Get version history
+ *   @returns {Function} rollbackService - Revert to previous version
+ *   @returns {Function} retryFailedOperation - Retry failed operation
+ *   @returns {Function} dismissAlert - Remove alert notification
+ * 
+ * @example
+ * ```jsx
+ * const { services, createService, loading } = useServices();
+ * ```
+ */
+
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';

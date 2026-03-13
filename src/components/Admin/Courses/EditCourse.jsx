@@ -1,14 +1,4 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
-import { CourseForm } from './CourseForm';
-//import { useCourseForm } from './CourseForm';
-import { Unauthorized } from './Unauthorized';
-
-export const EditCourse = () => {
-  const { currentUser } = useSelector((state) => state.user);
-  const { courseId } = useParams();
-  const navigate = useNavigate();
+/**\n * Edit Course Component\n * \n * Provides an interface for administrators to edit existing environmental courses.\n * Fetches course data and populates the form for modification and updates.\n * \n * Features:\n * - Fetch course data by ID from API\n * - Pre-populate form with existing course data\n * - Admin-only access with authorization check\n * - Update course with validation\n * - Feature management for existing courses\n * - Error handling and loading states\n * - Navigation after successful update\n * \n * Data Flow:\n * 1. Get courseId from URL parameters\n * 2. Verify user is admin\n * 3. Fetch course data from API\n * 4. Populate form with existing data\n * 5. Handle form submissions for updates\n * 6. Navigate to course list after update\n * \n * @component\n * @version 1.0.0\n * @author Gikonyo Mwema\n * \n * @returns {JSX.Element} Course edit form or unauthorized message\n * \n * @example\n * ```jsx\n * <EditCourse /> // Requires courseId in URL params\n * ```\n */\n\nimport React, { useEffect } from 'react';\nimport { useSelector } from 'react-redux';\nimport { useNavigate, useParams } from 'react-router-dom';\nimport { CourseForm } from './CourseForm';\n//import { useCourseForm } from './CourseForm';\nimport { Unauthorized } from './Unauthorized';\n\n/**\n * EditCourse\n * \n * Main component for editing existing courses\n * \n * @returns {JSX.Element} Course edit form or unauthorized access message\n */\nexport const EditCourse = () => {\n  const { currentUser } = useSelector((state) => state.user);\n  const { courseId } = useParams();\n  const navigate = useNavigate();
   const {
     formData,
     setFormData,

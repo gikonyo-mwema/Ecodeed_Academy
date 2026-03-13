@@ -1,3 +1,60 @@
+/**
+ * useServiceForm Hook
+ * 
+ * Custom React hook for managing service form state and validation.
+ * Handles all form field changes, contact info, features, and error tracking.
+ * 
+ * Features:
+ * - Form data state management
+ * - Input change handlers for all field types
+ * - Contact information management
+ * - Features list management (dynamic fields)
+ * - Error state tracking
+ * - Form validation logic
+ * - Field error messages
+ * - Form reset capability
+ * 
+ * Form Fields:
+ * - Title and slug
+ * - Short and full descriptions
+ * - Category and pricing
+ * - Features list
+ * - Contact information
+ * - Social links
+ * - Service metadata
+ * 
+ * Validation:
+ * - Required field validation
+ * - Email format validation
+ * - URL format validation
+ * - Price format validation
+ * - Text length constraints
+ * 
+ * @hook
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * 
+ * @param {Object} initialData - Initial form data
+ * @returns {Object} Hook object with form state and handlers
+ *   @returns {Object} formData - Current form values
+ *   @returns {Function} setFormData - Update form data
+ *   @returns {Object} errors - Field error messages
+ *   @returns {Function} setErrors - Update errors
+ *   @returns {Function} handleChange - Handle input changes
+ *   @returns {Function} handleContactInfoChange - Update contact info
+ *   @returns {Function} handleAddFeature - Add feature field
+ *   @returns {Function} handleRemoveFeature - Remove feature field
+ *   @returns {Function} handleFeatureChange - Update feature value
+ *   @returns {Function} validateForm - Validate all fields
+ *   @returns {Function} resetForm - Reset to initial state
+ * 
+ * @example
+ * ```jsx
+ * const form = useServiceForm(initialData);
+ * const { formData, handleChange, errors } = form;
+ * ```
+ */
+
 import { useState, useCallback } from 'react';
 
 export const useServiceForm = (initialData) => {

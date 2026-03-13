@@ -1,3 +1,39 @@
+/**
+ * Call-to-Action Component
+ * 
+ * A versatile CTA component used across the application to drive user engagement.
+ * Supports multiple types (blog, newsletter, course, service) with customizable
+ * content, buttons, and optional newsletter signup functionality.
+ * 
+ * Features:
+ * - Multiple CTA types with contextual styling
+ * - Newsletter subscription integration
+ * - Responsive design
+ * - Customizable buttons and messaging
+ * - Status feedback (success/error states)
+ * 
+ * Props:
+ * - type: 'blog' | 'course' | 'service' | 'newsletter' (default: 'blog')
+ * - title: Main headline text
+ * - subtitle: Supporting description
+ * - primaryButtonText: Primary button label
+ * - secondaryButtonText: Secondary button label
+ * - serviceName: Service name for routing
+ * - showNewsletter: Boolean to show newsletter signup form
+ * - className: Additional CSS classes
+ * 
+ * Usage:
+ * <CallToAction 
+ *   type="blog"
+ *   title="Discover Our Latest Articles"
+ *   showNewsletter={true}
+ * />
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React, { useState } from 'react';
 import { Button } from 'flowbite-react';
 import { Link } from 'react-router-dom';
@@ -11,6 +47,21 @@ import {
   FiStar
 } from 'react-icons/fi';
 
+/**
+ * CallToAction Component
+ * Displays contextual call-to-action content with optional newsletter signup
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.type - CTA type (blog, course, service, newsletter)
+ * @param {string} props.title - Main headline
+ * @param {string} props.subtitle - Supporting description
+ * @param {string} props.primaryButtonText - Primary button label
+ * @param {string} props.secondaryButtonText - Secondary button label
+ * @param {string} props.serviceName - Service identifier
+ * @param {boolean} props.showNewsletter - Show newsletter form
+ * @param {string} props.className - Additional classes
+ * @returns {JSX.Element} The call-to-action component
+ */
 function CallToAction({ 
   type = 'blog', 
   title, 

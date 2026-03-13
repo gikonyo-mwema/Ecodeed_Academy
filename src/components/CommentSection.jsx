@@ -1,3 +1,33 @@
+/**
+ * Comment Section Component
+ * 
+ * Complete comment system for blog posts and content items.
+ * Displays all comments and allows authenticated users to:
+ * - View all comments
+ * - Add new comments
+ * - Edit own comments
+ * - Delete own comments
+ * - Like comments
+ * 
+ * Features:
+ * - Real-time comment loading
+ * - Comment creation form with validation
+ * - Edit/delete modals for comment management
+ * - User authentication checks
+ * - Duplicate comment prevention
+ * - Error handling and user feedback
+ * 
+ * Props:
+ * - postId: ID of the post/content this comment section belongs to
+ * 
+ * Usage:
+ * <CommentSection postId={postData._id} />
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React from 'react';
 import { Alert, Button, Modal, Textarea } from 'flowbite-react';
 import { useEffect, useState } from 'react';
@@ -7,6 +37,13 @@ import Comment from './Comments';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 import { apiFetch } from '../utils/api';
 
+/**
+ * CommentSection - Complete comment management system
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.postId - ID of the parent post
+ * @returns {JSX.Element} Comment section with form and list
+ */
 export default function CommentSection({ postId }) {
   const { currentUser } = useSelector((state) => state.user);
   const [comment, setComment] = useState('');

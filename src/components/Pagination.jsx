@@ -1,5 +1,45 @@
+/**
+ * Pagination Component
+ * 
+ * Provides pagination controls for paginated content lists.
+ * Displays page numbers with navigation buttons.
+ * 
+ * Features:
+ * - Dynamic page number calculation
+ * - Previous/Next navigation
+ * - Smart page number display (shows limited range)
+ * - Smooth scroll to top on page change
+ * - Mobile-responsive design
+ * - Current page highlighting
+ * 
+ * Props:
+ * - currentPage: Current active page number
+ * - totalPages: Total number of available pages
+ * - onPageChange: Callback function when page changes
+ * 
+ * Usage:
+ * <Pagination 
+ *   currentPage={page}
+ *   totalPages={Math.ceil(posts.length / 10)}
+ *   onPageChange={(newPage) => setPage(newPage)}
+ * />
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React from 'react';
 
+/**
+ * Pagination - Navigation for paginated content
+ * 
+ * @param {Object} props - Component props
+ * @param {number} props.currentPage - Current page number
+ * @param {number} props.totalPages - Total pages available
+ * @param {Function} props.onPageChange - Callback for page change
+ * @returns {JSX.Element} Pagination controls
+ */
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   // Smoothly scroll to top on page change to avoid jumpiness
   const handlePageChange = (page) => {

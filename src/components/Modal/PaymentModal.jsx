@@ -1,9 +1,37 @@
+/**
+ * Payment Modal Component
+ * 
+ * Modal dialog for handling course payment processing.
+ * Integrates with Paystack payment gateway for card and mobile money payments.
+ * 
+ * Features:
+ * - Multiple payment methods (card, mobile money)
+ * - Course selection and pricing display
+ * - User email and phone number input
+ * - Paystack payment integration
+ * - Payment verification with backend
+ * - Loading and error states
+ * - Success confirmation
+ * - Email confirmation handling
+ * 
+ * Props:
+ * - course: Course object with price, name, id
+ * - show: Boolean to control modal visibility
+ * - onClose: Callback function when modal closes
+ * - user: Current user object with email\n * 
+ * Payment Integration:
+ * - Uses Paystack Inline JS for payment processing
+ * - Sends payment details to /api/payments/verify endpoint
+ * - Handles success/error responses\n * 
+ * Usage:
+ * <PaymentModal \n *   course={courseData}\n *   show={showPayment}\n *   onClose={() => setShowPayment(false)}\n *   user={currentUser}\n * />\n * \n * @component\n * @version 1.0.0\n * @author Gikonyo Mwema\n */
+
 import { useState } from 'react';
 import { Modal, Button, Select, TextInput, Alert, Spinner } from 'flowbite-react';
 import { HiOutlinePhone } from 'react-icons/hi';
 import PaystackPop from '@paystack/inline-js';
 
-export default function PaymentModal({ course, show, onClose, user }) {
+/**\n * PaymentModal - Course payment processing modal\n * \n * @param {Object} props - Component props\n * @param {Object} props.course - Course to purchase\n * @param {boolean} props.show - Modal visibility\n * @param {Function} props.onClose - Close handler\n * @param {Object} props.user - Current user\n * @returns {JSX.Element} Payment modal\n */\nexport default function PaymentModal({ course, show, onClose, user }) {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState(user?.email || '');

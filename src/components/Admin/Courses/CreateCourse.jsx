@@ -1,3 +1,40 @@
+/**
+ * Create Course Component
+ * 
+ * Provides an interface for administrators to create new environmental courses.
+ * Handles the full course creation flow with form validation and API integration.
+ * 
+ * Features:
+ * - Course form with all required fields
+ * - Admin-only access with authorization check
+ * - Form validation and error handling
+ * - Course feature management (dynamic fields)
+ * - Course pricing and payment options
+ * - Navigation after successful creation
+ * - Loading states during submission
+ * 
+ * Form Fields:
+ * - Title: Course name
+ * - Slug: URL-friendly identifier
+ * - Price: Course pricing in currency
+ * - Descriptions: Short and detailed descriptions
+ * - Features: Dynamic list of course features
+ * - Payment Options: One-time or subscription
+ * - External URL: Link to external course content
+ * - Popular Flag: Mark as featured course
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * 
+ * @returns {JSX.Element} Course creation form or unauthorized message
+ * 
+ * @example
+ * ```jsx
+ * <CreateCourse />
+ * ```
+ */
+
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -5,6 +42,13 @@ import { CourseForm } from './CourseForm';
 import { useCourseForm } from './useCourseForm';
 import { Unauthorized } from './Unauthorized';
 
+/**
+ * CreateCourse
+ * 
+ * Main component for creating new courses
+ * 
+ * @returns {JSX.Element} Course creation form or unauthorized access message
+ */
 export const CreateCourse = () => {
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();

@@ -1,3 +1,47 @@
+/**
+ * Version History Modal Component
+ * 
+ * Displays a timeline of all changes made to a service.
+ * Allows administrators to track modifications and optionally rollback to previous versions.
+ * 
+ * Features:
+ * - Timeline view of service modifications
+ * - Timestamp for each version
+ * - Author information for changes
+ * - Change details and descriptions
+ * - Rollback functionality to previous versions
+ * - Visual timeline indicators
+ * - Responsive modal layout
+ * 
+ * Props:
+ * - show: Boolean to control modal visibility
+ * - onClose: Callback to close modal
+ * - history: Array of version history objects
+ *   - timestamp: When change was made
+ *   - author: Who made the change
+ *   - changes: What was changed
+ *   - version: Version number or date
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.show - Modal visibility
+ * @param {Function} props.onClose - Close callback
+ * @param {Array} props.history - Version history array
+ * @returns {JSX.Element} Version history timeline modal
+ * 
+ * @example
+ * ```jsx
+ * <VersionHistoryModal 
+ *   show={showHistory}
+ *   onClose={() => setShowHistory(false)}
+ *   history={serviceHistory}
+ * />
+ * ```
+ */
+
 import { Modal, Button, Timeline } from 'flowbite-react';
 import { HiOutlineClock } from 'react-icons/hi';
 

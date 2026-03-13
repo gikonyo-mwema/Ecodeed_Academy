@@ -1,8 +1,41 @@
+/**
+ * Right Sidebar Component
+ * 
+ * Supplementary sidebar displayed on the right side of content pages.
+ * Shows related content, trending posts, categories, and recent articles.
+ * 
+ * Features:
+ * - Sticky positioning to remain visible while scrolling
+ * - Responsive design (hidden on small screens)
+ * - Trending posts/content display with view count
+ * - Recent articles with timestamps
+ * - Category filters and tags
+ * - Themed styling (light/dark mode)
+ * - Quick navigation links
+ * 
+ * Data Sources:
+ * - /api/posts/trending - Trending posts
+ * - /api/posts/recent - Recent posts
+ * - /api/categories - All categories
+ * 
+ * Usage:
+ * <RightSidebar />
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HiEye, HiClock, HiTag } from 'react-icons/hi';
 import { apiFetch } from '../utils/api';
 
+/**
+ * RightSidebar - Supplementary sidebar with trending and recent content
+ * 
+ * @returns {JSX.Element} Right sidebar component
+ */
 export default function RightSidebar() {
   const [trendingPosts, setTrendingPosts] = useState([]);
   const [recentPosts, setRecentPosts] = useState([]);
