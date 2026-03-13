@@ -1,3 +1,11 @@
+/**
+ * Delete Post Modal Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Modal, Button } from 'flowbite-react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 

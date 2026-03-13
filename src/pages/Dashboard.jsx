@@ -1,3 +1,17 @@
+/**
+ * Dashboard Page Component
+ * User dashboard showing profile, courses, and activity.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Dashboard Page Component
+ * User dashboard showing profile, courses, and activity.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';

@@ -1,3 +1,44 @@
+/**
+ * Courses Page Component
+ * 
+ * Main courses catalog page displaying all available environmental courses.
+ * Shows courses in grid layout with filtering by category and level.
+ * 
+ * Features:
+ * - Display all published courses in grid layout
+ * - Category-based filtering (Specialized, Masterclass, Webinar, Coaching)
+ * - Course level filtering (Beginner, Intermediate, Advanced)
+ * - Course cards with thumbnails, description, instructor, rating
+ * - Search functionality for course discovery
+ * - Enrollment CTA buttons
+ * - Loading states and error handling
+ * - Pagination for large course lists
+ * - Responsive design
+ * 
+ * Course Information Displayed:
+ * - Course title and description
+ * - Instructor information and ratings
+ * - Duration and difficulty level
+ * - Price and discount information
+ * - Student count and reviews
+ * - Skills learned and outcomes
+ * - Prerequisites if applicable
+ * 
+ * Categories:
+ * - Specialized Courses
+ * - Masterclass Programs
+ * - Webinar Series
+ * - One-on-One Coaching
+ * 
+ * API Integration:
+ * - GET /api/courses - Fetch all courses
+ * - GET /api/courses?category={cat} - Filter by category
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { 
@@ -21,6 +62,23 @@ import { Button, Badge } from 'flowbite-react';
 import { Link } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiFetch } from '../utils/api';
+
+/**
+ * Courses - Main courses catalog page
+ * 
+ * @returns {JSX.Element} Courses listing with filters and categories
+ */
+function Courses() {
+  const [courses, setCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedLevel, setSelectedLevel] = useState('all');
+  const { currentUser } = useSelector((state) => state.user);
+
+  // Fetch courses from API
+  useEffect(() => {
 
 // Course categories with their respective icons
 const categoryIcons = {

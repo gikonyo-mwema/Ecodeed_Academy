@@ -8,6 +8,20 @@ import { FaTwitter, FaFacebook, FaPinterest, FaExclamationTriangle } from 'react
 import CallToAction from '../components/CallToAction';
 import { getCategoryColorClass, formatCategoryLabel } from '../utils/categories';
 import CommentSection from '../components/CommentSection';
+/**
+ * Post Detail Page Component
+ * Displays single blog post with comments and related posts.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Post Detail Page Component
+ * Displays single blog post with comments and related posts.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import PostCard from '../components/PostCard';
 import { getDefaultImageUrl } from '../utils/cloudinary';
 import { apiFetch } from '../utils/api';

@@ -1,3 +1,11 @@
+/**
+ * Hook for Post Form Management
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 

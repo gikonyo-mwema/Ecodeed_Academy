@@ -12,6 +12,20 @@ import {
 } from 'react-icons/hi';
 import { Button, Badge, Accordion, Alert, Spinner } from 'flowbite-react';
 import PaymentModal from '../components/Modal/PaymentModal';
+/**
+ * Course Details Page Component
+ * Displays detailed information about a specific course.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Course Details Page Component
+ * Displays detailed information about a specific course.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiFetch } from '../utils/api';
 

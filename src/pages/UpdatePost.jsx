@@ -1,3 +1,17 @@
+/**
+ * Update Post Page Component
+ * Page for editing existing blog posts.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Update Post Page Component
+ * Page for editing existing blog posts.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import { Alert, Button, Select, TextInput } from 'flowbite-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';

@@ -1,3 +1,11 @@
+/**
+ * Alert Message Modal Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Alert } from 'flowbite-react';
 
 export default function AlertMessage({ message, onDismiss }) {

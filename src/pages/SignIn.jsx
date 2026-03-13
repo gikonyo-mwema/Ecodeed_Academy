@@ -1,3 +1,17 @@
+/**
+ * Sign In Page Component
+ * User authentication page with email/password and OAuth.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Sign In Page Component
+ * User authentication page with email/password and OAuth.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";

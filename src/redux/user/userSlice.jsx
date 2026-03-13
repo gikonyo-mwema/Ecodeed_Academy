@@ -1,3 +1,11 @@
+/**
+ * Redux User State Slice
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiFetch } from '../../utils/api';
 

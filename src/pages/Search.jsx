@@ -4,6 +4,20 @@ import { Button, Select, TextInput, Spinner, Alert } from 'flowbite-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PostCard from '../components/PostCard';
 import { FiSearch, FiFilter, FiChevronDown } from 'react-icons/fi';
+/**
+ * Search Results Page Component
+ * Displays search results for posts, courses, and services.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Search Results Page Component
+ * Displays search results for posts, courses, and services.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import { apiFetch } from '../utils/api';
 
 export default function Search() {

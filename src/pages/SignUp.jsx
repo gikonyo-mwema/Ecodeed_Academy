@@ -1,3 +1,17 @@
+/**
+ * Sign Up Page Component
+ * User registration page for creating new accounts.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Sign Up Page Component
+ * User registration page for creating new accounts.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";

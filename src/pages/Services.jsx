@@ -1,8 +1,52 @@
+/**
+ * Services Page Component
+ * 
+ * Main services catalog page displaying all environmental consulting services.
+ * Shows services in grid layout with filtering by category.
+ * 
+ * Features:
+ * - Display all published services in responsive grid
+ * - Category-based filtering (Audits, Climate, EIA, Policy)
+ * - Service cards with descriptions, pricing, features
+ * - Call-to-action buttons for service inquiries
+ * - Loading states and error handling
+ * - Smooth animations with Framer Motion
+ * - Responsive design for all screen sizes
+ * - Theme support (light/dark mode)
+ * 
+ * Service Categories:
+ * - Environmental Audits
+ * - Climate Change & Sustainability Solutions
+ * - Environmental Impact Assessments (EIA)
+ * - Environmental Safeguards & Policy Advisory
+ * 
+ * Service Information Displayed:
+ * - Service name and description
+ * - Key features and benefits
+ * - Duration and deliverables
+ * - Pricing information
+ * - Company experience and credentials
+ * - Related courses and resources
+ * 
+ * API Integration:
+ * - GET /api/services?isPublished=true - Fetch published services
+ * - Error handling for network failures
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ServiceCard from '../components/ServiceCard';
 import axios from 'axios';
 
+/**
+ * Services - Main services catalog page
+ * 
+ * @returns {JSX.Element} Services listing with filters and categories
+ */
 const Services = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);

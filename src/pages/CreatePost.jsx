@@ -4,6 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import PostEditor from "../components/Admin/Posts/PostForm/PostEditor";
 import { apiFetch } from '../utils/api';
+/**
+ * Create Post Page Component
+ * Page for creating new blog posts with WYSIWYG editor.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Create Post Page Component
+ * Page for creating new blog posts with WYSIWYG editor.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 
 export default function CreatePost() {
   const [formData, setFormData] = useState({

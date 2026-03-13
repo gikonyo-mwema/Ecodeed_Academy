@@ -1,3 +1,11 @@
+/**
+ * Post Content Editor Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React, { lazy, Suspense, useRef, useCallback, useMemo, useEffect, forwardRef } from 'react';
 import { modules, formats } from "../../../../editorConfig.js";
 import { uploadToCloudinary } from '../../../../utils/cloudinary.js';

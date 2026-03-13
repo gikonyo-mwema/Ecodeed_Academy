@@ -1,3 +1,11 @@
+/**
+ * Hook for Fetching Posts
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import apiRequest from '../../../../utils/apiRequest';
 

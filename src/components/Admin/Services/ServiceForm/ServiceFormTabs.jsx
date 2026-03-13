@@ -1,3 +1,11 @@
+/**
+ * Service Form Tabs Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { 
   Label, 
   TextInput, 

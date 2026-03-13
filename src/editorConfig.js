@@ -1,3 +1,11 @@
+/**
+ * Editor Configuration
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import hljs from 'highlight.js';
 
 // ===== Font Configuration =====

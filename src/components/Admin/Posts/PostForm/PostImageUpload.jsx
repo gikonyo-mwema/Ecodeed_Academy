@@ -1,3 +1,11 @@
+/**
+ * Post Image Upload Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Button, Alert } from 'flowbite-react';
 import { useState, useEffect } from 'react'; // ADDED: useState and useEffect
 

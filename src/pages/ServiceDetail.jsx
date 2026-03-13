@@ -1,3 +1,17 @@
+/**
+ * Service Detail Page Component
+ * Displays detailed information about a specific service.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Service Detail Page Component
+ * Displays detailed information about a specific service.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';

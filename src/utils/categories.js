@@ -1,3 +1,11 @@
+/**
+ * Category Constants and Utilities
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 // Category utilities: mapping, normalization, and label formatting
 
 // Tailwind classes for category badges in light/dark modes

@@ -24,6 +24,16 @@ const api = axios.create({
   }
 });
 
+/**
+ * Contact Page Component
+ * 
+ * Displays the contact form and company contact information.
+ * Allows users to send messages and inquiries to the company.
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 const Contact = () => {
   const location = useLocation();
   const { theme } = useSelector((state) => state.theme);

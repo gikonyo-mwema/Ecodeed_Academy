@@ -1,3 +1,11 @@
+/**
+ * Post Table Display Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Table, Button, Spinner } from 'flowbite-react';
 import PostTableHeader from './PostTableHeader';
 import PostTableRow from './PostTableRow';

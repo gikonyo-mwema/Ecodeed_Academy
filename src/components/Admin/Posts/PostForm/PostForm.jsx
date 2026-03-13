@@ -1,3 +1,11 @@
+/**
+ * Post Form Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useCallback, useState, useEffect } from 'react';
 import { Button } from 'flowbite-react';
 import PostCategorySelect from './PostCategorySelect';

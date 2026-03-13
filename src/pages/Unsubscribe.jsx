@@ -1,3 +1,17 @@
+/**
+ * Unsubscribe Page Component
+ * Page for managing newsletter unsubscription.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+/**
+ * Unsubscribe Page Component
+ * Page for managing newsletter unsubscription.
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';

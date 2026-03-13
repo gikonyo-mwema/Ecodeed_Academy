@@ -1,3 +1,11 @@
+/**
+ * Hook for Post Actions
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { useState } from 'react';
 import apiRequest from '../../../../utils/apiRequest';
 

@@ -1,3 +1,11 @@
+/**
+ * Service Data Sanitization Utility
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 // Normalizes and sanitizes service payloads before sending to the API
 export function sanitizeServicePayload(payload) {
   // Always keep a copy to avoid mutating caller unexpectedly
