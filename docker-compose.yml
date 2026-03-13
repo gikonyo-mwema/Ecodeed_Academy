@@ -1,0 +1,66 @@
+# Docker Compose configuration for Ecodeed Academy
+# Includes backend (Django), frontend (Vite/React), and MySQL database services
+# Environment variables are loaded from .env file
+
+services:
+  # ===========================================
+  # Django Backend Service
+  # ===========================================
+  backend:
+    build: ./backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"  # Expose Django on configurable port
+    volumes:
+      - ./backend:/app  # Mount backend code for live reloading
+    env_file:
+      - .env  # Load all env vars from root .env
+    environment:
+      # Override DB host/port for Docker networking
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+    depends_on:
+      - db  # Wait for database to be ready before starting
+
+  # ===========================================
+  # MySQL Database Service
+  # ===========================================
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}        # Database name from .env
+      MYSQL_USER: ${MYSQL_USER}                # Database user from .env
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}        # User password from .env
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # Root password from .env
+    volumes:
+      - mysql_data:/var/lib/mysql  # Persist database data
+    ports:
+      - "127.0.0.1:3306:3306"  # Localhost only — never expose DB to network
+
+  # ===========================================
+  # Vite/React Frontend Service
+  # ===========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev  # Use development Dockerfile
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"  # Vite dev server port
+    volumes:
+      - ./frontend:/app  # Mount frontend code for hot module replacement
+      - frontend_node_modules:/app/node_modules  # Persist node_modules (prevents overwrite)
+      - vite_cache:/app/node_modules/.vite  # Persist Vite prebundle cache
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}  # Backend API URL from .env
+      - VITE_PROXY_TARGET=http://backend:8000   # Internal URL for Vite Proxy
+      - VITE_PAYSTACK_PUBLIC_KEY=${VITE_PAYSTACK_PUBLIC_KEY}
+      - NODE_ENV=development
+    depends_on:
+      - backend  # Wait for backend before starting
+
+# ===========================================
+# Named Volumes
+# ===========================================
+volumes:
+  mysql_data:  # Persistent storage for MySQL data
+  frontend_node_modules:  # Cached node_modules for faster rebuilds
+  vite_cache:  # Cached Vite prebundled dependencies for faster startup

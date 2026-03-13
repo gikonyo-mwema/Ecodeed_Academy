@@ -1,0 +1,211 @@
+"""
+User Serializers for Authentication and Profile Management.
+
+This module provides serializers for user-related operations including
+registration, authentication, profile viewing, and profile updates.
+These serializers handle data validation, transformation, and user creation.
+"""
+
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
+
+User = get_user_model()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user profile data.
+
+    Used for serializing user information in API responses. Provides
+    a read-only view of user data suitable for profile display.
+
+    Fields:
+        id (int): Unique user identifier (read-only).
+        _id (int): Alias for id for frontend compatibility.
+        email (str): User's email address.
+        username (str): Alias for email for frontend compatibility.
+        first_name (str): User's first name.
+        firstName (str): Alias for first_name.
+        last_name (str): User's last name.
+        lastName (str): Alias for last_name.
+        user_type (str): Type/role of the user.
+        profile_picture (str): Cloudinary URL for the user's profile picture.
+        profilePicture (str): Alias for profile_picture.
+        bio (str): User's biography/description.
+        phone_number (str): User's phone number.
+        phoneNumber (str): Alias for phone_number.
+        date_joined (datetime): Account creation timestamp (read-only).
+        createdAt (datetime): Alias for date_joined for frontend compatibility.
+        isAdmin (bool): Whether the user has admin privileges.
+        isInstructor (bool): Whether the user is an instructor/tutor.
+        hasEnrollments (bool): Whether the user has any course enrollments (is a student).
+    """
+
+    isAdmin = serializers.SerializerMethodField()
+    isInstructor = serializers.SerializerMethodField()
+    hasEnrollments = serializers.SerializerMethodField()
+    _id = serializers.IntegerField(source='id', read_only=True)
+    username = serializers.CharField(source='email', read_only=True)
+    firstName = serializers.CharField(source='first_name', read_only=True)
+    lastName = serializers.CharField(source='last_name', read_only=True)
+    profilePicture = serializers.URLField(source='profile_picture', read_only=True)
+    phoneNumber = serializers.CharField(source='phone_number', read_only=True)
+    createdAt = serializers.DateTimeField(source='date_joined', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', '_id', 'email', 'username', 'first_name', 'firstName', 
+                'last_name', 'lastName', 'user_type', 'profile_picture', 'profilePicture', 
+                'bio', 'phone_number', 'phoneNumber', 'date_joined', 'createdAt', 
+                'isAdmin', 'isInstructor', 'hasEnrollments']
+        read_only_fields = ['id', '_id', 'username', 'date_joined', 'createdAt', 
+                           'isAdmin', 'isInstructor', 'hasEnrollments']
+
+    def get_isAdmin(self, obj):
+        """Check if user is an admin."""
+        return obj.user_type == 'ADMIN' or obj.is_staff or obj.is_superuser
+    
+    def get_isInstructor(self, obj):
+        """Check if user is an instructor/tutor (MENTOR type)."""
+        return obj.user_type == 'MENTOR'
+    
+    def get_hasEnrollments(self, obj):
+        """Check if user has any course enrollments (is a student)."""
+        # Import here to avoid circular imports
+        from courses.models import Enrollment
+        return Enrollment.objects.filter(user=obj).exists()
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user registration.
+
+    Handles new user account creation with password validation.
+    Ensures password confirmation matches before creating the user.
+
+    Fields:
+        email (str): User's email address (required).
+        first_name (str): User's first name (required).
+        last_name (str): User's last name (required).
+        user_type (str): Type/role of the user (optional, defaults to READER).
+        password (str): User's password, minimum 8 characters (write-only).
+        confirm_password (str): Password confirmation (write-only).
+
+    Raises:
+        ValidationError: If passwords don't match.
+    """
+
+    password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'user_type',
+                'password', 'confirm_password']
+
+    def validate(self, data):
+        """
+        Validate that password and confirm_password match.
+
+        Args:
+            data (dict): The input data containing password fields.
+
+        Returns:
+            dict: Validated data with confirm_password removed.
+
+        Raises:
+            ValidationError: If passwords don't match.
+        """
+        if data['password'] != data.pop('confirm_password'):
+            raise serializers.ValidationError({"password": "Passwords don't match"})
+        return data
+
+    def create(self, validated_data):
+        """
+        Create a new user with the validated data.
+
+        Args:
+            validated_data (dict): Validated user data.
+
+        Returns:
+            User: The newly created user instance.
+        """
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            user_type=validated_data.get('user_type', User.UserType.READER),
+            password=validated_data['password']
+        )
+        return user
+
+
+class UserLoginSerializer(serializers.Serializer):
+    """
+    Serializer for user authentication.
+
+    Validates user credentials and returns the authenticated user
+    if the credentials are valid.
+
+    Fields:
+        email (str): User's email address.
+        password (str): User's password (write-only).
+
+    Raises:
+        ValidationError: If credentials are invalid or user is disabled.
+    """
+
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        """
+        Validate user credentials.
+
+        Checks if the provided email and password match an active user account.
+
+        Args:
+            data (dict): Input data containing email and password.
+
+        Returns:
+            dict: Validated data with 'user' key containing the authenticated user.
+
+        Raises:
+            ValidationError: If email/password missing, invalid, or user disabled.
+        """
+        email = data.get('email')
+        password = data.get('password')
+
+        if email and password:
+            user = User.objects.filter(email=email).first()
+            if user and user.check_password(password):
+                if not user.is_active:
+                    raise serializers.ValidationError("User account is disabled.")
+                data['user'] = user
+                return data
+            raise serializers.ValidationError("Invalid email or password.")
+        raise serializers.ValidationError("Must include email and password.")
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating user profile information.
+
+    Allows users to update their personal information excluding
+    sensitive fields like email and password.
+
+    Fields:
+        first_name (str): User's first name.
+        last_name (str): User's last name.
+        profile_picture (str): Cloudinary URL for the user's profile picture.
+        bio (str): User's biography/description.
+        phone_number (str): User's phone number.
+    """
+
+    # Accept either a URL string or a file upload (handled in the view)
+    profile_picture = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'profile_picture', 'bio', 'phone_number']

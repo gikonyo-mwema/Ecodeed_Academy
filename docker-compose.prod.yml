@@ -1,0 +1,59 @@
+# ===========================================
+# Production Docker Compose — Ecodeed Academy
+# ===========================================
+# Usage:
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Expects a .env file with all required variables.
+# Images are pulled from Docker Hub (pre-built).
+
+services:
+  # ── Nginx + React SPA ──
+  frontend:
+    image: ${DOCKERHUB_USER}/ecodeed-frontend:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ── Django API (Gunicorn) ──
+  backend:
+    image: ${DOCKERHUB_USER}/ecodeed-backend:latest
+    env_file:
+      - .env
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - DEBUG=False
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── MySQL 8 Database ──
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # Tune MySQL for 2 GB droplet — use ~512 MB for InnoDB
+    command: >
+      --innodb-buffer-pool-size=256M
+      --innodb-log-file-size=64M
+      --max-connections=50
+      --key-buffer-size=16M
+      --table-open-cache=400
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

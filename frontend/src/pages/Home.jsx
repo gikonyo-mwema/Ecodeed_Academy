@@ -1,0 +1,278 @@
+/**
+ * Home Page Component
+ * 
+ * The main landing page of the MERN blog application that displays:
+ * - Latest blog posts in a responsive grid layout
+ * - Pagination for navigating through posts
+ * - Categories for post filtering
+ * - Sidebar with additional content
+ * - Loading states and error handling
+ * 
+ * Features:
+ * - Responsive design (mobile-first approach)
+ * - Infinite scrolling with pagination
+ * - Category-based filtering
+ * - Post preview cards with images and excerpts
+ * - Error handling with retry functionality
+ * - Loading skeletons for better UX
+ * - SEO-friendly post slugs
+ * 
+ * State Management:
+ * - Posts array with pagination
+ * - Current page tracking
+ * - Loading and error states
+ * - Categories for navigation
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
+import React from 'react';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import PostCard from '../components/PostCard';
+import RightSidebar from '../components/RightSidebar';
+import Pagination from '../components/Pagination';
+import { apiFetch } from '../utils/api';
+
+/**
+ * Home Component
+ * Main landing page that fetches and displays blog posts
+ * 
+ * @returns {JSX.Element} The home page with posts grid and sidebar
+ */
+export default function Home() {
+  // Posts and pagination state
+  const [posts, setPosts] = useState([]);
+  const location = useLocation();
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  // UI state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Content organization
+  const [categories, setCategories] = useState([]);
+  const [pagination, setPagination] = useState({
+    totalPosts: 0,
+    postsPerPage: 9,  // Number of posts per page
+    hasNextPage: false
+  });
+
+  /**
+   * Effect to fetch posts when component mounts or page changes
+   * Handles API calls, pagination, and error states
+   */
+  useEffect(() => {
+    // if we were redirected after sign-up, show a welcome toast/modal
+    if (location.state && location.state.newUser) {
+      setShowWelcome(true);
+      // clear the flag so refreshing doesn't keep showing it
+      window.history.replaceState({}, document.title);
+    }
+
+    /**
+     * Fetches posts from the API with pagination and error handling
+     * @async
+     * @function fetchPosts
+     */
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Build query parameters for API request
+        const query = new URLSearchParams({
+          page: currentPage,
+          limit: pagination.postsPerPage,
+          order: 'desc' // Latest posts first
+        }).toString();
+
+        // Fetch posts from API
+        const response = await apiFetch(`/api/v1/posts/?${query}`);
+        
+        // Match the backend response structure from your dashboard
+        const postsData = response.posts || [];
+        const paginationData = response.pagination || {
+          totalPosts: response.totalPosts || 0,
+          totalPages: 1,
+          currentPage: 1,
+          postsPerPage: pagination.postsPerPage,
+          hasNextPage: false
+        };
+
+        // Update component state
+        setPosts(postsData);
+        setTotalPages(paginationData.totalPages);
+        setPagination(paginationData);
+
+        // Extract unique categories from posts for filtering
+        const uniqueCategories = [...new Set(
+          postsData.map(post => post.category)
+        )].filter(Boolean);
+        setCategories(uniqueCategories);
+
+      } catch (err) {
+        setError(err.message || 'Failed to load posts');
+        
+        // Development fallback for testing
+        if (import.meta.env.DEV) {
+          setPosts([{
+            id: 'dev_fallback_1',
+            title: 'Sample Post (Dev Fallback)',
+            content: 'This is sample data because the API failed',
+            category: 'uncategorized',
+            image: 'https://res.cloudinary.com/demo/image/upload/v1626283631/sample.jpg',
+            createdAt: new Date().toISOString(),
+            slug: 'sample-post-dev-fallback'
+          }]);
+          setTotalPages(1);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [currentPage, pagination.postsPerPage]);
+
+  const renderPostGrid = () => {
+    if (loading) return (
+      <div className="space-y-6">
+        {[...Array(3)].map((_, rowIndex) => (
+          <div 
+            key={rowIndex} 
+            className={`grid gap-6 ${rowIndex % 3 === 1 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}
+          >
+            {[...Array(rowIndex % 3 === 1 ? 3 : 2)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 animate-pulse h-full">
+                <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-3"></div>
+                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-4"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+
+    if (error) return (
+      <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+        <h3 className="text-red-600 dark:text-red-400 font-bold mb-2">Loading Error</h3>
+        <p className="text-red-500 dark:text-red-300">{error}</p>
+        <div className="flex gap-3 mt-4">
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/40 rounded text-red-600 dark:text-red-300"
+          >
+            Retry
+          </button>
+          <button
+            onClick={() => setError(null)}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-gray-800 dark:text-gray-200"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    );
+
+    if (posts.length === 0) return (
+      <div className="text-center py-12">
+        <h3 className="text-gray-500 dark:text-gray-400 text-xl">No posts found</h3>
+        <p className="text-gray-400 dark:text-gray-500">Try refreshing the page or check back later</p>
+      </div>
+    );
+
+    // Create groups of posts following the 2-3-2 pattern
+    const postGroups = [];
+    for (let i = 0; i < posts.length; i += 7) {
+      postGroups.push(posts.slice(i, i + 2));
+      postGroups.push(posts.slice(i + 2, i + 5));
+      postGroups.push(posts.slice(i + 5, i + 7));
+    }
+
+    return (
+      <div className="space-y-6">
+        {postGroups.map((group, rowIndex) => (
+          <div 
+            key={rowIndex} 
+            className={`grid gap-6 ${group.length === 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}
+          >
+            {group.map(post => (
+              <PostCard 
+                key={post._id} 
+                post={post} 
+                isCompact={group.length === 3}
+                className="bg-white dark:bg-gray-800 shadow-md dark:shadow-gray-900 rounded-lg overflow-hidden"
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        <main className="lg:w-3/4">
+          {showWelcome && (
+            <div className="mb-6 p-4 bg-green-100 dark:bg-green-900 rounded-lg">
+              <h3 className="text-green-800 dark:text-green-200 font-semibold">
+                🎉 Welcome to Ecodeed!
+              </h3>
+              <p className="text-green-700 dark:text-green-300">
+                Your account has been created and you're now logged in. Explore
+                the dashboard or start by browsing our latest posts below.
+              </p>
+            </div>
+          )}
+          <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Latest Articles</h1>
+          
+          {renderPostGrid()}
+          
+          {totalPages > 1 && (
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              className="mt-8"
+            />
+          )}
+
+          {categories.length > 0 && (
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Browse Categories</h2>
+              <div className="flex flex-wrap gap-2">
+                {categories.map(category => (
+                  <Link 
+                    key={category} 
+                    to={`/search?category=${encodeURIComponent(category)}`}
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-sm font-medium transition-colors text-gray-800 dark:text-gray-200"
+                  >
+                    {category.split('-').map(word => 
+                      word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ')}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+
+        <aside className="lg:w-1/4">
+          <RightSidebar 
+            className="bg-white dark:bg-gray-800 shadow-md dark:shadow-gray-900 rounded-lg p-4 sticky top-4"
+          />
+        </aside>
+      </div>
+    </div>
+  );
+}

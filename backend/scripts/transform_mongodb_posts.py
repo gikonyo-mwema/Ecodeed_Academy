@@ -109,6 +109,10 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from urllib.parse import urlparse
+<<<<<<< HEAD
+=======
+from slug import Slug  # Using python-slug library, or fallback to basic slugify
+>>>>>>> origin/develop
 
 
 def slugify(text):
@@ -232,7 +236,11 @@ def transform_post(mongo_post, used_slugs):
     views = mongo_post.get('views', 0)
     if not isinstance(views, int) or views < 0:
         views = 0
+<<<<<<< HEAD
         warnings.append('Invalid views count, set to 0')
+=======
+        warnings.append(f'Invalid views count, set to 0')
+>>>>>>> origin/develop
     
     # Parse dates
     created_at = None

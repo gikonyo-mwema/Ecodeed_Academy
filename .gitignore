@@ -1,6 +1,17 @@
 # Client .gitignore
 node_modules/
 .env
+.env.*
+frontend/.env*
 dist/
 .vite/
-*.local
+
+
+__pycache__/
+*.pyc
+*.log
+backend/logs/
+
+mysql_data/
+
+staticfiles/

@@ -5,6 +5,7 @@
 
 An online learning platform built with Django REST Framework (backend) and React + Vite (frontend).
 
+<<<<<<< HEAD
 ## 📚 Comprehensive Documentation
 
 This project includes extensive documentation to help developers understand and contribute to the codebase:
@@ -37,6 +38,8 @@ This project includes extensive documentation to help developers understand and 
 
 ---
 
+=======
+>>>>>>> origin/develop
 ## 🏗️ Project Structure
 
 ```
@@ -62,6 +65,7 @@ Ecodeed_Academy/
 
 ## 🚀 Features
 
+<<<<<<< HEAD
 ### User Dashboards
 - **Student Dashboard**: Personalized learning experience with enrolled courses, progress tracking, week-based curriculum navigation
 - **Instructor Dashboard**: Teaching tools including course management, student roster, earnings tracking, live session scheduling
@@ -74,6 +78,13 @@ Ecodeed_Academy/
 - **Learning System**: Video lessons, assignments, resources, live Zoom sessions, progress tracking
 - **Admin Tools**: Content moderation, user management, analytics, newsletter campaigns
 - **Responsive Design**: Mobile-friendly interface with Tailwind CSS and dark mode support
+=======
+- **User Authentication**: JWT-based auth with social login (Google, Facebook, Twitter)
+- **Course Management**: Create, browse, and enroll in courses
+- **Blog System**: Educational content and articles
+- **Admin Dashboard**: Administrative controls for content management
+- **Responsive Design**: Mobile-friendly interface with Tailwind CSS
+>>>>>>> origin/develop
 
 ## 🛠️ Tech Stack
 
@@ -231,6 +242,7 @@ ruff format backend/
 API documentation is available at:
 - Swagger UI: `http://localhost:8000/swagger/`
 - ReDoc: `http://localhost:8000/redoc/`
+<<<<<<< HEAD
 - **Comprehensive Guide**: [BACKEND_API_DOCUMENTATION.md](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/BACKEND_API_DOCUMENTATION.md)
 
 ### Key Endpoints
@@ -276,6 +288,18 @@ API documentation is available at:
 - How do I integrate frontend and backend? → See [FRONTEND_BACKEND_INTEGRATION.md](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_BACKEND_INTEGRATION.md)
 
 ---
+=======
+
+### Key Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/register/` | POST | User registration — returns access & refresh tokens; new users are automatically logged in by frontend on success |
+| `/api/auth/login/` | POST | User login |
+| `/api/auth/logout/` | POST | User logout |
+| `/api/auth/profile/` | GET | Get user profile |
+| `/api/auth/token/refresh/` | POST | Refresh JWT token |
+>>>>>>> origin/develop
 
 ## 🤝 Contributing
 
