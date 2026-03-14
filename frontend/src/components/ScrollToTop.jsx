@@ -24,7 +24,7 @@
  *   function App() {
  *     return (
  *       <BrowserRouter>
- *         <ScrollToTop />  {/* ← Include here */}
+ *         <ScrollToTop />  (place here in the component tree)
  *         <Routes>
  *           <Route path="/" element={<Home />} />
  *           <Route path="/blog/:slug" element={<PostPage />} />

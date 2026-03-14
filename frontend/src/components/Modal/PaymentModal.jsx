@@ -46,11 +46,73 @@
  * PROPS
  * ═══════════════════════════════════════════════════════════════════════════════════
  *
- * - course: object { id, slug, title, price, ... }\n *   Required for payment amount and metadata\n *
- * - show: boolean\n *   Controls modal visibility\n *
- * - onClose: function(success: boolean) → Dismiss modal\n *   Callback when modal should close\n *   success = true if payment succeeded\n *
- * - user: object { email, id, ... }\n *   Current user for email pre-fill and user context\n *
- * - onSuccess: function() → Payment verification succeeded\n *   Called after successful payment verification\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * PAYMENT FLOW\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * 1. User enters/confirms email\n * 2. Click \"Pay\" button → Paystack popup opens\n * 3. User selects payment method (Card/Mobile Money/Bank)\n * 4. User completes payment in Paystack UI\n * 5. On success → reference returned to callback\n * 6. Backend POST /api/v1/payments/verify with reference\n * 7. On verification success:\n *    - Show success message (2 sec)\n *    - Call onSuccess callback\n *    - Close modal with success=true\n * 8. On error → Display error message\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * API INTEGRATION\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * **Paystack Integration:**\n *   - PaystackPop.newTransaction() for popup\n *   - Configuration: key, email, amount (kobo), currency, channels, metadata\n *   - Callbacks: onPaymentSuccess, onPaymentClose\n *\n * **Backend Endpoints:**\n *   POST /api/v1/payments/verify\n *     Body: { reference: string (Paystack reference) }\n *     Response: { success: boolean, enrollment: {...}, message: string }\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n * @example\n *   const [showPayment, setShowPayment] = useState(false);\n *   const [course, setCourse] = useState({...});\n *\n *   <PaymentModal\n *     course={course}\n *     show={showPayment}\n *     onClose={(success) => {\n *       setShowPayment(false);\n *       if (success) navigate('/dashboard');\n *     }}\n *     user={currentUser}\n *     onSuccess={() => dispatch(refreshUser())}\n *   />\n */\n\nimport { useState } from 'react';
+ * - course: object { id, slug, title, price, ... }
+ *   Required for payment amount and metadata
+ *
+ * - show: boolean
+ *   Controls modal visibility
+ *
+ * - onClose: function(success: boolean) → Dismiss modal
+ *   Callback when modal should close
+ *   success = true if payment succeeded
+ *
+ * - user: object { email, id, ... }
+ *   Current user for email pre-fill and user context
+ *
+ * - onSuccess: function() → Payment verification succeeded
+ *   Called after successful payment verification
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PAYMENT FLOW
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * 1. User enters/confirms email
+ * 2. Click \"Pay\" button → Paystack popup opens
+ * 3. User selects payment method (Card/Mobile Money/Bank)
+ * 4. User completes payment in Paystack UI
+ * 5. On success → reference returned to callback
+ * 6. Backend POST /api/v1/payments/verify with reference
+ * 7. On verification success:
+ *    - Show success message (2 sec)
+ *    - Call onSuccess callback
+ *    - Close modal with success=true
+ * 8. On error → Display error message
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * **Paystack Integration:**
+ *   - PaystackPop.newTransaction() for popup
+ *   - Configuration: key, email, amount (kobo), currency, channels, metadata
+ *   - Callbacks: onPaymentSuccess, onPaymentClose
+ *
+ * **Backend Endpoints:**
+ *   POST /api/v1/payments/verify
+ *     Body: { reference: string (Paystack reference) }
+ *     Response: { success: boolean, enrollment: {...}, message: string }
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ *   const [showPayment, setShowPayment] = useState(false);
+ *   const [course, setCourse] = useState({...});
+ *
+ *   <PaymentModal
+ *     course={course}
+ *     show={showPayment}
+ *     onClose={(success) => {
+ *       setShowPayment(false);
+ *       if (success) navigate('/dashboard');
+ *     }}
+ *     user={currentUser}
+ *     onSuccess={() => dispatch(refreshUser())}
+ *   />
+ */
+import { useState } from 'react';
 import { Modal, Button, TextInput, Alert, Spinner } from 'flowbite-react';
 import PaystackPop from '@paystack/inline-js';
 import { apiFetch } from '../../utils/api';

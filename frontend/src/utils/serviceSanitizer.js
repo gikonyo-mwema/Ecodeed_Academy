@@ -6,16 +6,20 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Cleans and normalizes service payload objects before sending to backend API.
  * Handles string trimming, empty array/field filtering, URL formatting, and
- * field name normalization. Ensures data consistency across form inputs.\n *
+ * field name normalization. Ensures data consistency across form inputs.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
- * SANITIZATION OPERATIONS\n * ═══════════════════════════════════════════════════════════════════════════════════
+ * SANITIZATION OPERATIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════
  * 1. String Trimming: Remove leading/trailing whitespace from all string fields
  * 2. Empty Array Filtering: Remove empty strings and falsy values from arrays
  * 3. URL Normalization: Prepend 'https://' to URLs missing protocol
  * 4. Field Normalization: Map 'fullDescription' → 'description' for consistency
- * 5. Step Mapping: Normalize 'step' → 'title' in processSteps array\n *
+ * 5. Step Mapping: Normalize 'step' → 'title' in processSteps array
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
- * PAYLOAD STRUCTURE\n * ═══════════════════════════════════════════════════════════════════════════════════
+ * PAYLOAD STRUCTURE
+ * ═══════════════════════════════════════════════════════════════════════════════════
  * Expected input/output structure:
  * {
  *   title: string,
@@ -26,13 +30,16 @@
  *   features: { title, description }[],
  *   socialLinks: { platform, url }[],  // URLs auto-formatted with https://
  *   processSteps: { title, description, order }[]
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLES
  * ═══════════════════════════════════════════════════════════════════════════════════
- * import { sanitizeServicePayload } from '@/utils/serviceSanitizer';\n * const formData = { title: '  Service  ', tags: ['', 'tag1', ''], url: 'example.com' };
+ * import { sanitizeServicePayload } from '@/utils/serviceSanitizer';
+ * const formData = { title: '  Service  ', tags: ['', 'tag1', ''], url: 'example.com' };
  * const clean = sanitizeServicePayload(formData);
- * // Result: { title: 'Service', tags: ['tag1'], url: 'https://example.com' }\n *
+ * // Result: { title: 'Service', tags: ['tag1'], url: 'https://example.com' }
+ *
  * @module ServiceSanitizer
  * @version 1.0.0
  * @author Gikonyo Mwema

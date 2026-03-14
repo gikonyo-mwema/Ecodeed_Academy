@@ -1,7 +1,100 @@
 /**
  * Comments Component — Individual comment display with edit/delete/like functionality
  *
- * ═══════════════════════════════════════════════════════════════════════════════════\n * PURPOSE\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * Renders a single blog post comment with user info, timestamp, content, and\n * interactive actions (like, edit, delete). Supports comment editing with inline\n * textarea and delete confirmation.\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * FEATURES\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * 1. **Comment Display**\n *    - User avatar (profile picture with fallback)\n *    - Username display (@username format)\n *    - Relative timestamp (\"2 days ago\" via dayjs)\n *    - Comment content (sanitized HTML)\n *    - Like count and button\n *    - Threaded/nested display support\n *\n * 2. **User Actions**\n *    - Like button (increment like count)\n *    - Edit button (convert to textarea)\n *    - Delete button (with confirmation)\n *    - Only available to comment author or post owner\n *\n * 3. **Edit Mode**\n *    - Textarea input for editing comment\n *    - Save/Cancel buttons\n *    - PUT request to /api/v1/comments/editComment/{id}\n *    - Error handling with feedback\n *    - Auto-close on success\n *\n * 4. **Theme Support**\n *    - Dark mode aware styling\n *    - Brand color buttons\n *    - Consistent with post comments section\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * PROPS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * - comment: object\n *   - _id: comment ID\n *   - content: comment text\n *   - user: { username, profilePicture, _id }\n *   - createdAt: ISO timestamp\n *   - likes: number (like count)\n *   - depth: number (nesting level for threads)\n *\n * - onLike: function(comment) → Like button callback\n * - onEdit: function(comment, newContent) → Save edit callback\n * - onDelete: function(commentId) → Delete confirmation callback\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * STATE & BEHAVIOR\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * Local state:\n * - isEditing: boolean (textarea visible)\n * - editedContent: string (textarea value)\n *\n * Edit flow:\n *   1. Click Edit → isEditing = true, textarea shows\n *   2. Modify text in textarea\n *   3. Click Save → PUT to /api/v1/comments/editComment/{id}\n *   4. On success: isEditing = false, onEdit callback fired\n *   5. On error: console error logged\n *   6. Click Cancel → isEditing = false (discard changes)\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * API INTEGRATION\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * **Endpoints:**\n *   PUT /api/v1/comments/editComment/{commentId}\n *     Body: { content: string }\n *     Response: { success: boolean, comment: {...} }\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n * @example\n *   <Comments\n *     comment={commentObj}\n *     onLike={handleLike}\n *     onEdit={handleEdit}\n *     onDelete={handleDelete}\n *   />\n */\n\nimport React, { useState } from 'react';\n\nimport dayjs from 'dayjs';
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PURPOSE
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * Renders a single blog post comment with user info, timestamp, content, and
+ * interactive actions (like, edit, delete). Supports comment editing with inline
+ * textarea and delete confirmation.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * FEATURES
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * 1. **Comment Display**
+ *    - User avatar (profile picture with fallback)
+ *    - Username display (@username format)
+ *    - Relative timestamp (\"2 days ago\" via dayjs)
+ *    - Comment content (sanitized HTML)
+ *    - Like count and button
+ *    - Threaded/nested display support
+ *
+ * 2. **User Actions**
+ *    - Like button (increment like count)
+ *    - Edit button (convert to textarea)
+ *    - Delete button (with confirmation)
+ *    - Only available to comment author or post owner
+ *
+ * 3. **Edit Mode**
+ *    - Textarea input for editing comment
+ *    - Save/Cancel buttons
+ *    - PUT request to /api/v1/comments/editComment/{id}
+ *    - Error handling with feedback
+ *    - Auto-close on success
+ *
+ * 4. **Theme Support**
+ *    - Dark mode aware styling
+ *    - Brand color buttons
+ *    - Consistent with post comments section
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PROPS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * - comment: object
+ *   - _id: comment ID
+ *   - content: comment text
+ *   - user: { username, profilePicture, _id }
+ *   - createdAt: ISO timestamp
+ *   - likes: number (like count)
+ *   - depth: number (nesting level for threads)
+ *
+ * - onLike: function(comment) → Like button callback
+ * - onEdit: function(comment, newContent) → Save edit callback
+ * - onDelete: function(commentId) → Delete confirmation callback
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE & BEHAVIOR
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * Local state:
+ * - isEditing: boolean (textarea visible)
+ * - editedContent: string (textarea value)
+ *
+ * Edit flow:
+ *   1. Click Edit → isEditing = true, textarea shows
+ *   2. Modify text in textarea
+ *   3. Click Save → PUT to /api/v1/comments/editComment/{id}
+ *   4. On success: isEditing = false, onEdit callback fired
+ *   5. On error: console error logged
+ *   6. Click Cancel → isEditing = false (discard changes)
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * **Endpoints:**
+ *   PUT /api/v1/comments/editComment/{commentId}
+ *     Body: { content: string }
+ *     Response: { success: boolean, comment: {...} }
+ *
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ *   <Comments
+ *     comment={commentObj}
+ *     onLike={handleLike}
+ *     onEdit={handleEdit}
+ *     onDelete={handleDelete}
+ *   />
+ */
+
+import React, { useState } from 'react';
+
+import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { FaThumbsUp } from 'react-icons/fa';
 

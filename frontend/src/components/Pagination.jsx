@@ -1,33 +1,4 @@
 /**
-<<<<<<< HEAD:src/components/Pagination.jsx
- * Pagination Component
- * 
- * Provides pagination controls for paginated content lists.
- * Displays page numbers with navigation buttons.
- * 
- * Features:
- * - Dynamic page number calculation
- * - Previous/Next navigation
- * - Smart page number display (shows limited range)
- * - Smooth scroll to top on page change
- * - Mobile-responsive design
- * - Current page highlighting
- * 
- * Props:
- * - currentPage: Current active page number
- * - totalPages: Total number of available pages
- * - onPageChange: Callback function when page changes
- * 
- * Usage:
- * <Pagination 
- *   currentPage={page}
- *   totalPages={Math.ceil(posts.length / 10)}
- *   onPageChange={(newPage) => setPage(newPage)}
- * />
- * 
- * @component
- * @version 1.0.0
-=======
  * Pagination Component — Navigation control for paginated content
  *
  * @component
@@ -73,7 +44,6 @@
  *   />
  *
  * @version 2.0.0
->>>>>>> origin/develop:frontend/src/components/Pagination.jsx
  * @author Gikonyo Mwema
  */
 

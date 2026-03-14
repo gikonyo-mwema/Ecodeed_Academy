@@ -1,19 +1,4 @@
 /**
-<<<<<<< HEAD:src/pages/SignUp.jsx
- * Sign Up Page Component
- * User registration page for creating new accounts.
- * @component
- * @version 1.0.0
- * @author Gikonyo Mwema
- */
-/**
- * Sign Up Page Component
- * User registration page for creating new accounts.
- * @component
- * @version 1.0.0
- * @author Gikonyo Mwema
- */
-=======
  * Sign Up Page
  * 
  * User registration page for creating new accounts.
@@ -49,7 +34,6 @@
  * @author Gikonyo Mwema
  */
 
->>>>>>> origin/develop:frontend/src/pages/SignUp.jsx
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";

@@ -9,6 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Progress, Badge, Accordion, Avatar, Tooltip, Card, Button } from 'flowbite-react';
 import { 
   HiPlay, 
@@ -34,6 +35,7 @@ import { apiFetch } from '../../utils/api';
 
 export default function CourseContentView({ course, activeSection = 'overview', onBack }) {
   const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
   const [loading, setLoading] = useState(true);
   const [courseContent, setCourseContent] = useState(null);
   const [activeModule, setActiveModule] = useState(null);
@@ -44,7 +46,18 @@ export default function CourseContentView({ course, activeSection = 'overview', 
       
       try {
         setLoading(true);
-        const data = await apiFetch(`/api/v1/courses/${course.slug}/content`);
+        let data;
+        try {
+          data = await apiFetch(`/api/v1/courses/${course.slug}/content`);
+        } catch (contentError) {
+          // Instructors/admins may not be enrolled; use preview endpoint for a real learner-like view.
+          if (currentUser?.isInstructor || currentUser?.isAdmin) {
+            data = await apiFetch(`/api/v1/courses/${course.slug}/preview-content/`);
+          } else {
+            throw contentError;
+          }
+        }
+
         setCourseContent(data);
         
         // Set active module to first in-progress or first module
@@ -62,7 +75,22 @@ export default function CourseContentView({ course, activeSection = 'overview', 
     };
 
     fetchCourseContent();
-  }, [course]);
+  }, [course, currentUser]);
+
+  const instructorData = course?.instructor || courseContent?.instructor || null;
+  const instructorName =
+    instructorData?.name ||
+    [instructorData?.first_name, instructorData?.last_name].filter(Boolean).join(' ') ||
+    course?.instructor_name ||
+    'Course Instructor';
+  const instructorTitle =
+    instructorData?.title ||
+    instructorData?.bio ||
+    'Instructor';
+  const instructorAvatar =
+    instructorData?.profilePicture ||
+    instructorData?.profile_picture ||
+    null;
 
   if (loading) {
     return (
@@ -112,7 +140,7 @@ export default function CourseContentView({ course, activeSection = 'overview', 
       </div>
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-4 gap-4">
         <Card className="text-center cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate(`/dashboard?tab=course-${course?.id}-weeks`)}>
           <HiPlay className="w-10 h-10 mx-auto text-brand-green mb-2" />
           <h4 className="font-semibold">Continue Learning</h4>
@@ -128,25 +156,18 @@ export default function CourseContentView({ course, activeSection = 'overview', 
           <h4 className="font-semibold">Assignments</h4>
           <p className="text-sm text-gray-500">{courseContent?.pendingAssignments || 0} pending</p>
         </Card>
-      </div>
-
-      {/* Instructor Info */}
-      {course?.instructor && (
-        <Card>
-          <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-4">Your Instructor</h3>
-          <div className="flex items-center gap-4">
-            <Avatar
-              img={course.instructor.profilePicture}
-              rounded
-              size="lg"
-            />
-            <div>
-              <h4 className="font-semibold">{course.instructor.name}</h4>
-              <p className="text-sm text-gray-500">{course.instructor.title}</p>
-            </div>
-          </div>
+        <Card className="text-center hover:shadow-lg transition-shadow">
+          <Avatar
+            img={instructorAvatar}
+            rounded
+            size="lg"
+            className="mx-auto mb-2"
+          />
+          <h4 className="font-semibold">Your Instructor</h4>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 truncate">{instructorName}</p>
+          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{instructorTitle}</p>
         </Card>
-      )}
+      </div>
     </div>
   );
 

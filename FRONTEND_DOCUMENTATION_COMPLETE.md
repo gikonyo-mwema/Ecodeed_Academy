@@ -203,22 +203,10 @@ Every documented file includes:
 
 ---
 
-## 📚 Reference Materials Created
+## 📚 Reference Materials
 
-### Progress Files (6 total)
-1. ✅ FRONTEND_PHASE1_PROGRESS.md
-2. ✅ FRONTEND_PHASE2_PROGRESS.md
-3. ✅ FRONTEND_PHASE3_PROGRESS.md
-4. ✅ FRONTEND_PHASE4_PROGRESS.md
-5. ✅ FRONTEND_PHASE5_PROGRESS.md
-6. ✅ FRONTEND_PHASE6_PROGRESS.md
-
-Each progress file includes:
-- Phase overview and objectives
-- Complete file inventory with descriptions
-- JSDoc statistics
-- Completion checklist
-- Next steps and recommendations
+Documentation has been consolidated. Use [PROJECT_DOCUMENTATION_INDEX.md](PROJECT_DOCUMENTATION_INDEX.md)
+as the single navigation point for current, maintained documentation files.
 
 ---
 
@@ -352,7 +340,7 @@ All files are self-documenting with inline JSDoc. Key reference points:
 
 **Admin Features:**
 - `/frontend/src/components/Admin/` - Admin dashboard
-- Usage patterns documented in Phase 5 progress file
+- Usage patterns documented inline via JSDoc and in the consolidated docs index
 
 ---
 
@@ -360,25 +348,10 @@ All files are self-documenting with inline JSDoc. Key reference points:
 
 ### For Understanding the Codebase
 
-1. **Start Here:** Read [FRONTEND_PHASE1_PROGRESS.md](FRONTEND_PHASE1_PROGRESS.md)
-   - Understand app architecture
-   - Learn state management approach
-   - See authentication flow
-
-2. **Learn Components:** Read [FRONTEND_PHASE4_PROGRESS.md](FRONTEND_PHASE4_PROGRESS.md)
-   - Reusable component patterns
-   - Shared UI component API
-   - Dark mode implementation
-
-3. **Explore Admin:** Read [FRONTEND_PHASE5_PROGRESS.md](FRONTEND_PHASE5_PROGRESS.md)
-   - Admin dashboard structure
-   - API endpoint examples
-   - Form handling patterns
-
-4. **Utility Guide:** Read [FRONTEND_PHASE6_PROGRESS.md](FRONTEND_PHASE6_PROGRESS.md)
-   - Custom hooks usage
-   - API integration patterns
-   - Firebase optional integration
+1. **Start Here:** Read [PROJECT_DOCUMENTATION_INDEX.md](PROJECT_DOCUMENTATION_INDEX.md)
+2. **Frontend Overview:** Read [FRONTEND_DOCUMENTATION_COMPLETE.md](FRONTEND_DOCUMENTATION_COMPLETE.md)
+3. **API Contracts:** Read [BACKEND_API_DOCUMENTATION.md](BACKEND_API_DOCUMENTATION.md)
+4. **End-to-End Flows:** Read [FRONTEND_BACKEND_INTEGRATION.md](FRONTEND_BACKEND_INTEGRATION.md)
 
 ---
 

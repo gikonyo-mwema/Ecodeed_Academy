@@ -87,7 +87,7 @@
  * // In main App layout:
  * <Layout>
  *   <Header />
- *   <main>{/* pages */}</main>
+ *   <main>page content here</main>
  *   <Footer />
  * </Layout>
  */

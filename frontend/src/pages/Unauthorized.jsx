@@ -1,5 +1,24 @@
 /**
- * Unauthorized Page — 403 access denied error page\n *\n * @component\n * @purpose Display 403 error when user lacks permissions to view resource\n * @features\n *   - Lock icon indicating access denied\n *   - 403 status code\n *   - Friendly error message\n *   - Home button link\n *   - Sign In button link\n *   - Responsive design\n * @usage\n *   Rendered by OnlyAdminPrivateRoute, OnlyInstructorPrivateRoute\n *   when user lacks required permissions\n * @example\n *   <Route path=\"/unauthorized\" element={<Unauthorized />} />\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React from 'react';
+ * Unauthorized Page — 403 access denied error page
+ *
+ * @component
+ * @purpose Display 403 error when user lacks permissions to view resource
+ * @features
+ *   - Lock icon indicating access denied
+ *   - 403 status code
+ *   - Friendly error message
+ *   - Home button link
+ *   - Sign In button link
+ *   - Responsive design
+ * @usage
+ *   Rendered by OnlyAdminPrivateRoute, OnlyInstructorPrivateRoute
+ *   when user lacks required permissions
+ * @example
+ *   <Route path=\"/unauthorized\" element={<Unauthorized />} />
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { HiOutlineLockClosed } from 'react-icons/hi';
 

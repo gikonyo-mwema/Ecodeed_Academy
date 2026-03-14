@@ -6,7 +6,8 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Provides consistent API URL handling and fetch wrapping across the application.
  * Centralizes authentication token management, error handling, and URL construction.
- * Supports both relative URLs (Render unified deployment) and explicit API URLs.\n *
+ * Supports both relative URLs (Render unified deployment) and explicit API URLs.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * FUNCTIONS
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -25,13 +26,17 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLES
  * ═══════════════════════════════════════════════════════════════════════════════════
- * import { apiFetch } from '@/utils/api';\n * // Simple GET
- * const users = await apiFetch('/api/v1/auth/users/');\n * // POST with body
+ * import { apiFetch } from '@/utils/api';
+ * // Simple GET
+ * const users = await apiFetch('/api/v1/auth/users/');
+ * // POST with body
  * const post = await apiFetch('/api/v1/posts/', {
  *   method: 'POST',
  *   body: JSON.stringify({ title: 'Hello', content: 'World' })
- * });\n * // DELETE with ID
- * await apiFetch('/api/v1/posts/123/', { method: 'DELETE' });\n * @module APIUtils
+ * });
+ * // DELETE with ID
+ * await apiFetch('/api/v1/posts/123/', { method: 'DELETE' });
+ * @module APIUtils
  * @version 2.0.0
  * @author Gikonyo Mwema
  */

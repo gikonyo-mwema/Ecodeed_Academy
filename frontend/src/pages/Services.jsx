@@ -1,50 +1,10 @@
 /**
-<<<<<<< HEAD:src/pages/Services.jsx
- * Services Page Component
- * 
- * Main services catalog page displaying all environmental consulting services.
- * Shows services in grid layout with filtering by category.
- * 
- * Features:
- * - Display all published services in responsive grid
- * - Category-based filtering (Audits, Climate, EIA, Policy)
- * - Service cards with descriptions, pricing, features
- * - Call-to-action buttons for service inquiries
- * - Loading states and error handling
- * - Smooth animations with Framer Motion
- * - Responsive design for all screen sizes
- * - Theme support (light/dark mode)
- * 
- * Service Categories:
- * - Environmental Audits
- * - Climate Change & Sustainability Solutions
- * - Environmental Impact Assessments (EIA)
- * - Environmental Safeguards & Policy Advisory
- * 
- * Service Information Displayed:
- * - Service name and description
- * - Key features and benefits
- * - Duration and deliverables
- * - Pricing information
- * - Company experience and credentials
- * - Related courses and resources
- * 
- * API Integration:
- * - GET /api/services?isPublished=true - Fetch published services
- * - Error handling for network failures
- * 
- * @component
- * @version 1.0.0
- * @author Gikonyo Mwema
- */
-
-=======
  * Services Listing Page — Professional services showcase and discovery
  *
  * @component
  * @purpose
  *   Displays all published services offered by Ecodeed Consulting. Services are
-n *   fetched from the API and displayed as cards with filtering by category.
+ *   fetched from the API and displayed as cards with filtering by category.
  * @features
  *   - Grid display of service cards (responsive)
  *   - Category filtering
@@ -63,7 +23,6 @@ n *   fetched from the API and displayed as cards with filtering by category.
  * @version 2.0.0
  * @author Gikonyo Mwema
  */
->>>>>>> origin/develop:frontend/src/pages/Services.jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ServiceCard from '../components/ServiceCard';

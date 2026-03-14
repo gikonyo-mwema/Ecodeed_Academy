@@ -12,7 +12,37 @@
  *   - Course title, progress percentage, enrollment date
  *   - \"Continue Learning\" button with arrow icon
  *   - Progress bar visualization
-n *   - Loading spinner during fetch\n *   - Empty state message\n *   - Mobile-responsive design\n *   - Course thumbnail/image (if available)\n *\n * @props\n *   - purchasedCourses: Array (optional)\n *     Pre-loaded courses array. If provided, skips API fetch.\n *     If not provided, fetches from /api/v1/enrollments/my-courses\n *\n * @api\n *   GET /api/v1/enrollments/my-courses\n *     Fetch student's enrolled courses if not provided as prop\n *     Response: Array of enrollment objects with course details\n *\n * @state\n *   - courses: Array of enrollment/course objects\n *   - loading: boolean (fetch in progress)\n *\n * @example\n *   // With pre-loaded courses (from parent)\n *   <UserCourses purchasedCourses={coursesFromParent} />\n *\n *   // Fetch from API\n *   <UserCourses />\n *\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\n\nimport React, { useState, useEffect } from 'react';
+n *   - Loading spinner during fetch
+ *   - Empty state message
+ *   - Mobile-responsive design
+ *   - Course thumbnail/image (if available)
+ *
+ * @props
+ *   - purchasedCourses: Array (optional)
+ *     Pre-loaded courses array. If provided, skips API fetch.
+ *     If not provided, fetches from /api/v1/enrollments/my-courses
+ *
+ * @api
+ *   GET /api/v1/enrollments/my-courses
+ *     Fetch student's enrolled courses if not provided as prop
+ *     Response: Array of enrollment objects with course details
+ *
+ * @state
+ *   - courses: Array of enrollment/course objects
+ *   - loading: boolean (fetch in progress)
+ *
+ * @example
+ *   // With pre-loaded courses (from parent)
+ *   <UserCourses purchasedCourses={coursesFromParent} />
+ *
+ *   // Fetch from API
+ *   <UserCourses />
+ *
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+
+import React, { useState, useEffect } from 'react';
 import { Table, Badge, Button, Spinner, Progress } from 'flowbite-react';
 import { HiOutlineBookOpen, HiOutlinePlay } from 'react-icons/hi';
 import { apiFetch } from '../utils/api';

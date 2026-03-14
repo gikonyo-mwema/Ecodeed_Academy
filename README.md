@@ -5,41 +5,22 @@
 
 An online learning platform built with Django REST Framework (backend) and React + Vite (frontend).
 
-<<<<<<< HEAD
 ## 📚 Comprehensive Documentation
 
-This project includes extensive documentation to help developers understand and contribute to the codebase:
+This project uses a reduced, source-of-truth documentation set:
 
 ### Quick Navigation
 
-**Dashboard Components Documentation:**
-- [**DASHBOARD_DOCUMENTATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/DASHBOARD_DOCUMENTATION.md) - Student, Instructor & Admin dashboards
-- [**DASHBOARD_QUICK_REFERENCE.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/DASHBOARD_QUICK_REFERENCE.md) - Dashboard quick reference guide
-
-**For Frontend Developers:**
-- [**FRONTEND_DOCUMENTATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_DOCUMENTATION.md) - Complete React component architecture and patterns
-- [**FRONTEND_QUICK_REFERENCE.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_QUICK_REFERENCE.md) - Cheat sheet and quick lookup
-- [**FRONTEND_PHASE3_PROGRESS.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_PHASE3_PROGRESS.md) - Page components documentation
-- [**FRONTEND_PHASE6_PROGRESS.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_PHASE6_PROGRESS.md) - Utilities and hooks documentation
-
-**For Backend Developers:**
-- [**BACKEND_API_DOCUMENTATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/BACKEND_API_DOCUMENTATION.md) - Complete API reference with all endpoints
-- [**BACKEND_QUICK_REFERENCE.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/BACKEND_QUICK_REFERENCE.md) - Data models and endpoint cheat sheet
-
-**For Full-Stack Developers:**
-- [**FRONTEND_BACKEND_INTEGRATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_BACKEND_INTEGRATION.md) - Complete integration patterns and flows
-- [**PROJECT_DOCUMENTATION_INDEX.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/PROJECT_DOCUMENTATION_INDEX.md) - Complete project index and file reference
+- [**PROJECT_DOCUMENTATION_INDEX.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/PROJECT_DOCUMENTATION_INDEX.md) - Master index and maintenance rules
+- [**FRONTEND_DOCUMENTATION_COMPLETE.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_DOCUMENTATION_COMPLETE.md) - Frontend architecture and component docs
+- [**BACKEND_API_DOCUMENTATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/BACKEND_API_DOCUMENTATION.md) - Complete backend API reference
+- [**FRONTEND_BACKEND_INTEGRATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_BACKEND_INTEGRATION.md) - Full-stack request/response flows
+- [**CHANGES_SUMMARY.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/CHANGES_SUMMARY.md) - Historical change log
 
 ### Documentation Statistics
-- **105 Frontend Components**: Fully documented with JSDoc headers
-- **30+ Backend Python Files**: Comprehensive docstrings
-- **14,000+ Lines**: Total documentation (code + guides)
-- **90%+ Coverage**: Critical systems documented
+- Reduced to 5 maintainable guides with minimal duplication.
 
 ---
-
-=======
->>>>>>> origin/develop
 ## 🏗️ Project Structure
 
 ```
@@ -65,7 +46,6 @@ Ecodeed_Academy/
 
 ## 🚀 Features
 
-<<<<<<< HEAD
 ### User Dashboards
 - **Student Dashboard**: Personalized learning experience with enrolled courses, progress tracking, week-based curriculum navigation
 - **Instructor Dashboard**: Teaching tools including course management, student roster, earnings tracking, live session scheduling
@@ -78,13 +58,6 @@ Ecodeed_Academy/
 - **Learning System**: Video lessons, assignments, resources, live Zoom sessions, progress tracking
 - **Admin Tools**: Content moderation, user management, analytics, newsletter campaigns
 - **Responsive Design**: Mobile-friendly interface with Tailwind CSS and dark mode support
-=======
-- **User Authentication**: JWT-based auth with social login (Google, Facebook, Twitter)
-- **Course Management**: Create, browse, and enroll in courses
-- **Blog System**: Educational content and articles
-- **Admin Dashboard**: Administrative controls for content management
-- **Responsive Design**: Mobile-friendly interface with Tailwind CSS
->>>>>>> origin/develop
 
 ## 🛠️ Tech Stack
 
@@ -242,7 +215,6 @@ ruff format backend/
 API documentation is available at:
 - Swagger UI: `http://localhost:8000/swagger/`
 - ReDoc: `http://localhost:8000/redoc/`
-<<<<<<< HEAD
 - **Comprehensive Guide**: [BACKEND_API_DOCUMENTATION.md](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/BACKEND_API_DOCUMENTATION.md)
 
 ### Key Endpoints
@@ -288,18 +260,6 @@ API documentation is available at:
 - How do I integrate frontend and backend? → See [FRONTEND_BACKEND_INTEGRATION.md](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_BACKEND_INTEGRATION.md)
 
 ---
-=======
-
-### Key Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/auth/register/` | POST | User registration — returns access & refresh tokens; new users are automatically logged in by frontend on success |
-| `/api/auth/login/` | POST | User login |
-| `/api/auth/logout/` | POST | User logout |
-| `/api/auth/profile/` | GET | Get user profile |
-| `/api/auth/token/refresh/` | POST | Refresh JWT token |
->>>>>>> origin/develop
 
 ## 🤝 Contributing
 

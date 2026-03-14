@@ -6,7 +6,8 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Manages post fetching for admin dashboard with offset-based pagination.
  * Handles automatic deduplication when loading more posts, loading states,
- * and error handling. Requires admin user authentication.\n *
+ * and error handling. Requires admin user authentication.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * HOOK STATE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -14,7 +15,8 @@
  * - loading (bool): Fetch in progress
  * - pagination (object): { page: number, limit: number }
  * - showMore (bool): True if more posts available beyond current page
- * - error (string|null): Last fetch error message\n *
+ * - error (string|null): Last fetch error message
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * PAGINATION STRATEGY
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -22,7 +24,8 @@
  * - Offset-based pagination: startIndex = (page - 1) * limit
  * - Default limit: 10 posts per page
  * - Deduplication: Filters by post.id to prevent duplicates on "Load More"
- * - Total posts: Backend returns totalPosts to calculate hasMore\n *
+ * - Total posts: Backend returns totalPosts to calculate hasMore
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -37,7 +40,8 @@
  *       {loading && <Spinner />}
  *     </div>
  *   );
- * }\n *
+ * }
+ *
  * @hook usePostFetch
  * @param {object} currentUser - Current authenticated user object with isAdmin flag
  * @returns {object} Hook state: { userPosts, loading, showMore, pagination, error, handleShowMore, fetchPosts }

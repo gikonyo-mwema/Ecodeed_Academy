@@ -7,14 +7,16 @@
  * Extends TipTap's built-in Image node with rich upload capabilities:
  * drag-and-drop, paste from clipboard, file picker, and URL insertion.
  * Handles upload progress with placeholder SVG, automatic Cloudinary uploads,
- * and graceful error handling with cleanup.\n *
+ * and graceful error handling with cleanup.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * UPLOAD METHODS
  * ═══════════════════════════════════════════════════════════════════════════════════
  * 1. Drag & Drop: Drop images directly onto editor
  * 2. Paste: Ctrl+V / Cmd+V or paste from clipboard data
  * 3. File Picker: toolbar button → opens native file dialog
- * 4. URL Paste: Paste raw image URL (Unsplash, Pexels, etc.)\n *
+ * 4. URL Paste: Paste raw image URL (Unsplash, Pexels, etc.)
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * UPLOAD FLOW
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -22,7 +24,8 @@
  * 2. Placeholder insertion: Insert SVG loading indicator
  * 3. API upload: POST to /api/v1/upload/upload with FormData
  * 4. URL replacement: Replace placeholder with Cloudinary secure URL
- * 5. Error cleanup: Remove placeholder if upload fails\n *
+ * 5. Error cleanup: Remove placeholder if upload fails
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * API ENDPOINT
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -31,7 +34,8 @@
  * Request: FormData with file field 'image'
  * Response: { secureUrl: 'https://res.cloudinary.com/...' }
  *
- * Max file size: 5 MB (enforced client + server)\n *
+ * Max file size: 5 MB (enforced client + server)
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * EDITOR COMMANDS
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -39,7 +43,8 @@
  *   → Opens native file picker, uploads multiple images
  *
  * editor.chain().focus().setImageFromUrl(url).run()
- *   → Inserts image by URL (no upload)\n *
+ *   → Inserts image by URL (no upload)
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * PLACEHOLDER RENDERING
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -47,14 +52,16 @@
  *   <svg>
  *     <rect fill="#f3f4f6" rx="8"/> (Tailwind gray-100)
  *     <text "Uploading…" fill="#9ca3af"/> (Tailwind gray-400)
- *   </svg>\n *
+ *   </svg>
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * ERROR HANDLING
  * ═══════════════════════════════════════════════════════════════════════════════════
  * • MIME type check: Only image/* files accepted
  * • Size validation: 5 MB max (with helpful error message)
  * • Upload failure: Removes placeholder, throws error to parent
- * • No URL returned: Throws error if Cloudinary response missing\n *
+ * • No URL returned: Throws error if Cloudinary response missing
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE IN EDITOR COMPONENT
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -68,12 +75,14 @@
  * // Toolbar button for file picker:
  * <button onClick={() => editor.chain().focus().uploadImage().run()}>
  *   📷 Upload Image
- * </button>\n *
+ * </button>
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * HTML ATTRIBUTES
  * ═══════════════════════════════════════════════════════════════════════════════════
  * • loading="lazy": Deferred image loading
- * • decoding="async": Async image decode (non-blocking)\n *
+ * • decoding="async": Async image decode (non-blocking)
+ *
  * @extension ImageUploadExtension
  * @type {TipTap Node Extension}
  * @version 1.0.0

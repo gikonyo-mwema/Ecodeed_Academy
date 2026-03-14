@@ -1,26 +1,31 @@
 /**
-<<<<<<< HEAD:src/pages/ServiceDetail.jsx
- * Service Detail Page Component
- * Displays detailed information about a specific service.
- * @component
- * @version 1.0.0
- * @author Gikonyo Mwema
- */
-/**
- * Service Detail Page Component
- * Displays detailed information about a specific service.
- * @component
- * @version 1.0.0
- * @author Gikonyo Mwema
- */
-import React, { useState, useEffect } from 'react';
-=======
  * ServiceDetail Page — Individual service showcase with full details and CTA
  *
  * @component
  * @purpose
- *   Displays comprehensive information about a specific service including description,\n *   features, benefits, pricing, and contact call-to-action.\n * @features\n *   - Full service description (rich HTML)\n *   - Service features and benefits listed\n *   - Pricing information\n *   - Services offered under parent category\n *   - Side navigation dots for section anchoring\n *   - \"Get Quote\" form modal\n *   - Responsive design with dark mode support\n *   - Contact button with service context\n * @api\n *   GET /api/v1/services/{slug}/ — Fetch service details by slug\n * @state\n *   - service: service object with full details\n *   - loading: boolean (fetch in progress)\n *   - error: string | null (error message)\n * @example\n *   <Route path=\"/services/:slug\" element={<ServiceDetail />} />\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React, { useState, useEffect } from 'react';
->>>>>>> origin/develop:frontend/src/pages/ServiceDetail.jsx
+ *   Displays comprehensive information about a specific service including description,
+ *   features, benefits, pricing, and contact call-to-action.
+ * @features
+ *   - Full service description (rich HTML)
+ *   - Service features and benefits listed
+ *   - Pricing information
+ *   - Services offered under parent category
+ *   - Side navigation dots for section anchoring
+ *   - \"Get Quote\" form modal
+ *   - Responsive design with dark mode support
+ *   - Contact button with service context
+ * @api
+ *   GET /api/v1/services/{slug}/ — Fetch service details by slug
+ * @state
+ *   - service: service object with full details
+ *   - loading: boolean (fetch in progress)
+ *   - error: string | null (error message)
+ * @example
+ *   <Route path=\"/services/:slug\" element={<ServiceDetail />} />
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { apiFetch } from '../utils/api';

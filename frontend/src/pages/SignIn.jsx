@@ -1,19 +1,4 @@
 /**
-<<<<<<< HEAD:src/pages/SignIn.jsx
- * Sign In Page Component
- * User authentication page with email/password and OAuth.
- * @component
- * @version 1.0.0
- * @author Gikonyo Mwema
- */
-/**
- * Sign In Page Component
- * User authentication page with email/password and OAuth.
- * @component
- * @version 1.0.0
- * @author Gikonyo Mwema
- */
-=======
  * Sign In Page
  * 
  * User login page with email/password authentication.
@@ -46,7 +31,6 @@
  * @author Gikonyo Mwema
  */
 
->>>>>>> origin/develop:frontend/src/pages/SignIn.jsx
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";

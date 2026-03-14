@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Table, Modal, Badge } from 'flowbite-react';
-import { HiOutlinePlus, HiOutlinePencilAlt, HiOutlineExclamationCircle, HiEye } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlinePencilAlt, HiOutlineExclamationCircle, HiEye, HiOutlineEye } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Unauthorized } from './Unauthorized';
@@ -181,6 +181,18 @@ export const DashCourses = () => {
                       >
                         <HiEye className="mr-1 w-4 h-4" /> View
                       </Button>
+                      {course.slug && (
+                        <Link to={`/learn/${course.slug}?preview=1`}>
+                          <Button
+                            outline
+                            color="none"
+                            size="xs"
+                            className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
+                          >
+                            <HiOutlineEye className="mr-1 w-4 h-4" /> Student View
+                          </Button>
+                        </Link>
+                      )}
                       <Link to={`/edit-course/${course.id}`}>
                         <Button outline color="none" size="xs" className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors">
                           <HiOutlinePencilAlt className="mr-1" /> Edit

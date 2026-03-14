@@ -64,6 +64,9 @@ class InstructorSerializer(serializers.ModelSerializer):
     
     @serializer InstructorSerializer
     """
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'profile_picture', 'bio']
 
 class AssignmentSerializer(serializers.ModelSerializer):
     """

@@ -36,7 +36,7 @@ import { HiX } from "react-icons/hi";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice";
 import { signOut } from "../redux/user/userSlice";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../utils/api";
 
 /**
@@ -60,7 +60,6 @@ export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const navToggleRef = useRef(null);
 
   // Announcement bar — fetched from API, dismissable per-id
   const [announcement, setAnnouncement] = useState(null);
@@ -325,7 +324,7 @@ export default function Header() {
               
               {/* Student Dashboard - shown if user has enrollments (is a student) */}
               {currentUser.hasEnrollments && !currentUser.isAdmin && (
-                <Link to="/dashboard?tab=learning">
+                <Link to="/dashboard?tab=my-courses">
                   <Dropdown.Item className="text-gray-700 dark:text-gray-200 hover:!bg-brand-green dark:hover:!bg-brand-green hover:!text-white dark:hover:!text-white transition-colors duration-200 focus:!bg-brand-green focus:!text-white">
                     Student Dashboard
                   </Dropdown.Item>
@@ -391,7 +390,6 @@ export default function Header() {
           )}
 
           <Navbar.Toggle
-            ref={navToggleRef}
             onClick={() => setIsNavOpen((prev) => !prev)}
             className="lg:hidden text-brand-green dark:text-brand-yellow"
             aria-expanded={isNavOpen}

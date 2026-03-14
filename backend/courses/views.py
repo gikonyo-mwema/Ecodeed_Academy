@@ -249,6 +249,29 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer = CourseContentSerializer(course)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['get'], permission_classes=[permissions.IsAuthenticated], url_path='preview-content')
+    def preview_content(self, request, **kwargs):
+        """
+        Instructor/Admin preview endpoint.
+        Returns the same full payload as student learning view, but only for:
+        - course instructor
+        - admin/staff users
+        """
+        course = self.get_object()
+        user = request.user
+
+        is_admin = user.is_staff or user.is_superuser
+        is_owner = course.instructor_id == user.id
+
+        if not (is_admin or is_owner):
+            return Response(
+                {'message': 'Only the course instructor or admin can preview this course as a student.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = CourseContentSerializer(course)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def weeks(self, request, **kwargs):
         """Return weekly content with lock/unlock status for enrolled student.

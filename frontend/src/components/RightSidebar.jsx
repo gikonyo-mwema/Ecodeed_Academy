@@ -1,30 +1,4 @@
 /**
-<<<<<<< HEAD:src/components/RightSidebar.jsx
- * Right Sidebar Component
- * 
- * Supplementary sidebar displayed on the right side of content pages.
- * Shows related content, trending posts, categories, and recent articles.
- * 
- * Features:
- * - Sticky positioning to remain visible while scrolling
- * - Responsive design (hidden on small screens)
- * - Trending posts/content display with view count
- * - Recent articles with timestamps
- * - Category filters and tags
- * - Themed styling (light/dark mode)
- * - Quick navigation links
- * 
- * Data Sources:
- * - /api/posts/trending - Trending posts
- * - /api/posts/recent - Recent posts
- * - /api/categories - All categories
- * 
- * Usage:
- * <RightSidebar />
- * 
- * @component
- * @version 1.0.0
-=======
  * RightSidebar Component — Contextual sidebar for blog & content discovery.
  *
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -100,7 +74,6 @@
  *
  * @component
  * @version 2.0.0
->>>>>>> origin/develop:frontend/src/components/RightSidebar.jsx
  * @author Gikonyo Mwema
  */
 

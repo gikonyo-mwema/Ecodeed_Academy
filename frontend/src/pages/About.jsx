@@ -1,38 +1,4 @@
 /**
-<<<<<<< HEAD:src/pages/About.jsx
- * About Page Component
- * 
- * Displays the company about page with mission, vision, values, and team information.
- * Provides detailed information about Ecodeed Academy and its environmental mission.
- * 
- * Sections:
- * - Hero section with company tagline
- * - Company mission and vision statements
- * - Core values and principles
- * - Team members and leadership
- * - Company achievements and milestones
- * - Call-to-action section
- * 
- * Features:
- * - Responsive design with hero image
- * - Team member profiles with photos
- * - Achievement statistics and metrics
- * - Testimonials section
- * - Contact CTA buttons
- * - Theme support (dark/light mode)
- * 
- * SEO:
- * - Meta tags for company information
- * - Structured data for organization
- * - Optimized headings and content
- * 
- * @component
- * @version 1.0.0
- * @author Gikonyo Mwema
- */
-
-import React from "react";
-=======
  * About Page — Company mission, values, founder story, and team
  *
  * @component
@@ -62,8 +28,9 @@ import React from "react";
  *   <Route path=\"/about\" element={<About />} />
  * @version 2.0.0
  * @author Gikonyo Mwema
- */import React from "react";
->>>>>>> origin/develop:frontend/src/pages/About.jsx
+ */
+
+import React from "react";
 import { Link } from "react-router-dom";
 import { FaHandshake, FaLightbulb, FaShieldAlt, FaChartLine } from "react-icons/fa";
 

@@ -5,7 +5,28 @@
  * @purpose Display Ecodeed Consulting's terms of service and user agreement
  * @sections
  *   1. Acceptance of Terms - User agreement to ToS
- *   2. Account Registration - Account creation requirements\n *   3. Acceptable Use - Prohibited behavior and content\n *   4. Intellectual Property - Copyright and licensing\n *   5. Limitation of Liability - Legal disclaimers\n *   6. Termination - Account suspension/removal conditions\n *   7. Changes to Terms - How updates are communicated\n *   8. Contact - Support and inquiry information\n * @features\n *   - Styled prose/markdown-like formatting\n *   - Dark mode support\n *   - Responsive layout\n *   - Last updated date tracking\n *   - Internal links (e.g., to Privacy Policy)\n * @content\n *   Static HTML content (no API calls)\n *   Last updated: 5 March 2026\n * @example\n *   <Route path=\"/terms\" element={<TermsOfService />} />\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React from 'react';
+ *   2. Account Registration - Account creation requirements
+ *   3. Acceptable Use - Prohibited behavior and content
+ *   4. Intellectual Property - Copyright and licensing
+ *   5. Limitation of Liability - Legal disclaimers
+ *   6. Termination - Account suspension/removal conditions
+ *   7. Changes to Terms - How updates are communicated
+ *   8. Contact - Support and inquiry information
+ * @features
+ *   - Styled prose/markdown-like formatting
+ *   - Dark mode support
+ *   - Responsive layout
+ *   - Last updated date tracking
+ *   - Internal links (e.g., to Privacy Policy)
+ * @content
+ *   Static HTML content (no API calls)
+ *   Last updated: 5 March 2026
+ * @example
+ *   <Route path=\"/terms\" element={<TermsOfService />} />
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 const LAST_UPDATED = '5 March 2026';
