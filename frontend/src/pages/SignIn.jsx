@@ -35,7 +35,7 @@ import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { signIn } from "../redux/user/userSlice";
+import { signIn, clearError } from "../redux/user/userSlice";
 import OAuth from "../components/OAuth";
 
 /**
@@ -62,6 +62,8 @@ export default function SignIn() {
       ...prev,
       [e.target.id]: e.target.value.trim(),
     }));
+    if (validationError) setValidationError(null);
+    dispatch(clearError());
   };
 
   const handleSubmit = async (e) => {

@@ -186,6 +186,7 @@ export default function DashSidebar() {
     ? [
         { id: "courses", name: "All Courses", icon: HiAcademicCap },
         { id: "enrollments", name: "All Enrollments", icon: HiShoppingBag },
+        { id: "instructors", name: "Instructors", icon: HiOutlineUserGroup },
       ]
     : [
         { id: "courses", name: "My Courses", icon: HiAcademicCap },

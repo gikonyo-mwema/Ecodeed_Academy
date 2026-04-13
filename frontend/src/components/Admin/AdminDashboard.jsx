@@ -95,6 +95,7 @@ import DashServices from './Services/DashServices';
 
 // Instructor Only
 import MyStudents from './Courses/MyStudents';
+import DashInstructors from './Courses/DashInstructors';
 import MyEarnings from './Courses/MyEarnings';
 
 export default function AdminDashboard() {
@@ -152,6 +153,7 @@ export default function AdminDashboard() {
         {tab === 'profile' && <DashProfile />}
         {tab === 'courses' && <DashCourses />}
         {tab === 'enrollments' && <DashEnrollments />}
+        {tab === 'instructors' && <DashInstructors />}
 
         {/* ──── INSTRUCTOR-SPECIFIC COMPONENTS ──── */}
         {tab === 'my-students' && <MyStudents />}

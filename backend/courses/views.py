@@ -90,6 +90,22 @@ from .serializers import (
     ResourceDetailSerializer, AssignmentDetailSerializer,
 )
 from .permissions import IsInstructorOrReadOnly, IsModuleContentInstructor
+from users.serializers import UserSerializer as _UserSerializer
+from rest_framework import serializers as _serializers
+
+
+class _EnrollmentRosterSerializer(_serializers.ModelSerializer):
+    """Minimal enrollment + user snapshot for the per-course student roster."""
+    user = _UserSerializer(read_only=True)
+    progress_percentage = _serializers.SerializerMethodField()
+
+    def get_progress_percentage(self, obj):
+        return obj.progress.get('completion_percentage', 0) if obj.progress else 0
+
+    class Meta:
+        model = Enrollment
+        fields = ['id', 'user', 'status', 'enrolled_at', 'progress_percentage']
+
 
 class CourseViewSet(viewsets.ModelViewSet):
     """
@@ -158,7 +174,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             if user.is_authenticated and user.is_staff:
                 # Admins see all courses including drafts
                 return qs
-            elif user.is_authenticated and getattr(user, 'user_type', None) == 'instructor':
+            elif user.is_authenticated and user.is_mentor:
                 # Instructors see published courses + their own drafts
                 from django.db.models import Q
                 return qs.filter(Q(is_live=True) | Q(instructor=user))
@@ -419,6 +435,143 @@ class CourseViewSet(viewsets.ModelViewSet):
             'total_weeks': len(weeks_data),
             'weeks': weeks_data,
         })
+
+    @action(
+        detail=True,
+        methods=['get'],
+        url_path='students',
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def students(self, request, **kwargs):
+        """
+        GET /api/v1/courses/{id}/students/
+
+        Returns a paginated list of all students enrolled in this course.
+        Accessible to the course instructor and any admin/staff user.
+        """
+        course = self.get_object()
+        user = request.user
+
+        is_admin = user.is_staff or user.is_superuser
+        is_owner = course.instructor_id == user.id
+
+        if not (is_admin or is_owner):
+            return Response(
+                {'message': 'Only the course instructor or an admin can view enrolled students.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        enrollments = (
+            Enrollment.objects
+            .filter(course=course)
+            .select_related('user')
+            .order_by('-enrolled_at')
+        )
+
+        page = self.paginate_queryset(enrollments)
+        if page is not None:
+            serializer = _EnrollmentRosterSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = _EnrollmentRosterSerializer(enrollments, many=True)
+        return Response({
+            'course_id': course.id,
+            'course_title': course.title,
+            'total_students': enrollments.count(),
+            'students': serializer.data,
+        })
+
+    @action(
+        detail=True,
+        methods=['post'],
+        url_path='manual-enroll',
+        permission_classes=[permissions.IsAdminUser],
+    )
+    def manual_enroll(self, request, **kwargs):
+        """
+        POST /api/v1/courses/{id}/manual-enroll/
+
+        Allows admins to manually enroll a student who paid via an external
+        method (GlobalPay, M-Pesa Global, bank transfer, etc.).
+
+        Request body:
+          {
+            "user_id": 42,
+            "payment_method": "globalpay",   // globalpay | mpesa_global | manual | card | mpesa
+            "amount": 5000,                  // amount received
+            "notes": "GlobalPay ref #GP123"  // optional admin notes
+          }
+
+        Creates a Payment record (status='success') and an Enrollment atomically.
+        The student's role is promoted to STUDENT if they were a READER.
+        """
+        from django.contrib.auth import get_user_model
+        from django.utils import timezone
+        from payments.models import Payment
+        from users.models import CustomUser
+
+        User = get_user_model()
+        course = self.get_object()
+
+        user_id = request.data.get('user_id')
+        payment_method = request.data.get('payment_method', 'manual')
+        amount = request.data.get('amount', 0)
+        notes = request.data.get('notes', '')
+
+        if not user_id:
+            return Response({'message': 'user_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        valid_methods = [m[0] for m in Payment.PAYMENT_METHOD]
+        if payment_method not in valid_methods:
+            return Response(
+                {'message': f'Invalid payment_method. Choices: {valid_methods}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        student = get_object_or_404(User, pk=user_id)
+
+        if Enrollment.objects.filter(user=student, course=course).exists():
+            return Response(
+                {'message': f'{student.email} is already enrolled in this course.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        import uuid as _uuid
+        with transaction.atomic():
+            payment = Payment.objects.create(
+                user=student,
+                course=course,
+                amount=amount,
+                reference=f'MANUAL-{_uuid.uuid4().hex[:12].upper()}',
+                email=student.email,
+                status='success',
+                provider='manual',
+                payment_method=payment_method,
+                notes=notes,
+                enrolled_by=request.user if request.user.is_authenticated else None,
+                verified_at=timezone.now(),
+            )
+            enrollment = Enrollment.objects.create(
+                user=student,
+                course=course,
+                status='active',
+            )
+            if student.user_type == CustomUser.UserType.READER:
+                student.user_type = CustomUser.UserType.STUDENT
+                student.save(update_fields=['user_type'])
+
+        return Response({
+            'message': f'{student.email} has been enrolled in "{course.title}".',
+            'enrollment_id': enrollment.id,
+            'payment_reference': payment.reference,
+            'student': {
+                'id': student.id,
+                'email': student.email,
+                'name': student.get_full_name(),
+                'user_type': student.user_type,
+            },
+        }, status=status.HTTP_201_CREATED)
+
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentSerializer
