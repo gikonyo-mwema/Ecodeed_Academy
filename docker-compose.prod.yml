@@ -10,16 +10,24 @@
 services:
   # ── Nginx + React SPA ──
   frontend:
-    image: ${DOCKERHUB_USER}/ecodeed-frontend:latest
+    image: ${DOCKERHUB_USER:?DOCKERHUB_USER is required}/ecodeed-frontend:latest
     ports:
       - "8080:80"
+    env_file:
+      - .env
     depends_on:
       - backend
     restart: unless-stopped
 
   # ── Django API (Gunicorn) ──
   backend:
-    image: ${DOCKERHUB_USER}/ecodeed-backend:latest
+    image: ${DOCKERHUB_USER:?DOCKERHUB_USER is required}/ecodeed-backend:latest
+    command: >
+      sh -c "until python manage.py migrate; do
+      echo 'Database not ready yet, retrying migrations...';
+      sleep 2;
+      done;
+      exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile -"
     env_file:
       - .env
     environment:

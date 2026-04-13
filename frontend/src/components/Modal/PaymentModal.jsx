@@ -154,9 +154,15 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
   const handlePayment = () => {
     setError(null);
     
-    // Validate email
-    if (!email) {
-      setError('Please enter your email');
+    // Validate email and amount
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    const price = parseFloat(course?.price);
+    if (isNaN(price) || price <= 0) {
+      setError('Invalid course price. Please contact support.');
       return;
     }
 
@@ -164,23 +170,29 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
 
     // Initialize Paystack payment - let Paystack handle payment method selection
     const paystack = new PaystackPop();
-    paystack.newTransaction({
-      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-      email: email,
-      amount: course?.price * 100, // Paystack uses kobo (multiply by 100)
-      currency: 'KES',
-      // Allow all available payment channels - Paystack UI lets user choose
-      channels: ['card', 'mobile_money', 'bank'],
-      metadata: {
-        // backend expects the Django PK which is exposed as `id`
-        courseId: course?.id || course?._id,
-        userId: user?.id || user?._id,
-        courseTitle: course?.title,
-      },
-      ref: `COURSE-${(course?.id || course?._id)?.toString().slice(-6)}-${Date.now()}`,
-      onSuccess: (response) => onPaymentSuccess(response),
-      onCancel: () => onPaymentClose(),
-    });
+    try {
+      paystack.newTransaction({
+        key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+        email: email,
+        amount: Math.round(price * 100), // Paystack uses kobo (multiply by 100)
+        currency: 'KES',
+        // Allow all available payment channels - Paystack UI lets user choose
+        channels: ['card', 'mobile_money', 'bank'],
+        metadata: {
+          // backend expects the Django PK which is exposed as `id`
+          courseId: course?.id || course?._id,
+          userId: user?.id || user?._id,
+          courseTitle: course?.title,
+        },
+        ref: `COURSE-${(course?.id || course?._id)?.toString().slice(-6)}-${Date.now()}`,
+        onSuccess: (response) => onPaymentSuccess(response),
+        onCancel: () => onPaymentClose(),
+      });
+    } catch (err) {
+      console.error('Paystack initialization error:', err);
+      setError('Failed to initialize payment. Please try again.');
+      setLoading(false);
+    }
   };
 
   const resetModal = () => {

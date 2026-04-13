@@ -8,6 +8,12 @@ services:
   # ===========================================
   backend:
     build: ./backend
+    command: >
+      sh -c "until python manage.py migrate; do
+      echo 'Database not ready yet, retrying migrations...';
+      sleep 2;
+      done;
+      exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile -"
     ports:
       - "${BACKEND_PORT:-8000}:8000"  # Expose Django on configurable port
     volumes:

@@ -465,8 +465,24 @@ LOGGING = {
     },
 }
 
-# Ensure the log directory exists
+# Ensure the log directory exists and is writable.
+# When the backend code is volume-mounted in Docker dev the logs/ directory
+# may have been created by a previous run with a different OS user
+# (e.g. systemd-journal), making errors.log unwritable.  In that case we
+# fall back to console-only logging so the container can still start.
+import os as _os
+_log_file = BASE_DIR / 'logs' / 'errors.log'
 (BASE_DIR / 'logs').mkdir(exist_ok=True)
+_log_writable = (
+    (_log_file.exists() and _os.access(_log_file, _os.W_OK)) or
+    (not _log_file.exists() and _os.access(_log_file.parent, _os.W_OK))
+)
+
+if not _log_writable:
+    # Strip file handler and replace every reference with console-only
+    LOGGING['handlers'].pop('error_file', None)
+    for _logger in LOGGING['loggers'].values():
+        _logger['handlers'] = [h for h in _logger.get('handlers', []) if h != 'error_file']
 
 
 # ─── Production Security Headers ─────────────────────────────────

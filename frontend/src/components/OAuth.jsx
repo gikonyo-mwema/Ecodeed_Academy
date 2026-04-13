@@ -64,6 +64,9 @@ const friendlyError = (error) => {
     return 'Popup blocked by your browser. Please allow popups and try again.';
   if (error?.code === 'auth/network-request-failed')
     return 'Network error. Please check your connection and try again.';
+  // Firebase SDK internal race condition — safe to retry
+  if (error?.message?.includes('INTERNAL ASSERTION FAILED'))
+    return 'Sign-in encountered a temporary error. Please try again.';
   if (error?.message) return error.message;
   return 'Failed to sign in with Google';
 };

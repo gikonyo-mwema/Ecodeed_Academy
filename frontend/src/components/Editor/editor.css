@@ -20,6 +20,39 @@
   outline: none;
 }
 
+/* ── Base text colors ───────────────────────────────────────── */
+.tiptap {
+  color: #111827;
+}
+
+.dark .tiptap {
+  color: #e5e7eb;
+}
+
+/* ── Scrollable editor body (toolbar remains visible) ───────── */
+.tiptap-scroll-area {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.tiptap-scroll-area::-webkit-scrollbar {
+  width: 10px;
+}
+
+.tiptap-scroll-area::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.dark .tiptap-scroll-area::-webkit-scrollbar-thumb {
+  background: #475569;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
 /* ── Image ───────────────────────────────────────────────────── */
 .tiptap img {
   max-width: 100%;

@@ -128,36 +128,26 @@ const hasValidAnalyticsConfig = () => {
 
 try {
   if (hasValidApiKey()) {
-    console.log('🔧 Initializing Firebase with config:', {
-      authDomain: firebaseConfig.authDomain,
-      projectId: firebaseConfig.projectId
-    });
-    
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    
-    // Add debugging for auth domain
-    console.log('🔧 Firebase Auth domain:', auth.config?.authDomain);
     
     // Only initialize analytics in production with proper domain and measurement ID validation
     if (typeof window !== 'undefined' && 
         window.location.hostname !== 'localhost' &&
         window.location.hostname !== '127.0.0.1' &&
         hasValidAnalyticsConfig() &&
-        import.meta.env.NODE_ENV === 'production') {
+        import.meta.env.PROD) {
       
       analytics = getAnalytics(app);
-      console.log('✅ Firebase initialized with Analytics');
-    } else {
-      console.log('🔥 Firebase initialized (Analytics disabled - not production environment or missing configuration)');
     }
-  } else {
+  } else if (import.meta.env.DEV) {
     console.warn('⚠️ Firebase API key not configured. Firebase features will be disabled.');
     console.warn('💡 To enable Firebase, add your API key to VITE_FIREBASE_API_KEY in .env file');
   }
 } catch (error) {
-  console.warn('⚠️ Firebase initialization failed:', error.message);
-  console.warn('💡 This is normal if Firebase is not configured for this environment');
+  if (import.meta.env.DEV) {
+    console.warn('⚠️ Firebase initialization failed:', error.message);
+  }
 }
 
 // Helper function to safely track analytics events

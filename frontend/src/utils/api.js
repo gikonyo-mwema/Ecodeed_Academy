@@ -56,7 +56,19 @@
 export const getApiBaseUrl = () => {
   // Prefer explicit base URL if provided (supports split frontend/backend)
   const envBase = import.meta.env.VITE_API_URL?.trim();
-  if (envBase) return envBase.replace(/\/$/, '');
+  if (envBase) {
+    // Safety: if a localhost API URL is accidentally baked into a production build,
+    // ignore it and use same-origin instead.
+    if (typeof window !== 'undefined') {
+      const isProdHost = !['localhost', '127.0.0.1'].includes(window.location.hostname);
+      const isLocalApi = /localhost|127\.0\.0\.1/.test(envBase);
+      if (isProdHost && isLocalApi) {
+        return window.location.origin;
+      }
+    }
+
+    return envBase.replace(/\/$/, '');
+  }
 
   // Fallback to same-origin
   if (typeof window !== 'undefined') {
