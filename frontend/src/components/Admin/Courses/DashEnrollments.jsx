@@ -38,12 +38,12 @@ function CourseSection({ course, enrollments, isAdmin, onRevoke, onAddStudent })
 
   return (
     <div className="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-      <div
+      <button
+        type="button"
         className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
         onClick={() => setOpen((v) => !v)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls={`enrollment-course-${course.id}`}
       >
         <div className="flex items-center gap-3 min-w-0">
           {open ? (
@@ -72,10 +72,10 @@ function CourseSection({ course, enrollments, isAdmin, onRevoke, onAddStudent })
             </Button>
           )}
         </div>
-      </div>
+      </button>
 
       {open && (
-        <>
+        <div id={`enrollment-course-${course.id}`}>
           {enrollments.length === 0 ? (
             <p className="px-6 py-4 text-sm text-gray-400">No students enrolled yet.</p>
           ) : (
@@ -144,7 +144,7 @@ function CourseSection({ course, enrollments, isAdmin, onRevoke, onAddStudent })
               </Table>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

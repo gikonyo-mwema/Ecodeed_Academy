@@ -181,6 +181,13 @@ export default function FeaturedImageUpload({ value, onChange }) {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, [onChange]);
 
+  const handleTriggerKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInputRef.current?.click();
+    }
+  }, []);
+
   // Has an image already
   if (value) {
     return (
@@ -213,6 +220,7 @@ export default function FeaturedImageUpload({ value, onChange }) {
         onDragLeave={handleDragLeave}
         onPaste={handlePaste}
         onClick={() => fileInputRef.current?.click()}
+        onKeyDown={handleTriggerKeyDown}
         tabIndex={0}
         role="button"
         aria-label="Upload featured image"

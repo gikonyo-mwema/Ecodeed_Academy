@@ -395,21 +395,32 @@ export default function DashUsers() {
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex items-center gap-3">
-                          <img
-                            src={user.profilePicture || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'}
-                            alt={user.username}
-                            className="w-10 h-10 rounded-full object-cover"
-                            onError={(e) => {
-                              e.target.src = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+                          {user.profilePicture ? (
+                            <img
+                              src={user.profilePicture}
+                              alt={user.username}
+                              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                              onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                            />
+                          ) : null}
+                          <div
+                            className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold"
+                            style={{
+                              display: user.profilePicture ? 'none' : 'flex',
+                              backgroundColor: `hsl(${((user.email || '').charCodeAt(0) * 37) % 360}, 60%, 45%)`,
                             }}
-                          />
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">{user.firstName || user.first_name} {user.lastName || user.last_name}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</p>
+                          >
+                            {(user.email || 'U')[0].toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-gray-900 dark:text-white truncate max-w-[140px]">{user.firstName || user.first_name} {user.lastName || user.last_name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[140px]">@{user.username}</p>
                           </div>
                         </div>
                       </Table.Cell>
-                      <Table.Cell className="text-gray-600 dark:text-gray-300">{user.email}</Table.Cell>
+                      <Table.Cell className="text-gray-600 dark:text-gray-300 max-w-[180px]">
+                        <p className="truncate" title={user.email}>{user.email}</p>
+                      </Table.Cell>
                       <Table.Cell>
                         <Badge color={roleBadge.color} className="inline-flex items-center gap-1">
                           <RoleIcon className="w-3 h-3" />
@@ -423,7 +434,9 @@ export default function DashUsers() {
                             dismissOnClick={true}
                             renderTrigger={() => (
                               <button 
+                                type="button"
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                aria-label={isSelf ? 'Role actions unavailable for your account' : `Open role actions for ${user.email}`}
                                 disabled={isSelf}
                               >
                                 <HiDotsVertical className={`w-5 h-5 ${isSelf ? 'text-gray-300' : 'text-gray-500'}`} />

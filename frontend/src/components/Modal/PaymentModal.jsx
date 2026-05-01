@@ -221,10 +221,11 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
           <div className="space-y-4">
             {/* Course Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="payment-course" className="block text-sm font-medium text-gray-700 mb-1">
                 Course
               </label>
               <TextInput
+                id="payment-course"
                 value={course?.title || ''}
                 disabled
                 className="font-semibold"
@@ -233,10 +234,11 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
 
             {/* Course Price */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="payment-price" className="block text-sm font-medium text-gray-700 mb-1">
                 Price
               </label>
               <TextInput
+                id="payment-price"
                 value={`KES ${course?.price?.toLocaleString() || '0'}`}
                 disabled
                 className="font-semibold"
@@ -245,17 +247,19 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
 
             {/* Email Address */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="payment-email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
               </label>
               <TextInput
+                id="payment-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
+                aria-describedby="payment-email-hint"
                 required
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p id="payment-email-hint" className="mt-1 text-xs text-gray-500">
                 Payment receipt will be sent to this email
               </p>
             </div>

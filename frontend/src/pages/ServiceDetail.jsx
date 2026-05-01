@@ -425,7 +425,11 @@ const ServiceDetail = () => {
                   className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300"
                 >
                   <button
+                    type="button"
                     onClick={() => toggleFaq(index)}
+                    aria-expanded={activeFaq === index}
+                    aria-controls={`service-faq-panel-${index}`}
+                    id={`service-faq-trigger-${index}`}
                     className="w-full flex justify-between items-center p-6 text-left focus:outline-none hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                   >
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -436,7 +440,12 @@ const ServiceDetail = () => {
                     />
                   </button>
                   {activeFaq === index && (
-                    <div className="px-6 pb-6 pt-0 text-gray-600 dark:text-gray-300 border-t border-gray-100 dark:border-gray-700">
+                    <div
+                      id={`service-faq-panel-${index}`}
+                      role="region"
+                      aria-labelledby={`service-faq-trigger-${index}`}
+                      className="px-6 pb-6 pt-0 text-gray-600 dark:text-gray-300 border-t border-gray-100 dark:border-gray-700"
+                    >
                       <div className="pt-4">
                         {faq.answer}
                       </div>

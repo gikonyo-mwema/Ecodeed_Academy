@@ -128,8 +128,7 @@ export const DashCourses = () => {
               {courses.map((course) => (
                 <Table.Row
                   key={course.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                  onClick={() => setSelectedCourse(course)}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <Table.Cell>
                     <div className="flex items-center gap-3">
@@ -174,7 +173,7 @@ export const DashCourses = () => {
                     </div>
                   </Table.Cell>
                   <Table.Cell>
-                    <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex space-x-2">
                       <Button
                         size="xs" color="light"
                         onClick={() => setSelectedCourse(course)}

@@ -141,10 +141,17 @@ export default function CourseContentView({ course, activeSection = 'overview', 
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-4 gap-4">
-        <Card className="text-center cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate(`/dashboard?tab=course-${course?.id}-weeks`)}>
-          <HiPlay className="w-10 h-10 mx-auto text-brand-green mb-2" />
-          <h4 className="font-semibold">Continue Learning</h4>
-          <p className="text-sm text-gray-500">Pick up where you left off</p>
+        <Card className="hover:shadow-lg transition-shadow p-0 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => navigate(`/dashboard?tab=course-${course?.id}-weeks`)}
+            className="w-full p-6 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2"
+            aria-label="Continue learning this course"
+          >
+            <HiPlay className="w-10 h-10 mx-auto text-brand-green mb-2" />
+            <h4 className="font-semibold">Continue Learning</h4>
+            <p className="text-sm text-gray-500">Pick up where you left off</p>
+          </button>
         </Card>
         <Card className="text-center cursor-pointer hover:shadow-lg transition-shadow">
           <HiVideoCamera className="w-10 h-10 mx-auto text-purple-600 mb-2" />
@@ -253,10 +260,12 @@ export default function CourseContentView({ course, activeSection = 'overview', 
                   {activeModule?.id === module.id && module.lessons && (
                     <div className="mt-4 pt-4 border-t space-y-2">
                       {module.lessons.map((lesson, lIndex) => (
-                        <div
+                        <button
+                          type="button"
                           key={lesson.id || lIndex}
-                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                          className="flex w-full items-center gap-3 rounded-lg p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
                           onClick={() => navigate(`/dashboard?tab=course-${course?.id}-weeks`)}
+                          aria-label={`Open lesson ${lesson.title}`}
                         >
                           {lesson.completed ? (
                             <HiCheckCircle className="w-5 h-5 text-brand-green" />
@@ -265,7 +274,7 @@ export default function CourseContentView({ course, activeSection = 'overview', 
                           )}
                           <span className="text-sm flex-1">{lesson.title}</span>
                           <span className="text-xs text-gray-400">{lesson.duration || '10 min'}</span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   )}

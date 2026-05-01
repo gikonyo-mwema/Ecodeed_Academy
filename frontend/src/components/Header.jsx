@@ -209,14 +209,19 @@ export default function Header() {
           onSubmit={handleSubmit}
           className="hidden md:block flex-1 max-w-xs md:max-w-md mx-2 md:mx-4"
         >
+          <label htmlFor="site-search" className="sr-only">
+            Search articles
+          </label>
           <div className={`relative flex items-center rounded-full border ${
             theme === "light" 
               ? "border-gray-300 bg-gray-50 focus-within:border-brand-green" 
               : "border-gray-600 bg-gray-700 focus-within:border-brand-yellow"
           } transition-colors duration-200`}>
             <input
+              id="site-search"
               type="text"
               placeholder="Search articles..."
+              aria-label="Search articles"
               className={`w-full h-10 pl-4 pr-10 text-sm bg-transparent outline-none rounded-full ${
                 theme === "light" ? "text-gray-800" : "text-white"
               }`}
@@ -400,14 +405,19 @@ export default function Header() {
         {isMobileSearchOpen && (
           <div className="md:hidden w-full mt-3 px-1 sm:px-0">
             <form onSubmit={handleSubmit} className="px-2">
+              <label htmlFor="mobile-site-search" className="sr-only">
+                Search articles
+              </label>
               <div className={`relative flex items-center rounded-full border ${
                 theme === "light" 
                   ? "border-gray-300 bg-gray-50 focus-within:border-brand-green" 
                   : "border-gray-600 bg-gray-700 focus-within:border-brand-yellow"
               } transition-colors duration-200`}>
                 <input
+                  id="mobile-site-search"
                   type="text"
                   placeholder="Search articles..."
+                  aria-label="Search articles"
                   className={`w-full h-10 pl-4 pr-10 text-sm bg-transparent outline-none rounded-full ${
                     theme === "light" ? "text-gray-800" : "text-white"
                   }`}

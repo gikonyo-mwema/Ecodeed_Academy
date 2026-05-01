@@ -71,12 +71,17 @@ import DashServices from './components/Admin/Services/DashServices';
 export default function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+
         {/* Automatically scrolls to top on route changes */}
         <ScrollToTop />
         
         {/* Global header navigation */}
         <Header />
-        
+
+        <main id="main-content" tabIndex={-1}>
         <Routes>
           {/* ===== PUBLIC ROUTES ===== */}
           {/* These routes are accessible to all users */}
@@ -118,6 +123,7 @@ export default function App() {
           {/* ===== 404 CATCH-ALL ===== */}
           <Route path='*' element={<NotFound />} />
         </Routes>
+        </main>
         
         {/* Global footer */}
         <Footer />

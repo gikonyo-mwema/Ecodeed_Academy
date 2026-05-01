@@ -231,7 +231,8 @@ export default function DashSidebar() {
                 active={tab === "dash"}
                 icon={HiChartPie}
                 onClick={() => handleTabClick("dash")}
-                as="div"
+                as="button"
+                type="button"
                 className="cursor-pointer"
               >
                 {!collapsed && "Overview"}
@@ -247,7 +248,8 @@ export default function DashSidebar() {
                 label={isAdmin ? "Admin" : isInstructor ? "Instructor" : "User"}
                 labelColor="dark"
                 onClick={() => handleTabClick("profile")}
-                as="div"
+                as="button"
+                type="button"
                 className="cursor-pointer"
               >
                 {!collapsed && "Profile"}
@@ -268,7 +270,8 @@ export default function DashSidebar() {
                     active={tab === item.id}
                     icon={item.icon}
                     onClick={() => handleTabClick(item.id)}
-                    as="div"
+                    as="button"
+                    type="button"
                     className="cursor-pointer"
                   >
                     {item.name}
@@ -285,7 +288,8 @@ export default function DashSidebar() {
                   active={tab === item.id}
                   icon={item.icon}
                   onClick={() => handleTabClick(item.id)}
-                  as="div"
+                  as="button"
+                  type="button"
                   className="cursor-pointer"
                 >
                   {!collapsed && item.name}
@@ -299,7 +303,8 @@ export default function DashSidebar() {
               <Sidebar.Item
                 icon={HiArrowSmRight}
                 onClick={handleSignOut}
-                as="div"
+                as="button"
+                type="button"
                 className="cursor-pointer"
               >
                 {!collapsed && "Sign Out"}

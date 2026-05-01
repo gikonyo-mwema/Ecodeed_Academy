@@ -64,6 +64,15 @@ const ScrollToTop = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+
+        const focusMain = window.requestAnimationFrame(() => {
+            const mainContent = document.getElementById('main-content');
+            if (mainContent instanceof HTMLElement) {
+                mainContent.focus();
+            }
+        });
+
+        return () => window.cancelAnimationFrame(focusMain);
     }, [pathname]);
     return null;
 }
