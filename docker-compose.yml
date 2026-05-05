@@ -1,21 +1,18 @@
 # Docker Compose configuration for Ecodeed Academy
-# Includes backend (Django), frontend (Vite/React), and MySQL database services
+# Three services: backend (Django + Redis + Celery), frontend (Vite/React), db (MySQL)
+# Redis and Celery run inside the backend container via start.sh
 # Environment variables are loaded from .env file
 
 services:
   # ===========================================
   # Django Backend Service
+  # Runs: Redis server + Celery worker + Gunicorn (via start.sh)
   # ===========================================
   backend:
     build: ./backend
-    command: >
-      sh -c "until python manage.py migrate; do
-      echo 'Database not ready yet, retrying migrations...';
-      sleep 2;
-      done;
-      exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile -"
+    # start.sh handles: Redis startup, migrations, Celery worker, Gunicorn
     ports:
-      - "${BACKEND_PORT:-8000}:8000"  # Expose Django on configurable port
+      - "8000:8000"
     volumes:
       - ./backend:/app  # Mount backend code for live reloading
     env_file:
@@ -24,12 +21,16 @@ services:
       # Override DB host/port for Docker networking
       - MYSQL_HOST=db
       - MYSQL_PORT=3306
+      # Redis runs inside this container, so use localhost
+      - CELERY_BROKER_URL=redis://localhost:6379/0
+      - CELERY_RESULT_BACKEND=redis://localhost:6379/1
     depends_on:
       - db  # Wait for database to be ready before starting
 
   # ===========================================
   # MySQL Database Service
   # ===========================================
+  # Redis and Celery run inside the backend container (see start.sh)
   db:
     image: mysql:8
     environment:
@@ -50,7 +51,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev  # Use development Dockerfile
     ports:
-      - "${FRONTEND_PORT:-5173}:5173"  # Vite dev server port
+      - "5173:5173"
     volumes:
       - ./frontend:/app  # Mount frontend code for hot module replacement
       - frontend_node_modules:/app/node_modules  # Persist node_modules (prevents overwrite)
