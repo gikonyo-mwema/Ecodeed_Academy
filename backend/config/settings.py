@@ -309,6 +309,9 @@ BREVO_API_KEY = env('BREVO_API_KEY', default='')
 BREVO_NEWSLETTER_LIST_ID = env.int('BREVO_NEWSLETTER_LIST_ID', default=0)
 BREVO_SENDER_EMAIL = env('BREVO_SENDER_EMAIL', default='noreply@ecodeedacademy.com')
 BREVO_SENDER_NAME = env('BREVO_SENDER_NAME', default='Ecodeed')
+# The inbox that receives contact form notifications (your real inbox, not the sender address)
+ADMIN_CONTACT_EMAIL = env('ADMIN_CONTACT_EMAIL', default='contact@ecodeed.co.ke')
+ADMIN_CONTACT_NAME = env('ADMIN_CONTACT_NAME', default='Ecodeed Team')
 
 # Social Auth Settings
 SOCIALACCOUNT_PROVIDERS = {
@@ -514,3 +517,81 @@ else:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CELERY CONFIGURATION — Async Task Queue for Background Email Processing
+# ═══════════════════════════════════════════════════════════════════════════════
+# Celery enables asynchronous task processing without blocking HTTP requests.
+# Instead of waiting for email to send (5-20 seconds), we:
+#   1. Queue the task immediately (<100ms)
+#   2. Return success to user instantly
+#   3. Celery workers process emails in the background
+#
+# REDIS: Acts as the message broker (task queue). Redis is an in-memory data store
+# that holds tasks waiting to be processed by Celery workers.
+#
+# DEPLOYMENT:
+# - Development: Redis container with default settings
+# - Production: Redis container with memory limit (256M) and eviction policy
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Broker settings: Redis connection string
+# Format: redis://[:password]@host:port/db_number
+# Redis runs inside the backend container (started by start.sh), so use localhost
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+
+# Result backend: Where Celery stores task results
+# Redis runs inside the backend container, so use localhost
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='redis://localhost:6379/1')
+
+# Task serialization format
+# 'json' is safer than 'pickle' (pickle can execute arbitrary code)
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+# Timezone settings
+# All timestamps in tasks will use UTC, then converted to local time if needed
+CELERY_TIMEZONE = 'UTC'
+
+# Task execution settings
+# Keep tasks reasonably small to avoid OOM issues
+CELERY_TASK_SOFT_TIME_LIMIT = 300  # Soft limit: 5 minutes (graceful shutdown)
+CELERY_TASK_TIME_LIMIT = 600        # Hard limit: 10 minutes (forceful kill)
+
+# Task compression
+# Reduces network overhead when queuing tasks
+CELERY_TASK_COMPRESSION = 'gzip'
+CELERY_RESULT_COMPRESSION = 'gzip'
+
+# Reduce memory footprint
+# Important for 2GB droplets where memory is limited
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Restart worker after 1000 tasks
+CELERY_WORKER_DISABLE_RATE_LIMITS = False  # Respect rate limits
+
+# Result expiration
+# Task results are automatically deleted after this time (in seconds)
+# 3600 = 1 hour (email results only needed briefly for status checks)
+CELERY_RESULT_EXPIRES = 3600
+
+# Broker connection settings
+# Auto-retry connection with exponential backoff if Redis is temporarily down
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+
+# Task retry settings
+# Automatically retry failed tasks a few times before giving up
+CELERY_TASK_ACKS_LATE = True  # Only acknowledge task after successful execution
+CELERY_TASK_REJECT_ON_WORKER_LOST = True  # Requeue if worker crashes mid-task
+
+# Production-specific tuning for 2GB droplet
+if not DEBUG:
+    # Reduce queue size to prevent excessive memory usage
+    CELERY_BROKER_POOL_LIMIT = 10  # Connection pool limit
+    
+    # Limit the queue depth (prevent massive memory buildup)
+    # If more than this many tasks are pending, new submissions will block
+    # until workers catch up. This is a safety valve for the 2GB droplet.
+    CELERYD_PREFETCH_MULTIPLIER = 1  # Workers only fetch 1 task at a time

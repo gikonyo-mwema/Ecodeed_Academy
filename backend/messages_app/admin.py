@@ -47,7 +47,7 @@ Contact Messages:
 """
 
 from django.contrib import admin
-from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, Announcement
+from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, EmailDeliveryLog, Announcement
 
 
 @admin.register(NewsletterSubscriber)
@@ -148,6 +148,27 @@ class EmailCampaignAdmin(admin.ModelAdmin):
     list_filter = ('status', 'audience_type')
     search_fields = ('subject',)
     readonly_fields = ('sent_at', 'created_at', 'recipient_count')
+
+
+class EmailDeliveryLogInline(admin.TabularInline):
+    model = EmailDeliveryLog
+    extra = 0
+    readonly_fields = ('recipient_email', 'recipient_name', 'status', 'error_message', 'sent_at', 'created_at')
+    can_delete = False
+    show_change_link = False
+    fields = ('recipient_email', 'recipient_name', 'status', 'error_message', 'sent_at')
+
+
+EmailCampaignAdmin.inlines = [EmailDeliveryLogInline]
+
+
+@admin.register(EmailDeliveryLog)
+class EmailDeliveryLogAdmin(admin.ModelAdmin):
+    list_display = ('campaign', 'recipient_email', 'status', 'sent_at', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('recipient_email', 'campaign__subject')
+    readonly_fields = ('campaign', 'recipient_email', 'recipient_name', 'status', 'error_message', 'sent_at', 'created_at')
+    ordering = ('-created_at',)
 
 
 @admin.register(Announcement)
