@@ -49,12 +49,6 @@ export default function PostForm({ post, isEdit, onCancel, onSuccess, currentUse
       const formDataToUpload = new FormData();
       formDataToUpload.append('image', imageFile);
 
-      console.log('Uploading file:', {
-        name: imageFile.name,
-        type: imageFile.type,
-        size: imageFile.size
-      });
-
       // Add Authorization header with current user token for development
       const uploadOptions = {
         method: 'POST',
@@ -73,7 +67,6 @@ export default function PostForm({ post, isEdit, onCancel, onSuccess, currentUse
 
       setUploadProgress(70);
 
-      console.log('Upload success response:', result);
       setUploadProgress(100);
 
       // Validate the response has the expected secureUrl

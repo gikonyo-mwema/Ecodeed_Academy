@@ -84,4 +84,17 @@ export const getDefaultImageUrl = (options = {}) => {
   return getCloudinaryUrl(DEFAULT_IMAGE_ID, options);
 };
 
-export default { getCloudinaryUrl, getDefaultImageUrl };
+/**
+ * Extract the src of the first <img> found in an HTML content string.
+ * Used to derive a thumbnail for posts that have no featured image set.
+ *
+ * @param {string} html - Raw HTML string (post content)
+ * @returns {string|null} First image src, or null if none found
+ */
+export const extractFirstImageFromContent = (html) => {
+  if (!html) return null;
+  const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return match ? match[1] : null;
+};
+
+export default { getCloudinaryUrl, getDefaultImageUrl, extractFirstImageFromContent };

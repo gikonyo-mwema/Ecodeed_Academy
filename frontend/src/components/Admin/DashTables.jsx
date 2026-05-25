@@ -197,13 +197,30 @@ const DashboardTables = ({
         { 
           key: "image", 
           label: "Post Image", 
-          render: (post) => (
-            <img 
-              src={post.image} 
-              alt="post" 
-              className="w-14 h-10 rounded-md bg-gray-500" 
-            />
-          )
+          render: (post) => {
+            const firstContentImg = (() => {
+              if (!post.content) return null;
+              const m = post.content.match(/<img[^>]+src=["']([^"']+)["']/i);
+              return m ? m[1] : null;
+            })();
+            const src = post.image || firstContentImg;
+            const LOGO = 'https://res.cloudinary.com/dcrubaesi/image/upload/v1737333837/ECODEED_COLORED_LOGO_wj2yy8.png';
+            if (src) {
+              return (
+                <img 
+                  src={src} 
+                  alt="post" 
+                  className="w-14 h-10 rounded-md object-cover bg-gray-200 dark:bg-gray-700"
+                  onError={(e) => { e.target.onerror = null; e.target.src = LOGO; e.target.className = 'w-10 h-auto object-contain opacity-60'; }}
+                />
+              );
+            }
+            return (
+              <div className="w-14 h-10 rounded-md bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                <img src={LOGO} alt="placeholder" className="w-10 h-auto object-contain opacity-60" loading="lazy" />
+              </div>
+            );
+          }
         },
         { key: "title", label: "Title" },
         { key: "category", label: "Category" }

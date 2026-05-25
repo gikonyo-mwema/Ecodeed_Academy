@@ -6,6 +6,7 @@
  * @author Gikonyo Mwema
  */
 
+import React from 'react';
 import { Table } from 'flowbite-react';
 import { FiEdit2 } from 'react-icons/fi';
 
@@ -25,7 +26,7 @@ export default function PostTableRow({ post, onEdit, onDelete }) {
     <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
       <Table.Cell>{new Date(post.updatedAt).toLocaleDateString()}</Table.Cell>
       <Table.Cell>
-        <PostImagePreview image={post.image} title={post.title} />
+        <PostImagePreview image={post.image} content={post.content} title={post.title} />
       </Table.Cell>
       <Table.Cell className="font-medium text-gray-900 dark:text-white">
         {post.title}
@@ -53,23 +54,36 @@ export default function PostTableRow({ post, onEdit, onDelete }) {
   );
 }
 
-function PostImagePreview({ image, title }) {
-  const defaultImage = 'https://res.cloudinary.com/dcrubaesi/image/upload/v1737333837/ECODEED_COLORED_LOGO_wj2yy8.png';
-  const hasValidImage = image && image.trim() !== '';
-  
+const LOGO_FALLBACK = 'https://res.cloudinary.com/dcrubaesi/image/upload/v1737333837/ECODEED_COLORED_LOGO_wj2yy8.png';
+
+function extractFirstImage(html) {
+  if (!html) return null;
+  const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return match ? match[1] : null;
+}
+
+function PostImagePreview({ image, content, title }) {
+  const [failed, setFailed] = React.useState(false);
+  const src = (!image || image.trim() === '' || failed)
+    ? (extractFirstImage(content) || LOGO_FALLBACK)
+    : image;
+
+  if (src === LOGO_FALLBACK) {
+    return (
+      <div className="w-20 h-12 bg-gray-50 dark:bg-gray-700 rounded-md overflow-hidden flex items-center justify-center">
+        <img src={LOGO_FALLBACK} alt="placeholder" className="w-12 h-auto object-contain opacity-60" loading="lazy" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-20 h-12 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden relative">
       <img
-        src={hasValidImage ? image : defaultImage}
+        src={src}
         alt={title || 'Post thumbnail'}
         className="absolute inset-0 w-full h-full object-cover"
         loading="lazy"
-        onError={(e) => {
-          if (e.target.src !== defaultImage) {
-            e.target.onerror = null;
-            e.target.src = defaultImage;
-          }
-        }}
+        onError={() => setFailed(true)}
       />
     </div>
   );

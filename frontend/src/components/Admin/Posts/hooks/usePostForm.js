@@ -96,12 +96,6 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
     setError(null);
     
     try {
-      console.log('Submitting post data:', {
-        formData,
-        currentUserId: currentUser.id,
-        isEdit
-      });
-
       // Validation
       if (!formData.title.trim()) throw new Error('Title is required');
       if (!formData.content.trim() || formData.content === '<p><br></p>') {
@@ -128,8 +122,6 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
         method,
         body: JSON.stringify(postPayload)
       });
-
-      console.log('Post submission successful:', data);
 
       // Reset form and call success handler
       if (!isEdit) {

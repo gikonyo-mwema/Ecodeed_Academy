@@ -144,7 +144,7 @@ async function handleImageFile(file, view) {
       `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="150">
         <rect width="100%" height="100%" fill="#f3f4f6" rx="8"/>
         <text x="50%" y="50%" font-family="system-ui" font-size="14" fill="#9ca3af"
-              text-anchor="middle" dy=".3em">Uploading…</text>
+              text-anchor="middle" dy=".3em">Uploading...</text>
       </svg>`
     );
 
@@ -153,7 +153,7 @@ async function handleImageFile(file, view) {
   let tr = state.tr.replaceWith(
     pos,
     pos,
-    state.schema.nodes.image.create({ src: PLACEHOLDER, alt: 'Uploading…' })
+    state.schema.nodes.image.create({ src: PLACEHOLDER, alt: 'Uploading...' })
   );
   dispatch(tr);
 

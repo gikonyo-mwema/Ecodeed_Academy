@@ -148,7 +148,6 @@ export default function PaymentModal({ course, show, onClose, user, onSuccess })
 
   const onPaymentClose = () => {
     setLoading(false);
-    console.log('Payment modal closed by user');
   };
 
   const handlePayment = () => {

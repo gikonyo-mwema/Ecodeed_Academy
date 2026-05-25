@@ -627,7 +627,6 @@ const userSlice = createSlice({
       // Update User
       .addCase(updateUser.pending, pendingState)
       .addCase(updateUser.fulfilled, (state, action) => {
-        console.log('Update payload:', action.payload);
         let updatedFields = action.payload; // Contains profile_picture, etc.
         
         // Handle potential nested wrapper from backend (just in case)
