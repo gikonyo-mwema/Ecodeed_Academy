@@ -1,30 +1,89 @@
 import React, { useState } from 'react';
 import {
-  Button, TextInput, Textarea, Select, Label, Checkbox, Badge
+  Button, TextInput, Textarea, Select, Label, Checkbox, Badge, Modal
 } from 'flowbite-react';
 import {
-  HiOutlineArrowLeft, HiOutlinePlus, HiOutlineX, HiOutlinePencilAlt,
+  HiOutlineArrowLeft, HiOutlinePlus, HiOutlineX,
   HiChevronDown, HiChevronRight, HiOutlineLink,
-  HiOutlineDocumentText, HiOutlineCalendar,
+  HiOutlineDocumentText, HiOutlineCalendar, HiOutlineEye,
 } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import TipTapEditor from '../../Editor/TipTapEditor';
 
 export const CourseForm = ({
+  id,
+  showHeader = true,
+  showSubmitButtons = true,
+  activeStep = 1,
   formData, handleChange, handleFeatureChange,
   handleCurriculumChange, handleCurriculumItemChange, handleLessonDetailChange,
   handleFaqChange, addFeatureField, removeFeatureField,
   handleTargetAudienceChange, addTargetAudience, removeTargetAudience,
   addCurriculumSection, addCurriculumItem, removeCurriculumItem,
+  addMultipleCurriculumItems,
+  duplicateCurriculumSection,
+  duplicateCurriculumLesson,
+  moveCurriculumSection,
+  moveCurriculumLesson,
   addLiveSession, updateLiveSession, removeLiveSession,
   addResource, updateResource, removeResource,
   addFaq, removeFaq,
+  validationErrors = {},
+  sectionErrorCounts = {},
   handleSubmit, error, loading, title,
 }) => {
+  const isEmbedded = !showHeader;
+  const [showPreview, setShowPreview] = useState(false);
   // Track which weeks (sections) are expanded — accordion style
   const [expandedWeeks, setExpandedWeeks] = useState(new Set([0]));
   // Track which individual lessons are expanded for editing
   const [expandedLessons, setExpandedLessons] = useState(new Set());
+  const [draggedWeekIndex, setDraggedWeekIndex] = useState(null);
+  const [draggedLesson, setDraggedLesson] = useState(null);
+
+  const curriculum = Array.isArray(formData.curriculum) ? formData.curriculum : [];
+  const allLessons = curriculum.flatMap((section) => (Array.isArray(section?.items) ? section.items : []));
+  const faqs = Array.isArray(formData.faqs) ? formData.faqs : [];
+
+  const normalizeLesson = (lesson) => (typeof lesson === 'object' && lesson !== null ? lesson : { title: lesson || '' });
+
+  const checklist = [
+    {
+      key: 'thumbnail',
+      label: 'Has thumbnail',
+      done: Boolean(formData.thumbnail || formData.image || formData.imageUrl || formData.coverImage),
+    },
+    { key: 'title', label: 'Has course title', done: Boolean(formData.title?.trim()) },
+    { key: 'short', label: 'Has short description', done: Boolean(formData.shortDescription?.trim()) },
+    {
+      key: 'intro',
+      label: 'Has intro lesson',
+      done: allLessons.some((lesson, index) => index === 0 && Boolean(normalizeLesson(lesson).title?.trim())),
+    },
+    {
+      key: 'resource',
+      label: 'Has at least one resource',
+      done: curriculum.some((section) =>
+        (section.resources || []).some((res) => Boolean(res?.title?.trim() || res?.file_url?.trim()))
+      ),
+    },
+    {
+      key: 'faq',
+      label: 'Has FAQ',
+      done: faqs.some((faq) => Boolean(faq?.question?.trim() && faq?.answer?.trim())),
+    },
+  ];
+
+  const checklistDone = checklist.filter((item) => item.done).length;
+  const checklistTotal = checklist.length;
+  const checklistPercent = Math.round((checklistDone / checklistTotal) * 100);
+  const missingChecks = checklist.filter((item) => !item.done);
+  const lessonsWithoutVideo = allLessons.filter((lesson) => !normalizeLesson(lesson).video_url?.trim()).length;
+
+  const renderInlineError = (key) => {
+    if (!validationErrors[key]) return null;
+    return <p className="mt-1 text-xs text-red-600 dark:text-red-300">{validationErrors[key]}</p>;
+  };
 
   const toggleWeek = (idx) => {
     setExpandedWeeks(prev => {
@@ -43,22 +102,41 @@ export const CourseForm = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-brand-blue py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <Link to="/dashboard?tab=courses">
-          <Button outline color="none" className="mb-6 !border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors">
-            <HiOutlineArrowLeft className="mr-2" /> Back to Courses
-          </Button>
-        </Link>
+    <div className={isEmbedded ? 'py-6 px-4 sm:px-6 lg:px-8 bg-transparent' : 'min-h-screen bg-gray-50 dark:bg-brand-blue py-12 px-4 sm:px-6 lg:px-8'}>
+      <div className={isEmbedded ? 'max-w-5xl mx-auto' : 'max-w-6xl mx-auto'}>
+        {showHeader && (
+          <Link to="/dashboard?tab=courses">
+            <Button outline color="none" className="mb-6 !border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors">
+              <HiOutlineArrowLeft className="mr-2" /> Back to Courses
+            </Button>
+          </Link>
+        )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 border border-brand-green/20 dark:border-gray-700">
-          <h1 className="text-3xl font-bold text-brand-blue dark:text-white mb-6">{title}</h1>
+        <div className={isEmbedded ? 'bg-white/80 dark:bg-brand-blue/70 border-0 shadow-none p-6 rounded-b-2xl' : 'bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 border border-brand-green/20 dark:border-gray-700'}>
+          {showHeader && (
+            <h1 className="text-3xl font-bold text-brand-blue dark:text-white mb-6">{title}</h1>
+          )}
 
-          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+          <form id={id} onSubmit={handleSubmit} className="space-y-6">
+            {/* STEP 1: Basic Information */}
+            {activeStep === 1 && (
+              <>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Basic Information
+                {sectionErrorCounts?.[1] > 0 && (
+                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200 align-middle">
+                    {sectionErrorCounts[1]} issues
+                  </span>
+                )}
+              </h2>
+              <span className="text-xs text-gray-500 dark:text-gray-300">Step 1 of 3</span>
+            </div>
+
             {/* Basic Information Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="title" value="Course Title" />
+              <div className="md:max-w-xl">
+                <Label htmlFor="title" value="Course Title *" />
                 <TextInput
                   id="title"
                   type="text"
@@ -66,15 +144,17 @@ export const CourseForm = ({
                   required
                   value={formData.title}
                   onChange={handleChange}
+                  sizing="sm"
                 />
+                {renderInlineError('title')}
               </div>
 
             </div>
 
             {/* Pricing and Category Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="price" value="Price (KES)" />
+              <div className="md:max-w-sm">
+                <Label htmlFor="price" value="Price (KES) *" />
                 <TextInput
                   id="price"
                   type="number"
@@ -84,16 +164,19 @@ export const CourseForm = ({
                   min="0"
                   step="100"
                   disabled={formData.isFree}
+                  sizing="sm"
                 />
+                {renderInlineError('price')}
               </div>
 
-              <div>
-                <Label htmlFor="category" value="Category" />
+              <div className="md:max-w-sm">
+                <Label htmlFor="category" value="Category *" />
                 <Select
                   id="category"
                   value={formData.category}
                   onChange={handleChange}
                   required
+                  sizing="sm"
                 >
                   <option value="">Select category</option>
                   <option value="specialized">Specialized Course</option>
@@ -103,6 +186,7 @@ export const CourseForm = ({
                   <option value="compliance">Compliance</option>
                   <option value="licensing">Licensing</option>
                 </Select>
+                {renderInlineError('category')}
               </div>
             </div>
 
@@ -119,8 +203,8 @@ export const CourseForm = ({
             </div>
 
             {/* Descriptions */}
-            <div>
-              <Label htmlFor="shortDescription" value="Short Description" />
+            <div className="md:max-w-3xl">
+              <Label htmlFor="shortDescription" value="Short Description *" />
               <Textarea
                 id="shortDescription"
                 placeholder="Brief description for course cards (max 100 characters)"
@@ -130,10 +214,11 @@ export const CourseForm = ({
                 onChange={handleChange}
                 required
               />
+              {renderInlineError('shortDescription')}
             </div>
 
-            <div>
-              <Label htmlFor="description" value="Full Description" />
+            <div className="md:max-w-4xl">
+              <Label htmlFor="description" value="Full Description *" />
               <Textarea
                 id="description"
                 placeholder="Detailed course description"
@@ -142,9 +227,74 @@ export const CourseForm = ({
                 onChange={handleChange}
                 required
               />
+              {renderInlineError('description')}
             </div>
+              </>
+            )}
 
             {/* Course Options */}
+            {activeStep === 3 && (
+              <>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Publish & Settings
+                {sectionErrorCounts?.[3] > 0 && (
+                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200 align-middle">
+                    {sectionErrorCounts[3]} issues
+                  </span>
+                )}
+              </h2>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  outline
+                  color="none"
+                  size="xs"
+                  onClick={() => setShowPreview(true)}
+                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
+                >
+                  <HiOutlineEye className="mr-1" /> Student Preview
+                </Button>
+                <span className="text-xs text-gray-500 dark:text-gray-300">Step 3 of 3</span>
+              </div>
+            </div>
+
+            {/* Publish Checklist */}
+            <div className="border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-brand-blue/50 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Publish Checklist</h3>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                  {checklistDone}/{checklistTotal} complete
+                </span>
+              </div>
+
+              <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mb-4">
+                <div
+                  className="h-full bg-gradient-to-r from-brand-green to-brand-yellow transition-all duration-500"
+                  style={{ width: `${checklistPercent}%` }}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {checklist.map((item) => (
+                  <div
+                    key={item.key}
+                    className={`text-sm px-3 py-2 rounded-lg border ${
+                      item.done
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-300'
+                        : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300'
+                    }`}
+                  >
+                    {item.done ? '✅' : '⚠️'} {item.label}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
+                Completion: <span className="font-semibold">{checklistPercent}%</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -253,22 +403,45 @@ export const CourseForm = ({
                 </div>
               ))}
             </div>
+              </>
+            )}
 
             {/* Curriculum Builder */}
+            {activeStep === 2 && (
+              <>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Curriculum
+                {sectionErrorCounts?.[2] > 0 && (
+                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200 align-middle">
+                    {sectionErrorCounts[2]} issues
+                  </span>
+                )}
+              </h2>
+              <span className="text-xs text-gray-500 dark:text-gray-300">Step 2 of 3</span>
+            </div>
+
             <div>
               <div className="flex justify-between items-center mb-3">
                 <Label value="Course Curriculum (Weeks & Lessons)" className="text-base font-semibold" />
-                <Button
-                  type="button"
-                  outline
-                  color="none"
-                  size="xs"
-                  onClick={addCurriculumSection}
-                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                >
-                  <HiOutlinePlus className="mr-1" /> Add Week
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    outline
+                    color="none"
+                    size="xs"
+                    onClick={addCurriculumSection}
+                    className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
+                  >
+                    <HiOutlinePlus className="mr-1" /> Add Week
+                  </Button>
+                </div>
               </div>
+              {(validationErrors.curriculum || validationErrors.weekTitle || validationErrors.lessonTitle) && (
+                <p className="mb-2 text-xs text-red-600 dark:text-red-300">
+                  {validationErrors.curriculum || validationErrors.weekTitle || validationErrors.lessonTitle}
+                </p>
+              )}
 
               {/* Week Accordion */}
               <div className="space-y-3">
@@ -279,7 +452,19 @@ export const CourseForm = ({
                   const resourceCount = (section.resources || []).length;
 
                   return (
-                    <div key={sectionIndex} className="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden">
+                    <div
+                      key={sectionIndex}
+                      className="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden"
+                      draggable
+                      onDragStart={() => setDraggedWeekIndex(sectionIndex)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => {
+                        if (draggedWeekIndex === null || draggedWeekIndex === sectionIndex) return;
+                        moveCurriculumSection?.(draggedWeekIndex, sectionIndex);
+                        setDraggedWeekIndex(null);
+                      }}
+                      onDragEnd={() => setDraggedWeekIndex(null)}
+                    >
                       {/* Week Header — click to collapse/expand */}
                       <div
                         className={`flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors ${
@@ -306,6 +491,39 @@ export const CourseForm = ({
                         </div>
                         <Button
                           type="button"
+                          outline
+                          color="none"
+                          size="xs"
+                          onClick={(e) => { e.stopPropagation(); duplicateCurriculumSection?.(sectionIndex); }}
+                          title="Duplicate this week"
+                          className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
+                        >
+                          Copy
+                        </Button>
+                        <Button
+                          type="button"
+                          outline
+                          color="none"
+                          size="xs"
+                          onClick={(e) => { e.stopPropagation(); moveCurriculumSection?.(sectionIndex, Math.max(0, sectionIndex - 1)); }}
+                          disabled={sectionIndex === 0}
+                          title="Move week up"
+                        >
+                          ↑
+                        </Button>
+                        <Button
+                          type="button"
+                          outline
+                          color="none"
+                          size="xs"
+                          onClick={(e) => { e.stopPropagation(); moveCurriculumSection?.(sectionIndex, Math.min((formData.curriculum || []).length - 1, sectionIndex + 1)); }}
+                          disabled={sectionIndex === (formData.curriculum || []).length - 1}
+                          title="Move week down"
+                        >
+                          ↓
+                        </Button>
+                        <Button
+                          type="button"
                           color="failure"
                           size="xs"
                           onClick={(e) => { e.stopPropagation(); removeCurriculumItem(sectionIndex); }}
@@ -326,6 +544,7 @@ export const CourseForm = ({
                               placeholder="e.g. Environmental Auditing Fundamentals"
                               value={section.title}
                               onChange={(e) => handleCurriculumChange(sectionIndex, 'title', e.target.value)}
+                              className="max-w-2xl"
                               required
                             />
                           </div>
@@ -336,16 +555,28 @@ export const CourseForm = ({
                               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                                 📖 Lessons
                               </span>
-                              <Button
-                                type="button"
-                                outline
-                                color="none"
-                                size="xs"
-                                onClick={() => addCurriculumItem(sectionIndex)}
-                                className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                              >
-                                <HiOutlinePlus className="mr-1" /> Add Lesson
-                              </Button>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  outline
+                                  color="none"
+                                  size="xs"
+                                  onClick={() => addCurriculumItem(sectionIndex)}
+                                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
+                                >
+                                  <HiOutlinePlus className="mr-1" /> Add Lesson
+                                </Button>
+                                <Button
+                                  type="button"
+                                  outline
+                                  color="none"
+                                  size="xs"
+                                  onClick={() => addMultipleCurriculumItems?.(sectionIndex, 5)}
+                                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
+                                >
+                                  +5 Lessons
+                                </Button>
+                              </div>
                             </div>
 
                             <div className="space-y-2">
@@ -355,7 +586,19 @@ export const CourseForm = ({
                                 const itemObj = typeof item === 'object' && item !== null ? item : { title: item || '' };
 
                                 return (
-                                  <div key={itemIndex} className="border border-gray-100 dark:border-gray-700 rounded-lg">
+                                  <div
+                                    key={itemIndex}
+                                    className="border border-gray-100 dark:border-gray-700 rounded-lg"
+                                    draggable
+                                    onDragStart={() => setDraggedLesson({ sectionIndex, itemIndex })}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDrop={() => {
+                                      if (!draggedLesson || draggedLesson.sectionIndex !== sectionIndex) return;
+                                      moveCurriculumLesson?.(sectionIndex, draggedLesson.itemIndex, itemIndex);
+                                      setDraggedLesson(null);
+                                    }}
+                                    onDragEnd={() => setDraggedLesson(null)}
+                                  >
                                     {/* Lesson header row */}
                                     <div className="flex items-center gap-2 p-2">
                                       <button
@@ -375,13 +618,46 @@ export const CourseForm = ({
                                         placeholder={`Lesson ${itemIndex + 1} title`}
                                         value={itemObj.title || ''}
                                         onChange={(e) => handleCurriculumItemChange(sectionIndex, itemIndex, e.target.value)}
-                                        className="flex-1"
+                                        className="flex-1 max-w-2xl"
                                         sizing="sm"
                                         required
                                       />
                                       {/* Indicators */}
                                       {itemObj.video_url && <Badge color="purple" size="xs" title="Has video">🎬</Badge>}
                                       {itemObj.content && <Badge color="info" size="xs" title="Has text content">📝</Badge>}
+                                      <Button
+                                        type="button"
+                                        outline
+                                        color="none"
+                                        size="xs"
+                                        onClick={() => duplicateCurriculumLesson?.(sectionIndex, itemIndex)}
+                                        title="Duplicate lesson"
+                                        className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
+                                      >
+                                        Copy
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        outline
+                                        color="none"
+                                        size="xs"
+                                        onClick={() => moveCurriculumLesson?.(sectionIndex, itemIndex, Math.max(0, itemIndex - 1))}
+                                        disabled={itemIndex === 0}
+                                        title="Move lesson up"
+                                      >
+                                        ↑
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        outline
+                                        color="none"
+                                        size="xs"
+                                        onClick={() => moveCurriculumLesson?.(sectionIndex, itemIndex, Math.min((section.items || []).length - 1, itemIndex + 1))}
+                                        disabled={itemIndex === (section.items || []).length - 1}
+                                        title="Move lesson down"
+                                      >
+                                        ↓
+                                      </Button>
                                       <Button
                                         type="button"
                                         color="failure"
@@ -605,8 +881,11 @@ export const CourseForm = ({
                 })}
               </div>
             </div>
+              </>
+            )}
 
               {/* FAQs Section */}
+              {activeStep === 3 && (
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <Label value="Frequently Asked Questions" />
@@ -629,7 +908,8 @@ export const CourseForm = ({
                         placeholder="Question"
                         value={faq.question}
                         onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
-                        className="flex-1"
+                        className="flex-1 max-w-3xl"
+                        sizing="sm"
                         required
                       />
                       <Button
@@ -648,13 +928,16 @@ export const CourseForm = ({
                       value={faq.answer}
                       onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
                       rows={2}
+                      className="max-w-4xl"
                       required
                     />
                   </div>
                 ))}
               </div>
+              )}
 
             {/* Submit Buttons */}
+            {showSubmitButtons && activeStep === 3 && (
             <div className="pt-4 flex flex-col sm:flex-row gap-3">
               {/* Save as Draft */}
               <Button
@@ -700,20 +983,104 @@ export const CourseForm = ({
                 )}
               </Button>
             </div>
+            )}
 
             {/* Draft indicator */}
-            {formData.isLive === false && formData.title && (
+            {showSubmitButtons && formData.isLive === false && formData.title && (
               <p className="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
                 ⚠️ This course is currently a <strong>draft</strong> and is not visible to students.
               </p>
             )}
 
-            {error && (
+            {showSubmitButtons && error && (
               <div className="mt-4 text-center">
                 <p className="text-red-500 text-sm">{error}</p>
               </div>
             )}
           </form>
+
+          {/* Student Preview Modal */}
+          <Modal show={showPreview} onClose={() => setShowPreview(false)} size="4xl">
+            <Modal.Header>Student Preview</Modal.Header>
+            <Modal.Body>
+              <div className="space-y-5">
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {formData.title?.trim() || 'Untitled Course'}
+                  </h2>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                    {formData.shortDescription?.trim() || 'No short description yet.'}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200">
+                      {formData.category || 'Uncategorized'}
+                    </span>
+                    {formData.hasCertificate && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-200">
+                        Certificate
+                      </span>
+                    )}
+                    {formData.isFree ? (
+                      <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200">
+                        Free
+                      </span>
+                    ) : (
+                      <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200">
+                        KES {Number(formData.price || 0).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Curriculum Preview</h3>
+                  {curriculum.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-300">No curriculum added yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {curriculum.map((section, idx) => (
+                        <div key={idx} className="border border-gray-100 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800/40">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            Week {idx + 1}: {section?.title || 'Untitled Week'}
+                          </p>
+                          <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                            {(section?.items || []).map((lesson, li) => {
+                              const item = normalizeLesson(lesson);
+                              return (
+                                <li key={li} className="flex items-center justify-between gap-2">
+                                  <span>• {item.title || `Lesson ${li + 1}`}</span>
+                                  {item.video_url ? <span className="text-xs">🎬</span> : <span className="text-xs text-amber-500">No video</span>}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Quality Checks</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Checklist completion: <strong>{checklistPercent}%</strong>
+                  </p>
+                  {missingChecks.length > 0 && (
+                    <ul className="mt-2 list-disc list-inside text-sm text-amber-700 dark:text-amber-300">
+                      {missingChecks.map((item) => (
+                        <li key={item.key}>Missing: {item.label}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {lessonsWithoutVideo > 0 && (
+                    <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                      {lessonsWithoutVideo} lesson(s) currently have no video URL.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </Modal.Body>
+          </Modal>
         </div>
       </div>
     </div>

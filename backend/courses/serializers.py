@@ -41,7 +41,7 @@ CourseSerializer provides both snake_case (DRF default) and camelCase aliases:
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Course, Enrollment, Module, Lesson, LessonCompletion, Assignment, LiveSession, Resource
+from .models import Course, Enrollment, Module, Lesson, Assignment, LiveSession, Resource
 
 User = get_user_model()
 
@@ -64,6 +64,9 @@ class InstructorSerializer(serializers.ModelSerializer):
     
     @serializer InstructorSerializer
     """
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'profile_picture', 'bio']
 
 class AssignmentSerializer(serializers.ModelSerializer):
     """

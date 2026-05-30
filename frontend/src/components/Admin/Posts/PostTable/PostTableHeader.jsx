@@ -1,3 +1,11 @@
+/**
+ * Post Table Header Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Table } from 'flowbite-react';
 
 export default function PostTableHeader() {

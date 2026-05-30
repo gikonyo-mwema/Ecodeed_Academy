@@ -23,10 +23,9 @@ from rest_framework.response import Response
 
 from .throttles import ContactFormThrottle, NewsletterSubscribeThrottle
 
-from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, Announcement
+from .models import NewsletterSubscriber, EmailCampaign, Announcement
 from .serializers import (
     NewsletterSubscribeSerializer,
-    NewsletterSubscriberSerializer,
     ContactMessageSerializer,
     EmailCampaignCreateSerializer,
     EmailCampaignListSerializer,
@@ -37,6 +36,24 @@ from .email_utils import (
     send_bulk_email,
     add_contact_to_brevo_list,
     remove_contact_from_brevo_list,
+)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CELERY ASYNC EMAIL TASKS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Import Celery tasks for async email processing.
+# Instead of waiting for emails to send (5-20 seconds), we queue the tasks
+# in Redis and return instantly. Celery workers process emails in background.
+# See messages_app/tasks.py for task implementations and documentation.
+
+from .tasks import (
+    send_newsletter_confirmation_email,
+    send_newsletter_welcome_email,
+    send_contact_admin_notification,
+    send_contact_confirmation,
+    send_bulk_broadcast,
+    send_course_notification,
+    sync_unsubscribe_to_brevo,
 )
 
 logger = logging.getLogger(__name__)
@@ -106,13 +123,21 @@ def newsletter_subscribe(request):
             f'<p>If you did not request this, you can safely ignore this email.</p>'
         )
 
-    send_transactional_email(
-        to_email=email,
-        to_name=email.split('@')[0],
-        subject='Confirm your Ecodeed newsletter subscription',
-        html_content=html_content,
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ASYNC: Queue email task instead of sending synchronously
+    # ─────────────────────────────────────────────────────────────────────────────
+    # This call returns instantly (adds task to Redis queue).
+    # Celery worker will process the email in the background.
+    # Even if Brevo is slow or network issues occur, user still gets instant response.
+    
+    send_newsletter_confirmation_email.delay(
+        email=email,
+        confirm_url=confirm_url,
+        site_url=site_url,
     )
 
+    # ✅ Return success immediately (task is queued, not yet sent)
+    # User doesn't wait for email delivery
     return Response(
         {'message': 'Please check your email to confirm your subscription.'},
         status=status.HTTP_201_CREATED,
@@ -156,8 +181,8 @@ def newsletter_unsubscribe(request):
     subscriber.unsubscribed_at = timezone.now()
     subscriber.save(update_fields=['status', 'unsubscribed_at'])
 
-    # Remove from Brevo list
-    remove_contact_from_brevo_list(subscriber.email)
+    # Remove from Brevo list asynchronously (retried on failure)
+    sync_unsubscribe_to_brevo.delay(subscriber.email)
 
     return Response(
         {'message': 'You have been successfully unsubscribed.'},
@@ -207,32 +232,24 @@ def newsletter_confirm(request):
     subscriber.confirmed_at = timezone.now()
     subscriber.save(update_fields=['status', 'confirmed_at'])
 
-    # Sync to Brevo now that opt-in is confirmed
-    add_contact_to_brevo_list(subscriber.email)
-
-    # Send welcome email
+    # Build unsubscribe URL
     site_url = settings.SITE_URL.rstrip('/')
     unsubscribe_url = f"{site_url}/unsubscribe?token={subscriber.token}"
 
-    try:
-        html_content = render_to_string('emails/newsletter_welcome.html', {
-            'email': subscriber.email,
-            'unsubscribe_url': unsubscribe_url,
-            'site_url': site_url,
-        })
-    except Exception:
-        html_content = (
-            f'<h2>Welcome to Ecodeed!</h2>'
-            f'<p>Thank you for confirming your newsletter subscription.</p>'
-            f'<p>You\'ll receive updates on new courses, environmental insights, and more.</p>'
-            f'<p><a href="{unsubscribe_url}">Unsubscribe</a></p>'
-        )
-
-    send_transactional_email(
-        to_email=subscriber.email,
-        to_name=subscriber.email.split('@')[0],
-        subject='Welcome to the Ecodeed Newsletter!',
-        html_content=html_content,
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ASYNC: Queue welcome email task + Brevo sync (all in one Celery task)
+    # ─────────────────────────────────────────────────────────────────────────────
+    # The task handles:
+    #   1. Render welcome email template
+    #   2. Send via Brevo API
+    #   3. Add contact to Brevo list (for future marketing campaigns)
+    #   4. Automatic retry if temporary failures occur
+    # All happens in background after this endpoint returns.
+    
+    send_newsletter_welcome_email.delay(
+        email=subscriber.email,
+        unsubscribe_url=unsubscribe_url,
+        site_url=site_url,
     )
 
     return Response(
@@ -300,52 +317,44 @@ def newsletter_stats(request):
 @throttle_classes([ContactFormThrottle])
 def contact_create(request):
     """
-    Save a contact form submission and send a notification email to site admins.
+    Save a contact form submission and send notification emails asynchronously.
 
     Frontend calls:  POST /api/messages/contact
     Payload: { "name": ..., "email": ..., "subject": ..., "message": ... }
+    
+    ASYNC PROCESSING:
+    ────────────────
+    Two emails are sent in parallel via Celery tasks:
+      1. Admin notification (with reply-to set to visitor's email)
+      2. Confirmation email to the visitor
+    User gets instant response without waiting for email delivery.
     """
     serializer = ContactMessageSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     contact = serializer.save()
 
-    # Notify site admin about the new message
-    admin_html = (
-        f'<h3>New Contact Message</h3>'
-        f'<p><strong>From:</strong> {contact.name} ({contact.email})</p>'
-        f'<p><strong>Subject:</strong> {contact.subject}</p>'
-        f'<p>{contact.message}</p>'
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ASYNC: Queue admin notification email
+    # ─────────────────────────────────────────────────────────────────────────────
+    send_contact_admin_notification.delay(
+        admin_email=settings.ADMIN_CONTACT_EMAIL,
+        admin_name=settings.ADMIN_CONTACT_NAME,
+        from_name=contact.name,
+        from_email=contact.email,
+        subject=contact.subject,
+        message=contact.message,
     )
 
-    send_transactional_email(
-        to_email=settings.BREVO_SENDER_EMAIL,
-        to_name=settings.BREVO_SENDER_NAME,
-        subject=f'[Contact Form] {contact.subject}',
-        html_content=admin_html,
-        reply_to_email=contact.email,
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ASYNC: Queue visitor confirmation email
+    # ─────────────────────────────────────────────────────────────────────────────
+    send_contact_confirmation.delay(
+        visitor_email=contact.email,
+        visitor_name=contact.name,
+        site_url=settings.SITE_URL,
     )
 
-    # Send a confirmation to the visitor
-    try:
-        visitor_html = render_to_string('emails/contact_confirmation.html', {
-            'name': contact.name,
-            'site_url': settings.SITE_URL,
-        })
-    except Exception:
-        visitor_html = (
-            f'<p>Hi {contact.name},</p>'
-            f'<p>Thank you for reaching out! We received your message and will '
-            f'get back to you soon.</p>'
-            f'<p>— The Ecodeed Team</p>'
-        )
-
-    send_transactional_email(
-        to_email=contact.email,
-        to_name=contact.name,
-        subject='We received your message — Ecodeed',
-        html_content=visitor_html,
-    )
-
+    # ✅ Return success immediately (both tasks queued, emails sent in background)
     return Response(
         {'message': 'Your message has been sent successfully!'},
         status=status.HTTP_201_CREATED,
@@ -370,16 +379,29 @@ def broadcast(request):
         "audience_type": "all_students" | "all_users" | "newsletter" | "course_students",
         "course": <course_id>   (required only when audience_type == "course_students")
     }
+    
+    ASYNC PROCESSING:
+    ────────────────
+    Instead of waiting for all emails to send (can take minutes), we:
+      1. Create the campaign record with status='SENDING'
+      2. Queue the send_bulk_broadcast Celery task
+      3. Return instantly to admin
+      4. Celery worker processes emails in background
+      5. Campaign status updated to 'SENT' or 'FAILED' when complete
+    Admin can check campaign status in dashboard without waiting.
     """
     if request.method == 'GET':
         campaigns = EmailCampaign.objects.select_related('sent_by').all()
         serializer = EmailCampaignListSerializer(campaigns, many=True)
         return Response(serializer.data)
 
-    # POST — create & send
+    # POST — create & queue async send
     serializer = EmailCampaignCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    campaign = serializer.save(sent_by=request.user, status=EmailCampaign.Status.SENDING)
+
+    scheduled_at = serializer.validated_data.get('scheduled_at')
+    initial_status = EmailCampaign.Status.SCHEDULED if scheduled_at else EmailCampaign.Status.SENDING
+    campaign = serializer.save(sent_by=request.user, status=initial_status)
 
     recipients = _resolve_audience(campaign)
 
@@ -391,25 +413,42 @@ def broadcast(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    result = send_bulk_email(
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ASYNC: Queue bulk broadcast task to Celery
+    # ─────────────────────────────────────────────────────────────────────────────
+    # The task will:
+    #   1. Send emails in batches of 50 to Brevo API
+    #   2. Track sent/failed counts per recipient in EmailDeliveryLog
+    #   3. Update campaign status in database when complete
+    #   4. Retry if temporary failures occur
+    # If scheduled_at is set, Celery will delay execution until that time (eta).
+    
+    task_kwargs = dict(
+        campaign_id=campaign.id,
         recipients=recipients,
         subject=campaign.subject,
         html_content=campaign.body,
     )
+    if scheduled_at:
+        send_bulk_broadcast.apply_async(kwargs=task_kwargs, eta=scheduled_at)
+    else:
+        send_bulk_broadcast.delay(**task_kwargs)
 
-    campaign.recipient_count = result['sent']
-    campaign.status = (
-        EmailCampaign.Status.SENT if result['failed'] == 0
-        else EmailCampaign.Status.FAILED
-    )
-    campaign.sent_at = timezone.now()
-    campaign.save(update_fields=['recipient_count', 'status', 'sent_at'])
+    # ✅ Return success immediately (campaign queued, not yet sent)
+    # Admin can see campaign with status='SENDING'/'SCHEDULED' and check back later
+    if scheduled_at:
+        msg = f"Broadcast scheduled for {scheduled_at.strftime('%Y-%m-%d %H:%M UTC')} — {len(recipients)} recipients."
+        resp_status = 'SCHEDULED'
+    else:
+        msg = f"Broadcast queued for {len(recipients)} recipients. Check campaign status in dashboard."
+        resp_status = 'SENDING'
 
     return Response(
         {
-            'message': f"Broadcast sent to {result['sent']} recipients.",
-            'sent': result['sent'],
-            'failed': result['failed'],
+            'message': msg,
+            'campaign_id': campaign.id,
+            'recipients_count': len(recipients),
+            'status': resp_status,
         },
         status=status.HTTP_201_CREATED,
     )

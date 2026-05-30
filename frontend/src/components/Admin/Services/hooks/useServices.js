@@ -9,7 +9,8 @@ import { apiFetch } from '../../../../utils/api';
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Provides full service lifecycle management for admin dashboard. Handles all CRUD
  * operations (Create, Read, Update, Delete), bulk operations, version control, and
- * API error handling with exponential backoff retry mechanism.\n *
+ * API error handling with exponential backoff retry mechanism.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * CORE OPERATIONS
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -18,14 +19,16 @@ import { apiFetch } from '../../../../utils/api';
  * • updateService(id, data): PUT /api/v1/services/{id}/
  * • deleteService(id): DELETE /api/v1/services/{id}/
  * • duplicateService(id): POST /api/v1/services/{id}/duplicate
- * • bulkDeleteServices(ids[]): Batch delete with fallback handling\n *
+ * • bulkDeleteServices(ids[]): Batch delete with fallback handling
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * ADVANCED FEATURES
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Retry Mechanism: Exponential backoff (1s, 2s, 3s) on API failures, max 3 retries
  * Field Mapping: Converts camelCase (frontend) ↔ snake_case (backend)
  * Alert System: Auto-hiding notifications (5s default) with success/failure types
- * Loading States: Fine-grained control for table, operation, bulk, history views\n *
+ * Loading States: Fine-grained control for table, operation, bulk, history views
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * FIELD MAPPING (Frontend → Backend)
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -33,7 +36,8 @@ import { apiFetch } from '../../../../utils/api';
  * fullDescription/description ↔ full_description
  * isPublished ↔ is_published
  * priceSuffix ↔ price_suffix
- * processSteps ↔ process\n *
+ * processSteps ↔ process
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * HOOK STATE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -51,7 +55,8 @@ import { apiFetch } from '../../../../utils/api';
  *     type: 'success'|'failure',// Alert type/severity
  *     duration: number          // Auto-hide timeout (ms)
  *   }
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -66,7 +71,8 @@ import { apiFetch } from '../../../../utils/api';
  *   } catch (err) {
  *     console.error(err);
  *   }
- * };\n *
+ * };
+ *
  * @hook useServices
  * @returns {object} { services, loading, alert, fetchServices, createService, updateService, deleteService, duplicateService, bulkDeleteServices, showAlert }
  * @version 2.0.0

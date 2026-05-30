@@ -5,17 +5,20 @@
  * PURPOSE
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Manages global UI theme preference (light/dark mode). Integrated with Redux store
- * and persisted via Redux Persist for user preference preservation.\n *
+ * and persisted via Redux Persist for user preference preservation.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * STATE SHAPE
  * ═══════════════════════════════════════════════════════════════════════════════════
  * {
  *   theme: 'light' | 'dark'
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * ACTIONS
  * ═══════════════════════════════════════════════════════════════════════════════════
- * toggleTheme: Switches theme between 'light' and 'dark'\n *
+ * toggleTheme: Switches theme between 'light' and 'dark'
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -31,7 +34,8 @@
  *       {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
  *     </button>
  *   );
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * TAILWIND CSS INTEGRATION
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -41,7 +45,8 @@
  * Components automatically support:
  *   dark:bg-gray-900
  *   dark:text-white
- *   etc.\n *
+ *   etc.
+ *
  * @module ThemeSlice
  * @version 1.0.0
  * @author Gikonyo Mwema

@@ -6,7 +6,8 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Provides form state management for creating and editing posts. Handles field
  * updates, form submission, validation (title/content required), and error handling.
- * Supports both POST (create) and PUT (edit) workflows with trailing slash URLs.\n *
+ * Supports both POST (create) and PUT (edit) workflows with trailing slash URLs.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * FORM SCHEMA
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -15,25 +16,29 @@
  *   content: string (required, non-empty, not just HTML tags),
  *   category: string (default: 'uncategorized'),
  *   image: string (URL, optional)
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * HOOK STATE
  * ═══════════════════════════════════════════════════════════════════════════════════
  * - formData (object): Current form field values
  * - isSubmitting (bool): Form submission in progress
- * - error (string|null): Validation or API error message\n *
+ * - error (string|null): Validation or API error message
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * API ENDPOINTS
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Create: POST /api/v1/posts/
- * Edit:   PUT /api/v1/posts/{id}/\n *
+ * Edit:   PUT /api/v1/posts/{id}/
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * VALIDATION RULES
  * ═══════════════════════════════════════════════════════════════════════════════════
  * • Title must be non-empty after trim
  * • Content must be non-empty after trim AND not be just HTML tags (<p><br></p>)
  * • Category optional (defaults to 'uncategorized')
- * • Image optional (must be valid URL if provided)\n *
+ * • Image optional (must be valid URL if provided)
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -45,7 +50,8 @@
  *   <Editor value={formData.content} onChange={(html) => setFormData({...formData, content: html})} />
  *   <button disabled={isSubmitting}>{isEdit ? 'Update' : 'Create'}</button>
  *   {error && <Alert>{error}</Alert>}
- * </form>\n *
+ * </form>
+ *
  * @hook usePostForm
  * @param {object|null} initialPost - Post object for editing (null for creation)
  * @param {boolean} isEdit - True if editing existing post, false if creating new
@@ -90,12 +96,6 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
     setError(null);
     
     try {
-      console.log('Submitting post data:', {
-        formData,
-        currentUserId: currentUser.id,
-        isEdit
-      });
-
       // Validation
       if (!formData.title.trim()) throw new Error('Title is required');
       if (!formData.content.trim() || formData.content === '<p><br></p>') {
@@ -122,8 +122,6 @@ export default function usePostForm(initialPost, isEdit, currentUser, onSuccess)
         method,
         body: JSON.stringify(postPayload)
       });
-
-      console.log('Post submission successful:', data);
 
       // Reset form and call success handler
       if (!isEdit) {

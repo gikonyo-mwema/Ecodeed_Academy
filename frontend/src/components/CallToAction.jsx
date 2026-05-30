@@ -34,7 +34,73 @@
  *    - Dark mode support
  *
  * 4. **Button Handling**
- *    - Primary button with arrow icon\n *    - Secondary button (outline style)\n *    - Custom navigation or onClick handlers\n *    - Disabled states\n *\n * 5. **State Management**\n *    - Email input state\n *    - Newsletter status (subscribing, success, error)\n *    - Auto-dismiss notifications\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * PROPS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * - type: 'blog' | 'service' | 'course' (determines default messaging)\n * - title: string (section headline)\n * - subtitle: string (supporting text)\n * - primaryButtonText: string (main CTA button label)\n * - secondaryButtonText: string (secondary button label)\n * - serviceName: string (service name for context)\n * - showNewsletter: boolean (default: false, show email signup)\n * - className: string (additional CSS classes)\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * API INTEGRATION\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * **Endpoints:**\n *   POST /api/v1/messages/newsletter/subscribe\n *     Body: { email: string }\n *     Response: { success: boolean, message: string }\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * STATE & BEHAVIOR\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * Local state:\n * - email: string (user email input)\n * - newsletterStatus: '' | 'subscribing' | 'success' | 'error'\n *\n * Newsletter flow:\n *   1. User enters email\n *   2. Click Subscribe → status = 'subscribing'\n *   3. API call to /api/v1/messages/newsletter/subscribe\n *   4. On success: status = 'success', email cleared, message shown\n *   5. On error: status = 'error', message shown\n *   6. Auto-dismiss after 5-8 seconds\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n * @example\n *   // Service-related CTA with newsletter\n *   <CallToAction\n *     type=\"service\"\n *     serviceName=\"Environmental Audit\"\n *     showNewsletter={true}\n *     primaryButtonText=\"Get Started\"\n *   />\n *\n *   // Course enrollment CTA\n *   <CallToAction\n *     type=\"course\"\n *     title=\"Ready to Learn?\"\n *     primaryButtonText=\"Enroll Now\"\n *   />\n */
+ *    - Primary button with arrow icon
+ *    - Secondary button (outline style)
+ *    - Custom navigation or onClick handlers
+ *    - Disabled states
+ *
+ * 5. **State Management**
+ *    - Email input state
+ *    - Newsletter status (subscribing, success, error)
+ *    - Auto-dismiss notifications
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PROPS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * - type: 'blog' | 'service' | 'course' (determines default messaging)
+ * - title: string (section headline)
+ * - subtitle: string (supporting text)
+ * - primaryButtonText: string (main CTA button label)
+ * - secondaryButtonText: string (secondary button label)
+ * - serviceName: string (service name for context)
+ * - showNewsletter: boolean (default: false, show email signup)
+ * - className: string (additional CSS classes)
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * API INTEGRATION
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * **Endpoints:**
+ *   POST /api/v1/messages/newsletter/subscribe
+ *     Body: { email: string }
+ *     Response: { success: boolean, message: string }
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * STATE & BEHAVIOR
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * Local state:
+ * - email: string (user email input)
+ * - newsletterStatus: '' | 'subscribing' | 'success' | 'error'
+ *
+ * Newsletter flow:
+ *   1. User enters email
+ *   2. Click Subscribe → status = 'subscribing'
+ *   3. API call to /api/v1/messages/newsletter/subscribe
+ *   4. On success: status = 'success', email cleared, message shown
+ *   5. On error: status = 'error', message shown
+ *   6. Auto-dismiss after 5-8 seconds
+ *
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ *   // Service-related CTA with newsletter
+ *   <CallToAction
+ *     type=\"service\"
+ *     serviceName=\"Environmental Audit\"
+ *     showNewsletter={true}
+ *     primaryButtonText=\"Get Started\"
+ *   />
+ *
+ *   // Course enrollment CTA
+ *   <CallToAction
+ *     type=\"course\"
+ *     title=\"Ready to Learn?\"
+ *     primaryButtonText=\"Enroll Now\"
+ *   />
+ */
 
 import React, { useState } from 'react';
 import { Button } from 'flowbite-react';
@@ -49,6 +115,21 @@ import {
   FiStar
 } from 'react-icons/fi';
 
+/**
+ * CallToAction Component
+ * Displays contextual call-to-action content with optional newsletter signup
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.type - CTA type (blog, course, service, newsletter)
+ * @param {string} props.title - Main headline
+ * @param {string} props.subtitle - Supporting description
+ * @param {string} props.primaryButtonText - Primary button label
+ * @param {string} props.secondaryButtonText - Secondary button label
+ * @param {string} props.serviceName - Service identifier
+ * @param {boolean} props.showNewsletter - Show newsletter form
+ * @param {string} props.className - Additional classes
+ * @returns {JSX.Element} The call-to-action component
+ */
 function CallToAction({ 
   type = 'blog', 
   title, 

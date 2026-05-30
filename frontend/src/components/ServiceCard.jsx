@@ -41,7 +41,40 @@
  * 5. **Responsive**
  *    - Grid-friendly container
  *    - Full height flex layout
- *    - Mobile-optimized touch targets\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * PROPS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * - service: object\n *   - id: unique identifier\n *   - title: service name\n *   - description: short description\n *   - icon: emoji string or legacy icon filename\n *   - features: Array<string> (feature list)\n *   - price: string (rate or pricing info)\n *   - slug: URL slug for detail page\n *\n * - className: string (optional, additional CSS classes)\n *\n * ═══════════════════════════════════════════════════════════════════════════════════\n * HELPER FUNCTIONS\n * ═══════════════════════════════════════════════════════════════════════════════════\n *\n * getIconComponent(iconName: string): ReactNode\n *   Returns the appropriate icon component based on format:\n *   - Emoji regex test for Unicode emoji characters\n *   - Legacy SVG mapping for old icon filenames\n *   - Default box icon fallback\n *\n * @component\n * @version 2.0.0\n * @author Gikonyo Mwema\n * @example\n *   <ServiceCard service={serviceObj} className=\"col-span-1\" />\n */\n\nimport React from 'react';
+ *    - Mobile-optimized touch targets
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * PROPS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * - service: object
+ *   - id: unique identifier
+ *   - title: service name
+ *   - description: short description
+ *   - icon: emoji string or legacy icon filename
+ *   - features: Array<string> (feature list)
+ *   - price: string (rate or pricing info)
+ *   - slug: URL slug for detail page
+ *
+ * - className: string (optional, additional CSS classes)
+ *
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ * HELPER FUNCTIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════
+ *
+ * getIconComponent(iconName: string): ReactNode
+ *   Returns the appropriate icon component based on format:
+ *   - Emoji regex test for Unicode emoji characters
+ *   - Legacy SVG mapping for old icon filenames
+ *   - Default box icon fallback
+ *
+ * @component
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ * @example
+ *   <ServiceCard service={serviceObj} className=\"col-span-1\" />
+ */
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {

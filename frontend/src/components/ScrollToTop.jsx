@@ -24,7 +24,7 @@
  *   function App() {
  *     return (
  *       <BrowserRouter>
- *         <ScrollToTop />  {/* ← Include here */}
+ *         <ScrollToTop />  (place here in the component tree)
  *         <Routes>
  *           <Route path="/" element={<Home />} />
  *           <Route path="/blog/:slug" element={<PostPage />} />
@@ -64,6 +64,15 @@ const ScrollToTop = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+
+        const focusMain = window.requestAnimationFrame(() => {
+            const mainContent = document.getElementById('main-content');
+            if (mainContent instanceof HTMLElement) {
+                mainContent.focus();
+            }
+        });
+
+        return () => window.cancelAnimationFrame(focusMain);
     }, [pathname]);
     return null;
 }

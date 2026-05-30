@@ -31,7 +31,8 @@
  *   <Route path=\"/contact\" element={<Contact />} />
  * @version 2.0.0
  * @author Gikonyo Mwema
- */import React, { useState } from "react";
+ */
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { apiFetch } from "../utils/api";
@@ -48,6 +49,16 @@ import {
   FaVideo,
 } from "react-icons/fa";
 
+/**
+ * Contact Page Component
+ * 
+ * Displays the contact form and company contact information.
+ * Allows users to send messages and inquiries to the company.
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
 const Contact = () => {
   const location = useLocation();
   const { theme } = useSelector((state) => state.theme);
@@ -159,7 +170,7 @@ const Contact = () => {
         <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
           {/* Contact Form */}
           <form onSubmit={handleSubmit} className={`p-6 sm:p-8 rounded-2xl ${cardClass} space-y-6`}>
-            <h3 className="text-2xl font-semibold text-brand-blue">
+            <h3 className={`text-2xl font-semibold ${theme === "light" ? "text-brand-blue" : "text-white"}`}>
               Send us a message
             </h3>
 
@@ -241,14 +252,14 @@ const Contact = () => {
 
           {/* Contact Details */}
           <div className={`p-6 sm:p-8 rounded-2xl ${cardClass}`}>
-            <h3 className="text-2xl font-semibold mb-6 text-brand-blue">
+            <h3 className={`text-2xl font-semibold mb-6 ${theme === "light" ? "text-brand-blue" : "text-white"}`}>
               Contact Information
             </h3>
 
             <div className="space-y-8">
               {/* Basic Contact Info */}
               <div className="space-y-4">
-                <h4 className="text-lg font-medium text-brand-blue">
+                <h4 className={`text-lg font-medium ${theme === "light" ? "text-brand-blue" : "text-brand-yellow"}`}>
                   General Inquiries
                 </h4>
                 <div className="flex items-start gap-4">
@@ -293,7 +304,7 @@ const Contact = () => {
 
               {/* Scheduling */}
               <div className="space-y-4">
-                <h4 className="text-lg font-medium text-brand-blue">
+                <h4 className={`text-lg font-medium ${theme === "light" ? "text-brand-blue" : "text-brand-yellow"}`}>
                   Schedule a Meeting
                 </h4>
                 <a
@@ -316,7 +327,7 @@ const Contact = () => {
 
               {/* Social Media */}
               <div className="pt-4">
-                <h4 className="text-lg font-medium mb-4 text-brand-blue">
+                <h4 className={`text-lg font-medium mb-4 ${theme === "light" ? "text-brand-blue" : "text-brand-yellow"}`}>
                   Connect With Us
                 </h4>
                 <div className="flex items-center gap-4">

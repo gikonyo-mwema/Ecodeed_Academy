@@ -3,7 +3,7 @@ Serializers for the Messages & Newsletter app.
 """
 
 from rest_framework import serializers
-from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, Announcement
+from .models import NewsletterSubscriber, ContactMessage, EmailCampaign, EmailDeliveryLog, Announcement
 
 
 class NewsletterSubscribeSerializer(serializers.Serializer):
@@ -57,7 +57,7 @@ class EmailCampaignCreateSerializer(serializers.ModelSerializer):
         model = EmailCampaign
         fields = [
             'id', 'subject', 'body', 'audience_type', 'course',
-            'status', 'recipient_count', 'sent_at', 'created_at',
+            'scheduled_at', 'status', 'recipient_count', 'sent_at', 'created_at',
         ]
         read_only_fields = ['id', 'status', 'recipient_count', 'sent_at', 'created_at']
 
@@ -70,7 +70,7 @@ class EmailCampaignListSerializer(serializers.ModelSerializer):
         model = EmailCampaign
         fields = [
             'id', 'subject', 'audience_type', 'status',
-            'recipient_count', 'sent_by_email', 'sent_at', 'created_at',
+            'recipient_count', 'sent_by_email', 'scheduled_at', 'sent_at', 'created_at',
         ]
         read_only_fields = fields
 

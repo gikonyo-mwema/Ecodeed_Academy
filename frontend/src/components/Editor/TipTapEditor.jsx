@@ -21,6 +21,7 @@
  *  - editable       (boolean)   — Toggle read-only
  *  - className      (string)    — Extra classes on the outer wrapper
  *  - minHeight      (string)    — CSS min-height for the editor area (default "300px")
+ *  - maxHeight      (string)    — Max height for scrollable editor body (default "70vh")
  *
  * @component
  */
@@ -75,6 +76,7 @@ export default function TipTapEditor({
   editable = true,
   className = '',
   minHeight = '300px',
+  maxHeight = '70vh',
 }) {
   // Track whether we should skip the next onChange (for programmatic setContent)
   const skipUpdate = useRef(false);
@@ -157,9 +159,11 @@ export default function TipTapEditor({
   }, [editable, editor]);
 
   return (
-    <div className={`border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-900 ${className}`}>
+    <div className={`border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-900 flex flex-col ${className}`}>
       {editable && <EditorToolbar editor={editor} />}
-      <EditorContent editor={editor} />
+      <div className="tiptap-scroll-area" style={{ maxHeight }}>
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }

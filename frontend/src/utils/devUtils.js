@@ -7,7 +7,8 @@
  * Provides development-only utilities for suppressing noisy browser errors that
  * don't affect application functionality. Particularly handles Firefox WebSocket
  * connection errors, deprecation warnings, and SameSite cookie warnings that clutter
- * the console during development.\n *
+ * the console during development.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * FEATURES
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -15,13 +16,15 @@
  * • Browser Warning Filtering: Suppresses findDOMNode, MozInputSource deprecations
  * • CORS Image Error Handling: Fallback image support for blocked images
  * • Console Grouping: Enhanced API validation error logging with grouped output
- * • Event Cleanup: Restores original console methods on page unload\n *
+ * • Event Cleanup: Restores original console methods on page unload
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * EXPORTED FUNCTIONS
  * ═══════════════════════════════════════════════════════════════════════════════════
  * - suppressWebSocketErrors(): Install console.error/warn interceptors
  * - handleImageError(event, fallbackUrl): Fallback image on load failure
- * - initDevUtils(): Initialize all development utilities\n *
+ * - initDevUtils(): Initialize all development utilities
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * INITIALIZATION
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -30,7 +33,8 @@
  * // In main.jsx or App.jsx (development only):
  * if (import.meta.env.DEV) {
  *   initDevUtils();
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * FILTERED ERRORS (Development Only)
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -46,7 +50,8 @@
  *   - scroll-linked positioning effects
  *
  * Security warnings:
- *   - SameSite cookie warnings\n *
+ *   - SameSite cookie warnings
+ *
  * @module DevUtils
  * @version 1.0.0
  * @author Gikonyo Mwema

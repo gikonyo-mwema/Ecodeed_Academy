@@ -687,9 +687,9 @@ class LogoutView(APIView):
             
             return Response(
                 {"message": "Successfully logged out"},
-                status=status.HTTP_205_RESET_CONTENT
+                status=status.HTTP_200_OK
             )
-        except Exception as e:
+        except Exception:
             # Even if blacklist fails, logout succeeds on frontend
             # Frontend still needs to delete tokens and redirect
             return Response(
@@ -958,29 +958,35 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         
         user = self.get_object()
-        new_role = request.data.get('user_type') or request.data.get('role')
-        
+        new_role = (request.data.get('user_type') or request.data.get('role') or '').upper()
+
+        # Accept 'INSTRUCTOR' as an alias for 'MENTOR' (the stored UserType value).
+        if new_role == 'INSTRUCTOR':
+            new_role = 'MENTOR'
+
         # ── VALIDATE ROLE ──
-        valid_roles = ['READER', 'STUDENT', 'INSTRUCTOR', 'ADMIN']
-        if not new_role or new_role.upper() not in valid_roles:
+        # Valid stored values match CustomUser.UserType choices.
+        valid_roles = ['READER', 'STUDENT', 'MENTOR', 'ADMIN']
+        if new_role not in valid_roles:
             return Response(
-                {
-                    'message': f'Invalid role. Must be one of: {valid_roles}'
-                },
+                {'message': f'Invalid role. Must be one of: {valid_roles} (INSTRUCTOR is an alias for MENTOR)'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         # ── UPDATE USER ──
-        user.user_type = new_role.upper()
+        user.user_type = new_role
         
-        # If promoting to admin, also set is_staff (allows admin access)
-        if new_role.upper() == 'ADMIN':
+        # Keep is_staff in sync: only ADMIN role needs Django-admin access.
+        if new_role == 'ADMIN':
             user.is_staff = True
+        else:
+            # Demoting from ADMIN must revoke staff access.
+            user.is_staff = False
         
-        user.save()
+        user.save(update_fields=['user_type', 'is_staff'])
         
         return Response({
-            'message': f'User role updated to {new_role.upper()}',
+            'message': f'User role updated to {new_role}',
             'user': UserSerializer(user).data
         })
 

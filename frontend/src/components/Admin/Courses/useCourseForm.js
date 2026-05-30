@@ -6,7 +6,8 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Manages complex course form state including hierarchical curriculum structure
  * with weeks/modules, lessons, live sessions, resources, FAQs, features, and target
- * audience. Provides comprehensive handlers for deeply nested array operations.\n *
+ * audience. Provides comprehensive handlers for deeply nested array operations.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * CURRICULUM STRUCTURE (Hierarchical)
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -23,7 +24,8 @@
  *       { title, file_url, resource_type, description }
  *     ]
  *   }
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * HANDLER ORGANIZATION
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -59,7 +61,8 @@
  *
  * FAQs (Global):
  *   handleFaqChange(idx, field, value)
- *   addFaq(), removeFaq(idx)\n *
+ *   addFaq(), removeFaq(idx)
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * FORM SCHEMA
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -73,7 +76,8 @@
  *   ],
  *   faqs: [{ question, answer }],
  *   ...otherFields
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -92,7 +96,8 @@
  * <input
  *   value={formData.curriculum[0].title}
  *   onChange={(e) => handleCurriculumChange(0, 'title', e.target.value)}
- * />\n *
+ * />
+ *
  * @hook useCourseForm
  * @param {object} initialState - Initial form data with course structure
  * @returns {object} Form state and handlers for all fields (features, audience, curriculum, etc.)
@@ -179,6 +184,85 @@ export const useCourseForm = (initialState) => {
       ...sec,
       items: [...(sec.items || []), { title: '' }],
     }));
+  };
+
+  const addMultipleCurriculumItems = (sectionIndex, count = 5) => {
+    const safeCount = Math.max(1, Number(count) || 1);
+    _updateSection(sectionIndex, sec => ({
+      ...sec,
+      items: [
+        ...(sec.items || []),
+        ...Array.from({ length: safeCount }, () => ({ title: '' })),
+      ],
+    }));
+  };
+
+  const duplicateCurriculumSection = (sectionIndex) => {
+    setFormData(prev => {
+      const c = [...(prev.curriculum || [])];
+      if (!c[sectionIndex]) return prev;
+      const source = c[sectionIndex];
+      const clone = {
+        ...source,
+        title: source.title ? `${source.title} (Copy)` : 'Untitled Week (Copy)',
+        items: (source.items || []).map((item) =>
+          typeof item === 'object' && item !== null ? { ...item } : { title: item || '' }
+        ),
+        live_sessions: (source.live_sessions || []).map((ls) => ({ ...ls })),
+        resources: (source.resources || []).map((res) => ({ ...res })),
+      };
+      c.splice(sectionIndex + 1, 0, clone);
+      return { ...prev, curriculum: c };
+    });
+  };
+
+  const duplicateCurriculumLesson = (sectionIndex, itemIndex) => {
+    _updateSection(sectionIndex, sec => {
+      const items = [...(sec.items || [])];
+      const source = items[itemIndex];
+      if (source === undefined) return sec;
+      const clone = typeof source === 'object' && source !== null
+        ? { ...source, title: source.title ? `${source.title} (Copy)` : 'Untitled Lesson (Copy)' }
+        : { title: source ? `${source} (Copy)` : 'Untitled Lesson (Copy)' };
+      items.splice(itemIndex + 1, 0, clone);
+      return { ...sec, items };
+    });
+  };
+
+  const moveCurriculumSection = (fromIndex, toIndex) => {
+    setFormData(prev => {
+      const c = [...(prev.curriculum || [])];
+      if (
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= c.length ||
+        toIndex >= c.length ||
+        fromIndex === toIndex
+      ) {
+        return prev;
+      }
+      const [moved] = c.splice(fromIndex, 1);
+      c.splice(toIndex, 0, moved);
+      return { ...prev, curriculum: c };
+    });
+  };
+
+  const moveCurriculumLesson = (sectionIndex, fromIndex, toIndex) => {
+    _updateSection(sectionIndex, sec => {
+      const items = [...(sec.items || [])];
+      if (
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= items.length ||
+        toIndex >= items.length ||
+        fromIndex === toIndex
+      ) {
+        return sec;
+      }
+      const [moved] = items.splice(fromIndex, 1);
+      items.splice(toIndex, 0, moved);
+      return { ...sec, items };
+    });
   };
 
   const removeCurriculumItem = (sectionIndex, itemIndex) => {
@@ -277,6 +361,9 @@ export const useCourseForm = (initialState) => {
     handleTargetAudienceChange, addTargetAudience, removeTargetAudience,
     handleCurriculumChange, handleCurriculumItemChange,
     addCurriculumSection, addCurriculumItem, removeCurriculumItem,
+    addMultipleCurriculumItems,
+    duplicateCurriculumSection, duplicateCurriculumLesson,
+    moveCurriculumSection, moveCurriculumLesson,
     handleLessonDetailChange,
     addLiveSession, updateLiveSession, removeLiveSession,
     addResource, updateResource, removeResource,

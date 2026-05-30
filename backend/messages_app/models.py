@@ -104,6 +104,7 @@ class EmailCampaign(models.Model):
 
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Draft'
+        SCHEDULED = 'scheduled', 'Scheduled'
         SENDING = 'sending', 'Sending'
         SENT = 'sent', 'Sent'
         FAILED = 'failed', 'Failed'
@@ -131,6 +132,11 @@ class EmailCampaign(models.Model):
         default=Status.DRAFT,
     )
     recipient_count = models.PositiveIntegerField(default=0)
+    scheduled_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='If set, the campaign will be sent at this time. Leave blank to send immediately.',
+    )
     sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -141,10 +147,60 @@ class EmailCampaign(models.Model):
         indexes = [
             models.Index(fields=['status']),
             models.Index(fields=['-created_at']),
+            models.Index(fields=['scheduled_at']),
         ]
 
     def __str__(self):
         return f"{self.subject} ({self.status})"
+
+
+class EmailDeliveryLog(models.Model):
+    """
+    Per-recipient delivery record for an EmailCampaign.
+
+    One row is created per (campaign, recipient) pair so admins can see
+    exactly which addresses succeeded, failed, or are still pending.
+    """
+
+    class DeliveryStatus(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        SENT = 'sent', 'Sent'
+        FAILED = 'failed', 'Failed'
+
+    campaign = models.ForeignKey(
+        EmailCampaign,
+        on_delete=models.CASCADE,
+        related_name='delivery_logs',
+    )
+    recipient_email = models.EmailField(db_index=True)
+    recipient_name = models.CharField(max_length=255, blank=True, default='')
+    status = models.CharField(
+        max_length=10,
+        choices=DeliveryStatus.choices,
+        default=DeliveryStatus.PENDING,
+        db_index=True,
+    )
+    error_message = models.TextField(blank=True, default='')
+    sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = 'Email Delivery Log'
+        verbose_name_plural = 'Email Delivery Logs'
+        indexes = [
+            models.Index(fields=['campaign', 'status']),
+            models.Index(fields=['recipient_email']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['campaign', 'recipient_email'],
+                name='unique_campaign_recipient',
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.campaign_id} → {self.recipient_email} ({self.status})"
 
 
 class Announcement(models.Model):

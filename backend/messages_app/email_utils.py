@@ -170,6 +170,71 @@ def send_bulk_email(
     return {'sent': sent, 'failed': failed}
 
 
+def send_bulk_email_tracked(
+    recipients: List[Dict],
+    subject: str,
+    html_content: str,
+    text_content: str = '',
+) -> Dict:
+    """
+    Like send_bulk_email but returns per-batch detail for delivery logging.
+
+    Returns:
+        Dict with keys:
+          'sent'    — total successful recipient count
+          'failed'  — total failed recipient count
+          'batches' — list of {'emails': [...], 'success': bool, 'error': str}
+    """
+    if not settings.BREVO_API_KEY:
+        logger.warning('BREVO_API_KEY not set — bulk email aborted (%d recipients)', len(recipients))
+        all_emails = [r['email'] for r in recipients]
+        return {
+            'sent': 0,
+            'failed': len(recipients),
+            'batches': [{'emails': all_emails, 'success': False, 'error': 'BREVO_API_KEY not configured'}],
+        }
+
+    api_instance = _get_api_instance()
+    sender = {
+        'name': settings.BREVO_SENDER_NAME,
+        'email': settings.BREVO_SENDER_EMAIL,
+    }
+
+    BATCH_SIZE = 50
+    sent = 0
+    failed = 0
+    batches = []
+
+    for i in range(0, len(recipients), BATCH_SIZE):
+        batch = recipients[i:i + BATCH_SIZE]
+        batch_emails = [r['email'] for r in batch]
+        bcc_list = [
+            {'email': r['email'], 'name': r.get('name', '')}
+            for r in batch
+        ]
+
+        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+            sender=sender,
+            to=[{'email': sender['email'], 'name': sender['name']}],
+            bcc=bcc_list,
+            subject=subject,
+            html_content=html_content,
+            text_content=text_content or None,
+        )
+
+        try:
+            api_instance.send_transac_email(send_smtp_email)
+            sent += len(batch)
+            batches.append({'emails': batch_emails, 'success': True, 'error': ''})
+            logger.info('Bulk email batch sent: %d recipients', len(batch))
+        except ApiException as exc:
+            failed += len(batch)
+            batches.append({'emails': batch_emails, 'success': False, 'error': str(exc)[:500]})
+            logger.error('Brevo bulk email batch failed: %s', exc)
+
+    return {'sent': sent, 'failed': failed, 'batches': batches}
+
+
 # ────────────────────────────────────────────────────────────────────
 # Brevo Contact Management (for newsletter list sync)
 # ────────────────────────────────────────────────────────────────────

@@ -1,6 +1,20 @@
 /**
  * NotFound Page — 404 error page for missing routes
-n *\n * @component\n * @purpose Display user-friendly 404 error page with navigation options\n * @features\n *   - Large 404 status code\n *   - Friendly error message\n *   - Home button link\n *   - Back button (navigate -1)\n *   - Responsive design\n * @example\n *   <Route path=\"*\" element={<NotFound />} /> // Catch-all route\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React from 'react';
+n *
+ * @component
+ * @purpose Display user-friendly 404 error page with navigation options
+ * @features
+ *   - Large 404 status code
+ *   - Friendly error message
+ *   - Home button link
+ *   - Back button (navigate -1)
+ *   - Responsive design
+ * @example
+ *   <Route path=\"*\" element={<NotFound />} /> // Catch-all route
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HiOutlineEmojiSad } from 'react-icons/hi';
 

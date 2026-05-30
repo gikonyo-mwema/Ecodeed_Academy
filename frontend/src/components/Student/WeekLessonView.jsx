@@ -27,6 +27,7 @@ import {
   HiClock,
 } from 'react-icons/hi';
 import { apiFetch } from '../../utils/api';
+import { getEmbedFallbackUrl, getPlayableVideoUrl } from '../../utils/videoEmbed';
 
 /**
  * Props
@@ -57,6 +58,19 @@ export default function WeekLessonView({
   const [currentLesson, setCurrentLesson] = useState(null);
   const [completedSet, setCompletedSet] = useState(new Set());
   const [markingComplete, setMarkingComplete] = useState(false);
+
+  const playerUrl = useMemo(
+    () => getPlayableVideoUrl(currentLesson?.video_url),
+    [currentLesson?.video_url]
+  );
+  const fallbackEmbedUrl = useMemo(
+    () => getEmbedFallbackUrl(currentLesson?.video_url),
+    [currentLesson?.video_url]
+  );
+  const canPlayWithReactPlayer = useMemo(
+    () => !!(playerUrl && ReactPlayer.canPlay(playerUrl)),
+    [playerUrl]
+  );
 
   // Scroll to top whenever the active lesson changes
   useEffect(() => {
@@ -167,7 +181,7 @@ export default function WeekLessonView({
         {/* Lesson Description / Introduction — read first */}
         {currentLesson.content && (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
-            <div className="prose dark:prose-invert max-w-none">
+            <div className="prose dark:prose-invert max-w-none lesson-content text-gray-800 dark:text-gray-100">
               <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }} />
             </div>
           </div>
@@ -176,13 +190,47 @@ export default function WeekLessonView({
         {/* Video Player — watch after reading */}
         {currentLesson.video_url && (
           <div className="aspect-video rounded-xl overflow-hidden bg-black">
-            <ReactPlayer
-              url={currentLesson.video_url}
-              width="100%"
-              height="100%"
-              controls
-              playing={false}
-            />
+            {canPlayWithReactPlayer ? (
+              <ReactPlayer
+                url={playerUrl}
+                width="100%"
+                height="100%"
+                controls
+                playing={false}
+                config={{
+                  youtube: {
+                    playerVars: {
+                      rel: 0,
+                      modestbranding: 1,
+                      playsinline: 1,
+                      origin: typeof window !== 'undefined' ? window.location.origin : undefined,
+                    },
+                  },
+                }}
+              />
+            ) : fallbackEmbedUrl ? (
+              <iframe
+                src={fallbackEmbedUrl}
+                title={currentLesson.title || 'Lesson video'}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center p-6 text-center text-white/85">
+                <div>
+                  <p className="font-semibold mb-2">Video preview unavailable in embedded mode.</p>
+                  <a
+                    href={currentLesson.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-brand-yellow"
+                  >
+                    Open video in a new tab
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -451,6 +499,21 @@ export default function WeekLessonView({
       </div>
 
       {renderSection()}
+
+      <style>{`
+        .lesson-content,
+        .lesson-content * {
+          color: inherit;
+        }
+
+        .dark .lesson-content a {
+          color: #93c5fd;
+        }
+
+        .dark .lesson-content strong {
+          color: #ffffff;
+        }
+      `}</style>
     </div>
   );
 }

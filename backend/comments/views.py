@@ -6,7 +6,7 @@ preserved for backward compatibility.  New ``/v1/`` routes use cleaner
 REST conventions.
 """
 
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets

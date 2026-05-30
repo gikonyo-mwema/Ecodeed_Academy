@@ -1,3 +1,45 @@
+/**
+ * Dashboard Services Table Component
+ * 
+ * Comprehensive services management interface with full CRUD operations.
+ * Displays all services in a table format with editing, deletion, and preview capabilities.
+ * 
+ * Features:
+ * - Service listing with sorting and filtering
+ * - Create new services with modal form
+ * - Edit existing services with inline updates
+ * - Delete services with confirmation modal
+ * - Preview service details before publishing
+ * - Version history tracking and rollback
+ * - Bulk operations for multiple services
+ * - Real-time table updates
+ * - Loading states and error handling
+ * - Pagination for large datasets
+ * 
+ * Modal Operations:
+ * - ServiceFormModal: Create/edit services
+ * - DeleteModal: Confirm service deletion
+ * - PreviewModal: View service before publishing
+ * - VersionHistoryModal: Track version changes
+ * 
+ * State Management:
+ * - Services list with loading states
+ * - Modal visibility controls
+ * - Form validation and error handling
+ * - Retry mechanisms for failed operations
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ * 
+ * @returns {JSX.Element} Services table with CRUD interface
+ * 
+ * @example
+ * ```jsx
+ * <DashServicesTable />
+ * ```
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { 

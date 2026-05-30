@@ -28,10 +28,17 @@
  *   <Route path=\"/about\" element={<About />} />
  * @version 2.0.0
  * @author Gikonyo Mwema
- */import React from "react";
+ */
+
+import React from "react";
 import { Link } from "react-router-dom";
 import { FaHandshake, FaLightbulb, FaShieldAlt, FaChartLine } from "react-icons/fa";
 
+/**
+ * About - Company information and mission page
+ * 
+ * @returns {JSX.Element} About page with company information
+ */
 export default function About() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

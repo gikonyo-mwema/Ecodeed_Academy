@@ -151,6 +151,7 @@ export default function Search() {
     // --- autocomplete ---
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
     const suggestionsRef = useRef(null);
     const suggestionsTimer = useRef(null);
 
@@ -196,10 +197,15 @@ export default function Search() {
 
     // ---- Autocomplete suggestions ----
     const fetchSuggestions = useCallback(async (q) => {
-        if (q.length < 2) { setSuggestions([]); return; }
+        if (q.length < 2) {
+            setSuggestions([]);
+            setActiveSuggestionIndex(-1);
+            return;
+        }
         try {
             const res = await apiFetch(`/api/v1/posts/search-suggestions/?q=${encodeURIComponent(q)}`);
             setSuggestions(res?.suggestions || []);
+            setActiveSuggestionIndex(-1);
         } catch { setSuggestions([]); }
     }, []);
 
@@ -213,6 +219,7 @@ export default function Search() {
             clearTimeout(suggestionsTimer.current);
             suggestionsTimer.current = setTimeout(() => fetchSuggestions(value), 250);
             setShowSuggestions(true);
+            setActiveSuggestionIndex(-1);
         }
     };
 
@@ -220,6 +227,7 @@ export default function Search() {
     const pickSuggestion = (title) => {
         setSidebarData((prev) => ({ ...prev, searchTerm: title }));
         setShowSuggestions(false);
+        setActiveSuggestionIndex(-1);
         // Immediately submit
         const urlParams = new URLSearchParams();
         urlParams.set('searchTerm', title);
@@ -229,6 +237,37 @@ export default function Search() {
         if (sidebarData.dateFrom) urlParams.set('dateFrom', sidebarData.dateFrom);
         if (sidebarData.dateTo) urlParams.set('dateTo', sidebarData.dateTo);
         navigate(`/search?${urlParams.toString()}`);
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (!showSuggestions || suggestions.length === 0) {
+            if (e.key === 'ArrowDown' && suggestions.length > 0) {
+                e.preventDefault();
+                setShowSuggestions(true);
+                setActiveSuggestionIndex(0);
+            }
+            return;
+        }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setActiveSuggestionIndex((prev) => (prev + 1) % suggestions.length);
+        }
+
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setActiveSuggestionIndex((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1));
+        }
+
+        if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+            e.preventDefault();
+            pickSuggestion(suggestions[activeSuggestionIndex]);
+        }
+
+        if (e.key === 'Escape') {
+            setShowSuggestions(false);
+            setActiveSuggestionIndex(-1);
+        }
     };
 
     // ---- Close suggestions on outside click ----
@@ -355,16 +394,35 @@ export default function Search() {
                             value={sidebarData.searchTerm}
                             onChange={handleChange}
                             onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                            onKeyDown={handleSearchKeyDown}
+                            role="combobox"
+                            aria-autocomplete="list"
+                            aria-expanded={showSuggestions}
+                            aria-controls="search-suggestions-list"
+                            aria-activedescendant={activeSuggestionIndex >= 0 ? `search-suggestion-${activeSuggestionIndex}` : undefined}
                             rightIcon={FiSearch}
                             autoComplete="off"
                         />
                         {/* Autocomplete dropdown */}
                         {showSuggestions && suggestions.length > 0 && (
-                            <ul className="absolute z-20 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                            <ul
+                                id="search-suggestions-list"
+                                role="listbox"
+                                aria-label="Search suggestions"
+                                className="absolute z-20 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                            >
                                 {suggestions.map((s, i) => (
                                     <li
+                                        id={`search-suggestion-${i}`}
                                         key={i}
-                                        className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 truncate"
+                                        role="option"
+                                        aria-selected={i === activeSuggestionIndex}
+                                        className={`px-3 py-2 text-sm cursor-pointer text-gray-800 dark:text-gray-200 truncate ${
+                                            i === activeSuggestionIndex
+                                                ? 'bg-gray-100 dark:bg-gray-600'
+                                                : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                                        }`}
+                                        onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => pickSuggestion(s)}
                                     >
                                         {s}

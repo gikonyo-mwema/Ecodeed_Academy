@@ -6,19 +6,22 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Provides post CRUD action handlers for the admin dashboard. Manages modal state
  * for delete confirmation, handles API calls for post deletion, and coordinates
- * edit form display. Calls optional callback on successful deletion.\n *
+ * edit form display. Calls optional callback on successful deletion.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * HOOK STATE
  * ═══════════════════════════════════════════════════════════════════════════════════
  * - showModal (bool): Delete confirmation modal visibility
  * - postIdToDelete (string): ID of post pending deletion
- * - publishError (string|null): Last operation error message\n *
+ * - publishError (string|null): Last operation error message
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * OPERATIONS
  * ═══════════════════════════════════════════════════════════════════════════════════
  * 1. handleDeleteClick(postId): Opens delete confirmation modal
  * 2. handleDeletePost(): Sends DELETE to /api/v1/posts/{id}/, calls onDeleteSuccess callback
- * 3. handleEditPost(post): Loads post into edit form via setCurrentPost, shows form\n *
+ * 3. handleEditPost(post): Loads post into edit form via setCurrentPost, shows form
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -33,7 +36,8 @@
  *       {showModal && <ConfirmModal onConfirm={handleDeletePost} />}
  *     </>
  *   );
- * }\n *
+ * }
+ *
  * @hook usePostActions
  * @param {object} currentUser - Current authenticated user (for context)
  * @param {function} setShowEditForm - Callback to show edit form

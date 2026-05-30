@@ -82,6 +82,11 @@ import { Link } from 'react-router-dom';
 import { HiEye, HiClock, HiTag } from 'react-icons/hi';
 import { apiFetch } from '../utils/api';
 
+/**
+ * RightSidebar - Supplementary sidebar with trending and recent content
+ * 
+ * @returns {JSX.Element} Right sidebar component
+ */
 export default function RightSidebar() {
   const [trendingPosts, setTrendingPosts] = useState([]);
   const [recentPosts, setRecentPosts] = useState([]);

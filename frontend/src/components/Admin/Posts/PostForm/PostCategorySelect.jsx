@@ -1,3 +1,11 @@
+/**
+ * Post Category Select Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import { Select } from 'flowbite-react';
 
 const categories = [

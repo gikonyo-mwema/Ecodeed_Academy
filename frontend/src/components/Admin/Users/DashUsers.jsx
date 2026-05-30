@@ -41,7 +41,7 @@
 
 import { Table, Modal, Button, Badge, Dropdown } from 'flowbite-react';
 import { useSelector } from 'react-redux';
-import { HiOutlineExclamationCircle, HiDotsVertical } from 'react-icons/hi';
+import { HiOutlineExclamationCircle, HiDotsVertical, HiChevronDown, HiChevronRight } from 'react-icons/hi';
 import { FaCheck, FaTimes, FaUserShield, FaChalkboardTeacher, FaUser, FaUserGraduate } from 'react-icons/fa';
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../../../utils/api';
@@ -116,6 +116,9 @@ export default function DashUsers() {
     studentCount: 0
   });
 
+  // Track which sections are expanded
+  const [openSections, setOpenSections] = useState({ admins: true, instructors: true, students: true, readers: true });
+
   /**
    * Fetches users from the API with pagination support
    * Handles authentication and error states
@@ -128,7 +131,7 @@ export default function DashUsers() {
       setLoading(true);
       setError(null);
       
-      const data = await apiFetch(`/api/v1/auth/users/getUsers?startIndex=${startIndex}&limit=9`);
+      const data = await apiFetch(`/api/v1/auth/users/getUsers?startIndex=${startIndex}&limit=100`);
 
       // Handle initial load vs pagination
       if (startIndex === 0) {
@@ -148,7 +151,7 @@ export default function DashUsers() {
       }
 
       // Update pagination control
-      setShowMore(data.users && data.users.length >= 9);
+      setShowMore(data.users && data.users.length >= 100);
     } catch (error) {
       console.error('Fetch error:', error);
       setError(error.message);
@@ -332,34 +335,37 @@ export default function DashUsers() {
     );
   }
 
+  // Categorize loaded users (mutually exclusive hierarchy: admin > instructor > student > reader)
+  const admins = users.filter(u => u.isAdmin);
+  const instructors = users.filter(u => u.isInstructor && !u.isAdmin);
+  const students = users.filter(u => u.hasEnrollments && !u.isInstructor && !u.isAdmin);
+  const readers = users.filter(u => !u.isAdmin && !u.isInstructor && !u.hasEnrollments);
+
+  const SECTIONS = [
+    { key: 'admins',      title: 'Admins',      icon: FaUserShield,        iconColor: 'text-red-500',    sectionUsers: admins      },
+    { key: 'instructors', title: 'Instructors', icon: FaChalkboardTeacher, iconColor: 'text-yellow-500', sectionUsers: instructors },
+    { key: 'students',    title: 'Students',    icon: FaUserGraduate,      iconColor: 'text-green-500',  sectionUsers: students    },
+    { key: 'readers',     title: 'Readers',     icon: FaUser,              iconColor: 'text-blue-400',   sectionUsers: readers     },
+  ];
+
   return (
     <div className="p-4 mx-auto max-w-7xl">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm">Total Users</h3>
-          <p className="text-2xl font-bold">{stats.totalUsers}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm">New (30d)</h3>
-          <p className="text-2xl font-bold">{stats.lastMonthUsers}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-red-500">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1">
-            <FaUserShield className="text-red-500" /> Admins
-          </h3>
-          <p className="text-2xl font-bold">{stats.adminCount}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-yellow-500">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1">
-            <FaChalkboardTeacher className="text-yellow-500" /> Instructors
-          </h3>
-          <p className="text-2xl font-bold">{stats.instructorCount}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border-l-4 border-green-500">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1">
-            <FaUserGraduate className="text-green-500" /> Students
-          </h3>
-          <p className="text-2xl font-bold">{stats.studentCount}</p>
+
+      {/* ── Summary Stats ── */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        {SECTIONS.map(({ key, title, icon: Icon, iconColor, sectionUsers }) => (
+          <div key={key} className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow text-sm">
+            <Icon className={`${iconColor} w-4 h-4`} />
+            <span className="font-semibold text-gray-900 dark:text-white">{sectionUsers.length}</span>
+            <span className="text-gray-500 dark:text-gray-400">{title}</span>
+          </div>
+        ))}
+        <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow text-sm ml-auto">
+          <span className="font-semibold text-gray-900 dark:text-white">{stats.totalUsers}</span>
+          <span className="text-gray-500 dark:text-gray-400">total</span>
+          {stats.lastMonthUsers > 0 && (
+            <span className="text-gray-400 dark:text-gray-500 ml-1">· +{stats.lastMonthUsers} this month</span>
+          )}
         </div>
       </div>
 
@@ -369,61 +375,86 @@ export default function DashUsers() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        {users.length > 0 ? (
-          <>
-            <div className="overflow-x-auto overflow-y-visible">
-            <Table hoverable className="w-full">
-              <Table.Head>
-                <Table.HeadCell>Date Created</Table.HeadCell>
-                <Table.HeadCell>User</Table.HeadCell>
-                <Table.HeadCell>Email</Table.HeadCell>
-                <Table.HeadCell>Role</Table.HeadCell>
-                <Table.HeadCell>Actions</Table.HeadCell>
-              </Table.Head>
-              <Table.Body className="divide-y">
-                {users.map((user) => {
-                  const roleBadge = getRoleBadge(user);
-                  const RoleIcon = roleBadge.icon;
-                  const userId = user.id;
-                  const isSelf = userId === currentUser.id;
-                  
-                  return (
-                    <Table.Row key={userId} className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                      <Table.Cell className="whitespace-nowrap">
-                        {formatDate(user.createdAt)}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={user.profilePicture || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'}
-                            alt={user.username}
-                            className="w-10 h-10 rounded-full object-cover"
-                            onError={(e) => {
-                              e.target.src = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
-                            }}
-                          />
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">{user.firstName || user.first_name} {user.lastName || user.last_name}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</p>
+      {/* ── Sectioned User Tables ── */}
+      {SECTIONS.map(({ key, title, icon: Icon, iconColor, sectionUsers }) => (
+        <div key={key} className="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          <button
+            type="button"
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+            onClick={() => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))}
+            aria-expanded={openSections[key]}
+            aria-controls={`user-section-${key}`}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              {openSections[key] ? (
+                <HiChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              ) : (
+                <HiChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              )}
+              <Icon className={`${iconColor} flex-shrink-0`} />
+              <span className="font-semibold text-gray-900 dark:text-white">{title}</span>
+            </div>
+            <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0 ml-3">
+              {sectionUsers.length} {sectionUsers.length === 1 ? 'user' : 'users'}
+            </span>
+          </button>
+          {openSections[key] && (sectionUsers.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table hoverable className="w-full">
+                <Table.Head>
+                  <Table.HeadCell>Date Joined</Table.HeadCell>
+                  <Table.HeadCell>User</Table.HeadCell>
+                  <Table.HeadCell>Email</Table.HeadCell>
+                  <Table.HeadCell>Actions</Table.HeadCell>
+                </Table.Head>
+                <Table.Body className="divide-y">
+                  {sectionUsers.map((user) => {
+                    const userId = user.id;
+                    const isSelf = userId === currentUser.id;
+                    return (
+                      <Table.Row key={userId} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                        <Table.Cell className="whitespace-nowrap">
+                          {formatDate(user.createdAt)}
+                        </Table.Cell>
+                        <Table.Cell>
+                          <div className="flex items-center gap-3">
+                            {user.profilePicture ? (
+                              <img
+                                src={user.profilePicture}
+                                alt={user.username}
+                                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                              />
+                            ) : null}
+                            <div
+                              className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold"
+                              style={{
+                                display: user.profilePicture ? 'none' : 'flex',
+                                backgroundColor: `hsl(${((user.email || '').charCodeAt(0) * 37) % 360}, 60%, 45%)`,
+                              }}
+                            >
+                              {(user.email || 'U')[0].toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-900 dark:text-white truncate max-w-[140px]">
+                                {user.firstName || user.first_name} {user.lastName || user.last_name}
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[140px]">@{user.username}</p>
+                            </div>
                           </div>
-                        </div>
-                      </Table.Cell>
-                      <Table.Cell className="text-gray-600 dark:text-gray-300">{user.email}</Table.Cell>
-                      <Table.Cell>
-                        <Badge color={roleBadge.color} className="inline-flex items-center gap-1">
-                          <RoleIcon className="w-3 h-3" />
-                          {roleBadge.text}
-                        </Badge>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div className="flex items-center gap-2">
+                        </Table.Cell>
+                        <Table.Cell className="text-gray-600 dark:text-gray-300 max-w-[180px]">
+                          <p className="truncate" title={user.email}>{user.email}</p>
+                        </Table.Cell>
+                        <Table.Cell>
                           <Dropdown
                             label=""
                             dismissOnClick={true}
                             renderTrigger={() => (
-                              <button 
+                              <button
+                                type="button"
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                aria-label={isSelf ? 'Role actions unavailable for your account' : `Open role actions for ${user.email}`}
                                 disabled={isSelf}
                               >
                                 <HiDotsVertical className={`w-5 h-5 ${isSelf ? 'text-gray-300' : 'text-gray-500'}`} />
@@ -433,70 +464,60 @@ export default function DashUsers() {
                             <Dropdown.Header>
                               <span className="block text-sm font-semibold">Change Role</span>
                             </Dropdown.Header>
-                            <Dropdown.Item 
-                              icon={FaUser}
-                              onClick={() => openRoleModal(user, 'READER')}
-                              disabled={isSelf}
-                            >
+                            <Dropdown.Item icon={FaUser} onClick={() => openRoleModal(user, 'READER')} disabled={isSelf}>
                               Set as User
                             </Dropdown.Item>
-                            <Dropdown.Item 
-                              icon={FaChalkboardTeacher}
-                              onClick={() => openRoleModal(user, 'MENTOR')}
-                              disabled={isSelf}
-                            >
+                            <Dropdown.Item icon={FaChalkboardTeacher} onClick={() => openRoleModal(user, 'MENTOR')} disabled={isSelf}>
                               Set as Instructor
                             </Dropdown.Item>
-                            <Dropdown.Item 
-                              icon={FaUserShield}
-                              onClick={() => openRoleModal(user, 'ADMIN')}
-                              disabled={isSelf}
-                            >
+                            <Dropdown.Item icon={FaUserShield} onClick={() => openRoleModal(user, 'ADMIN')} disabled={isSelf}>
                               Set as Admin
                             </Dropdown.Item>
                             <Dropdown.Divider />
-                            <Dropdown.Item 
+                            <Dropdown.Item
                               className="text-red-600"
-                              onClick={() => {
-                                setShowModal(true);
-                                setUserIdToDelete(userId);
-                              }}
+                              onClick={() => { setShowModal(true); setUserIdToDelete(userId); }}
                               disabled={isSelf}
                             >
                               Delete User
                             </Dropdown.Item>
                           </Dropdown>
-                        </div>
-                      </Table.Cell>
-                    </Table.Row>
-                  );
-                })}
-              </Table.Body>
-            </Table>
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })}
+                </Table.Body>
+              </Table>
             </div>
+          ) : (
+            <p className="px-6 py-4 text-sm text-gray-400 dark:text-gray-500">No {title.toLowerCase()} found.</p>
+          ))}
+        </div>
+      ))}
 
-            {showMore && (
-              <div className="p-4 text-center">
-                <Button
-                  onClick={handleShowMore}
-                  color="light"
-                  className="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
-                  disabled={loading}
-                >
-                  {loading ? 'Loading...' : 'Show More'}
-                </Button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-            No users found
-          </div>
-        )}
-      </div>
+      {showMore && (
+        <div className="p-4 text-center bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">More users available — load them to populate sections.</p>
+          <Button
+            onClick={handleShowMore}
+            color="light"
+            className="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Load More Users'}
+          </Button>
+        </div>
+      )}
 
+      {users.length === 0 && !loading && (
+        <div className="p-4 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg shadow">
+          No users found
+        </div>
+      )}
+
+      {/* ── Delete Confirmation Modal ── */}
       <Modal show={showModal} onClose={() => setShowModal(false)} popup size="md">
-        <Modal.Header />
+        <Modal.Header>Delete User</Modal.Header>
         <Modal.Body>
           <div className="text-center">
             <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
@@ -518,9 +539,9 @@ export default function DashUsers() {
         </Modal.Body>
       </Modal>
 
-      {/* Role Change Confirmation Modal */}
+      {/* ── Role Change Confirmation Modal ── */}
       <Modal show={showRoleModal} onClose={() => setShowRoleModal(false)} popup size="md">
-        <Modal.Header />
+        <Modal.Header>Change User Role</Modal.Header>
         <Modal.Body>
           <div className="text-center">
             <FaUserShield className="h-14 w-14 text-blue-500 mb-4 mx-auto" />

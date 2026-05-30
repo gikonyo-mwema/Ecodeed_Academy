@@ -141,7 +141,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import ReactPlayer from 'react-player';
 import DOMPurify from 'dompurify';
@@ -164,6 +164,7 @@ import {
 } from 'react-icons/hi';
 import { apiFetch } from '../utils/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { getEmbedFallbackUrl, getPlayableVideoUrl } from '../utils/videoEmbed';
 
 // Brand colors
 const brandColors = {
@@ -175,7 +176,12 @@ const brandColors = {
 export default function LearningPlayer() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useSelector((state) => state.user);
+  const isPreviewMode = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('preview') === '1';
+  }, [location.search]);
   
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -210,6 +216,21 @@ export default function LearningPlayer() {
     return course.modules[currentModuleIndex];
   }, [course, currentModuleIndex]);
 
+  const playerUrl = useMemo(
+    () => getPlayableVideoUrl(currentLesson?.video_url),
+    [currentLesson?.video_url]
+  );
+
+  const fallbackEmbedUrl = useMemo(
+    () => getEmbedFallbackUrl(currentLesson?.video_url),
+    [currentLesson?.video_url]
+  );
+
+  const canPlayWithReactPlayer = useMemo(
+    () => !!(playerUrl && ReactPlayer.canPlay(playerUrl)),
+    [playerUrl]
+  );
+
   // Calculate progress
   const progressPercentage = useMemo(() => {
     if (!allLessons.length) return 0;
@@ -219,21 +240,28 @@ export default function LearningPlayer() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        // Fetch course content and enrollment in parallel
+        const contentPath = isPreviewMode
+          ? `/api/v1/courses/${slug}/preview-content/`
+          : `/api/v1/courses/${slug}/content`;
+
+        // Fetch course content + enrollment check (enrollment only needed for non-preview mode)
         const [data, enrollmentData] = await Promise.all([
-          apiFetch(`/api/v1/courses/${slug}/content`),
-          currentUser
+          apiFetch(contentPath),
+          !isPreviewMode && currentUser
             ? apiFetch(`/api/v1/enrollments/check/?userId=${currentUser.id || currentUser._id}&courseSlug=${slug}`)
             : Promise.resolve(null),
         ]);
 
         setCourse(data);
 
-        // Restore persisted progress from enrollment
-        if (enrollmentData?.isEnrolled && enrollmentData.id) {
+        // Restore persisted progress from enrollment (student mode)
+        if (!isPreviewMode && enrollmentData?.isEnrolled && enrollmentData.id) {
           setEnrollmentId(enrollmentData.id);
           const savedCompleted = enrollmentData.progress?.completed_lessons || [];
           setCompletedLessons(savedCompleted);
+        } else {
+          setEnrollmentId(null);
+          setCompletedLessons([]);
         }
         
         if (data.modules?.length > 0 && data.modules[0].lessons?.length > 0) {
@@ -242,7 +270,19 @@ export default function LearningPlayer() {
         }
       } catch (error) {
         console.error("Access error:", error);
-        navigate(`/courses/${slug}`); 
+        if (isPreviewMode && (currentUser?.isInstructor || currentUser?.isAdmin)) {
+          try {
+            const fallbackCourse = await apiFetch(`/api/v1/courses/${slug}/`);
+            const fallbackCourseId = fallbackCourse?.id || fallbackCourse?._id;
+            if (fallbackCourseId) {
+              navigate(`/dashboard?tab=course-${fallbackCourseId}-weeks`);
+              return;
+            }
+          } catch (fallbackError) {
+            console.error('Preview fallback error:', fallbackError);
+          }
+        }
+        navigate(`/courses/${slug}`);
       } finally {
         setLoading(false);
       }
@@ -254,7 +294,7 @@ export default function LearningPlayer() {
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [slug, navigate]);
+  }, [slug, navigate, currentUser, isPreviewMode, sidebarOpen]);
 
   const handleLessonSelect = (lesson, moduleIndex) => {
     setCurrentLesson(lesson);
@@ -270,6 +310,12 @@ export default function LearningPlayer() {
     if (currentLesson && !completedLessons.includes(currentLesson.id)) {
       // Optimistic UI update
       setCompletedLessons(prev => [...prev, currentLesson.id]);
+
+      // In preview mode, don't persist progress to backend.
+      if (isPreviewMode) {
+        goToNextLesson();
+        return;
+      }
 
       // Persist to backend
       if (enrollmentId) {
@@ -571,6 +617,18 @@ export default function LearningPlayer() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {isPreviewMode && (
+              <span
+                className="text-xs px-2 py-1 rounded-full border"
+                style={{
+                  color: brandColors.blue,
+                  borderColor: 'rgba(5,24,54,0.2)',
+                  backgroundColor: 'rgba(248,191,15,0.2)',
+                }}
+              >
+                Preview Mode
+              </span>
+            )}
             <span className="text-sm text-gray-500">
               {currentLessonIndex + 1} / {allLessons.length}
             </span>
@@ -591,8 +649,8 @@ export default function LearningPlayer() {
             <div className="prose max-w-none mb-12">
               {currentLesson?.content ? (
                 <div 
+                  className="lesson-content text-gray-700 dark:text-gray-100"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
-                  style={{ color: '#374151' }}
                 />
               ) : (
                 <div className="text-center py-12 text-gray-500">
@@ -605,26 +663,65 @@ export default function LearningPlayer() {
             {/* Video Player — watch after reading */}
             <div className="mb-12">
               <h2 className="text-xl font-semibold mb-4" style={{ color: brandColors.blue }}>Watch the Video</h2>
+              <div className="mb-3">
+                {currentLesson?.video_url ? (
+                  canPlayWithReactPlayer ? (
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">Video playback: ready in player</span>
+                  ) : fallbackEmbedUrl ? (
+                    <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">Video playback: fallback embed mode</span>
+                  ) : (
+                    <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700">Video playback: external tab only</span>
+                  )
+                ) : (
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">No video attached to this lesson</span>
+                )}
+              </div>
               <div className="bg-black relative w-full" style={{ height: 'min(56.25vw, 405px)', aspectRatio: '16/9' }}>
                 {currentLesson?.video_url ? (
-                  <ReactPlayer
-                    url={currentLesson.video_url}
-                    width="100%"
-                    height="100%"
-                    controls={true}
-                    playing={false}
-                    onProgress={({ played }) => setVideoProgress(played * 100)}
-                    onEnded={markComplete}
-                    config={{
-                      youtube: { 
-                        playerVars: { 
-                          modestbranding: 1,
-                          rel: 0,
-                          showinfo: 0
-                        } 
-                      }
-                    }}
-                  />
+                  canPlayWithReactPlayer ? (
+                    <ReactPlayer
+                      url={playerUrl}
+                      width="100%"
+                      height="100%"
+                      controls={true}
+                      playing={false}
+                      onProgress={({ played }) => setVideoProgress(played * 100)}
+                      onEnded={markComplete}
+                      config={{
+                        youtube: {
+                          playerVars: {
+                            modestbranding: 1,
+                            rel: 0,
+                            showinfo: 0,
+                            playsinline: 1,
+                            origin: typeof window !== 'undefined' ? window.location.origin : undefined,
+                          },
+                        },
+                      }}
+                    />
+                  ) : fallbackEmbedUrl ? (
+                    <iframe
+                      src={fallbackEmbedUrl}
+                      title={currentLesson?.title || 'Lesson video'}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center p-6 text-center text-white/90">
+                      <div>
+                        <p className="font-semibold mb-2">This video provider does not support inline preview here.</p>
+                        <a
+                          href={currentLesson.video_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >
+                          Open video in new tab
+                        </a>
+                      </div>
+                    </div>
+                  )
                 ) : (
                   <div className="flex items-center justify-center h-full" style={{ backgroundColor: brandColors.blue }}>
                     <div className="text-center text-white">
@@ -673,6 +770,19 @@ export default function LearningPlayer() {
         </div>
 
         <style jsx>{`
+          .lesson-content,
+          .lesson-content * {
+            color: inherit;
+          }
+
+          .dark .lesson-content a {
+            color: #93c5fd;
+          }
+
+          .dark .lesson-content strong {
+            color: #ffffff;
+          }
+
           .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
           }

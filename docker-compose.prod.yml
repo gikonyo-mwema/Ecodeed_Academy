@@ -6,26 +6,37 @@
 #
 # Expects a .env file with all required variables.
 # Images are pulled from Docker Hub (pre-built).
+#
+# SERVICES (3 containers):
+# - Nginx + React SPA (port 8080)
+# - Django API + Redis + Celery worker (single backend image via start.sh)
+# - MySQL Database
 
 services:
   # ── Nginx + React SPA ──
   frontend:
-    image: ${DOCKERHUB_USER}/ecodeed-frontend:latest
+    image: ${DOCKERHUB_USER:?DOCKERHUB_USER is required}/ecodeed-frontend:latest
     ports:
       - "8080:80"
+    env_file:
+      - .env
     depends_on:
       - backend
     restart: unless-stopped
 
-  # ── Django API (Gunicorn) ──
+  # ── Django API + Redis + Celery worker (via start.sh) ──
   backend:
-    image: ${DOCKERHUB_USER}/ecodeed-backend:latest
+    image: ${DOCKERHUB_USER:?DOCKERHUB_USER is required}/ecodeed-backend:latest
+    # start.sh starts Redis, waits for DB, runs migrations, starts Celery, then Gunicorn
     env_file:
       - .env
     environment:
       - MYSQL_HOST=db
       - MYSQL_PORT=3306
       - DEBUG=False
+      # Redis runs inside this container, so use localhost
+      - CELERY_BROKER_URL=redis://localhost:6379/0
+      - CELERY_RESULT_BACKEND=redis://localhost:6379/1
     depends_on:
       db:
         condition: service_healthy

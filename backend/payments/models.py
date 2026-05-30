@@ -87,6 +87,9 @@ class Payment(models.Model):
     PAYMENT_METHOD = (
         ('card', 'Card'),
         ('mpesa', 'M-Pesa'),
+        ('globalpay', 'GlobalPay'),
+        ('mpesa_global', 'M-Pesa Global'),
+        ('manual', 'Manual / Other'),
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
@@ -97,6 +100,14 @@ class Payment(models.Model):
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
     provider = models.CharField(max_length=50, default='paystack')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD, blank=True, null=True)
+    notes = models.TextField(blank=True, default='', help_text='Admin notes, e.g. reference number for manual payments')
+    enrolled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='payments_enrolled',
+        help_text='Admin who manually created this payment/enrollment',
+    )
     
     created_at = models.DateTimeField(auto_now_add=True)
     verified_at = models.DateTimeField(null=True, blank=True)

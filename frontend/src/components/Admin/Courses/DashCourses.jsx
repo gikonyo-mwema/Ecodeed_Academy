@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Table, Modal, Badge } from 'flowbite-react';
-import { HiOutlinePlus, HiOutlinePencilAlt, HiOutlineExclamationCircle, HiEye } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlinePencilAlt, HiOutlineExclamationCircle, HiEye, HiOutlineEye } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Unauthorized } from './Unauthorized';
@@ -128,8 +128,7 @@ export const DashCourses = () => {
               {courses.map((course) => (
                 <Table.Row
                   key={course.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                  onClick={() => setSelectedCourse(course)}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <Table.Cell>
                     <div className="flex items-center gap-3">
@@ -174,13 +173,25 @@ export const DashCourses = () => {
                     </div>
                   </Table.Cell>
                   <Table.Cell>
-                    <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex space-x-2">
                       <Button
                         size="xs" color="light"
                         onClick={() => setSelectedCourse(course)}
                       >
                         <HiEye className="mr-1 w-4 h-4" /> View
                       </Button>
+                      {course.slug && (
+                        <Link to={`/learn/${course.slug}?preview=1`}>
+                          <Button
+                            outline
+                            color="none"
+                            size="xs"
+                            className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
+                          >
+                            <HiOutlineEye className="mr-1 w-4 h-4" /> Student View
+                          </Button>
+                        </Link>
+                      )}
                       <Link to={`/edit-course/${course.id}`}>
                         <Button outline color="none" size="xs" className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors">
                           <HiOutlinePencilAlt className="mr-1" /> Edit

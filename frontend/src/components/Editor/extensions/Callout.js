@@ -6,7 +6,8 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Custom TipTap extension that provides styled callout/alert blocks in rich text
  * editor. Supports multiple severity types with appropriate colors, borders, and
- * emoji icons. Fully dark mode compatible with Tailwind CSS classes.\n *
+ * emoji icons. Fully dark mode compatible with Tailwind CSS classes.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * CALLOUT TYPES
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -15,7 +16,8 @@
  * info     | Blue            | ℹ️   | General information, neutral notes
  * warning  | Amber/Yellow    | ⚠️   | Important cautions, watch out messages
  * success  | Green           | ✅   | Confirmed actions, best practices
- * danger   | Red             | ❌   | Critical alerts, errors, do not proceed\n *
+ * danger   | Red             | ❌   | Critical alerts, errors, do not proceed
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * STYLING
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -24,13 +26,15 @@
  * • Rounded right corners: rounded-r-lg
  * • Padding: p-4, margin: my-4
  * • Light/dark mode responsive via dark: prefix
- * • Icon non-editable (contenteditable: false)\n *
+ * • Icon non-editable (contenteditable: false)
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * EDITOR COMMANDS
  * ═══════════════════════════════════════════════════════════════════════════════════
  * editor.chain().focus().toggleCallout({ type: 'info' }).run()
  * editor.chain().focus().setCallout({ type: 'warning' }).run()
- * editor.chain().focus().unsetCallout().run()\n *
+ * editor.chain().focus().unsetCallout().run()
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * HTML OUTPUT
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -39,7 +43,8 @@
  *   <div class="callout-content">
  *     <!-- Content blocks -->
  *   </div>
- * </div>\n *
+ * </div>
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE IN EDITOR COMPONENT
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -54,14 +59,16 @@
  * // In toolbar buttons:
  * <button onClick={() => editor.chain().focus().toggleCallout({ type: 'warning' }).run()}>
  *   Add Warning
- * </button>\n *
+ * </button>
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * DARK MODE EXAMPLES
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Info:    bg-blue-50 dark:bg-blue-900/30 border-blue-400
  * Warning: bg-amber-50 dark:bg-amber-900/30 border-amber-400
  * Success: bg-green-50 dark:bg-green-900/30 border-green-400
- * Danger:  bg-red-50 dark:bg-red-900/30 border-red-400\n *
+ * Danger:  bg-red-50 dark:bg-red-900/30 border-red-400
+ *
  * @extension CalloutExtension
  * @type {TipTap Node Extension}
  * @version 1.0.0

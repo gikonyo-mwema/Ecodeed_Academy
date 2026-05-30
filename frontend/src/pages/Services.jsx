@@ -4,7 +4,7 @@
  * @component
  * @purpose
  *   Displays all published services offered by Ecodeed Consulting. Services are
-n *   fetched from the API and displayed as cards with filtering by category.
+ *   fetched from the API and displayed as cards with filtering by category.
  * @features
  *   - Grid display of service cards (responsive)
  *   - Category filtering
@@ -28,6 +28,11 @@ import { motion } from 'framer-motion';
 import ServiceCard from '../components/ServiceCard';
 import { apiFetch } from '../utils/api';
 
+/**
+ * Services - Main services catalog page
+ * 
+ * @returns {JSX.Element} Services listing with filters and categories
+ */
 const Services = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);

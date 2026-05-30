@@ -14,7 +14,7 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { FiEye, FiClock } from 'react-icons/fi';
-import { getDefaultImageUrl } from '../utils/cloudinary';
+import { getDefaultImageUrl, extractFirstImageFromContent } from '../utils/cloudinary';
 import { getCategoryColorClass, formatCategoryLabel } from '../utils/categories';
 
 // 32×32 placeholder — tiny enough to be negligible, avoids full-res fetch per card
@@ -90,7 +90,7 @@ function formatDate(dateStr) {
 export default function PostCard({ post, isCompact = false, isLoading = false, className = '' }) {
   // ---- Image state (must be called before any early return — Rules of Hooks) ----
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [imgSrc, setImgSrc] = useState(post?.image || getDefaultImageUrl());
+  const [imgSrc, setImgSrc] = useState(post?.image || extractFirstImageFromContent(post?.content) || getDefaultImageUrl());
 
   const handleImgError = useCallback(() => {
     setImgSrc(getDefaultImageUrl());

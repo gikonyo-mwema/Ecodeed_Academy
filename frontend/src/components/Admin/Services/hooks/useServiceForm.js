@@ -1,4 +1,58 @@
 /**
+ * useServiceForm Hook
+ *
+ * Custom React hook for managing service form state and validation.
+ * Handles all form field changes, contact info, features, and error tracking.
+ *
+ * Features:
+ * - Form data state management
+ * - Input change handlers for all field types
+ * - Contact information management
+ * - Features list management (dynamic fields)
+ * - Error state tracking
+ * - Form validation logic
+ * - Field error messages
+ * - Form reset capability
+ *
+ * Form Fields:
+ * - Title and slug
+ * - Short and full descriptions
+ * - Category and pricing
+ * - Features list
+ * - Contact information
+ * - Social links
+ * - Service metadata
+ *
+ * Validation:
+ * - Required field validation
+ * - Email format validation
+ * - URL format validation
+ * - Price format validation
+ * - Text length constraints
+ *
+ * @hook
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ *
+ * @param {Object} initialData - Initial form data
+ * @returns {Object} Hook object with form state and handlers
+ *   @returns {Object} formData - Current form values
+ *   @returns {Function} setFormData - Update form data
+ *   @returns {Object} errors - Field error messages
+ *   @returns {Function} setErrors - Update errors
+ *   @returns {Function} handleChange - Handle input changes
+ *   @returns {Function} handleContactInfoChange - Update contact info
+ *   @returns {Function} handleAddFeature - Add feature field
+ *   @returns {Function} handleRemoveFeature - Remove feature field
+ *   @returns {Function} handleFeatureChange - Update feature value
+ *   @returns {Function} validateForm - Validate all fields
+ *   @returns {Function} resetForm - Reset to initial state
+ * 
+ * @example
+ * ```jsx
+ * const form = useServiceForm(initialData);
+ * const { formData, handleChange, errors } = form;
+ * ```
  * useServiceForm Hook — Complex service form state management with nested arrays.
  *
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -6,7 +60,8 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Manages intricate service form state with support for multiple nested arrays
  * (features, benefits, social links, process steps). Provides add/edit/remove
- * handlers for array fields, basic validation, and form reset capabilities.\n *
+ * handlers for array fields, basic validation, and form reset capabilities.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * FORM SCHEMA
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -21,7 +76,8 @@
  *   socialLinks?: { platform, url }[],
  *   examples?: string[],
  *   projectTypes?: string[]
- * }\n *
+ * }
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * ARRAY FIELD OPERATIONS
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -29,7 +85,8 @@
  * has 3 handler functions:
  *   - handleXxxChange(index, field, value): Update specific field in item
  *   - addXxx(): Append new empty item to array
- *   - removeXxx(index): Remove item by index\n *
+ *   - removeXxx(index): Remove item by index
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * HOOK STATE & UTILITIES
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -39,13 +96,15 @@
  * resetForm(): Reset to initialData
  * updateFormData(updates): Merge updates into formData
  * validateForm(): Check required fields, return boolean
- * handleChange(e): Standard input field handler\n *
+ * handleChange(e): Standard input field handler
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * VALIDATION RULES
  * ═══════════════════════════════════════════════════════════════════════════════════
  * • title: Required, non-empty
  * • description: Required, non-empty
- * • Each benefit/feature/step: Optional but validate if present\n *
+ * • Each benefit/feature/step: Optional but validate if present
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -66,7 +125,8 @@
  *     onChange={(e) => handleBenefitChange(i, 'title', e.target.value)}
  *   />
  * ))}
- * <button onClick={addBenefit}>+ Add Benefit</button>\n *
+ * <button onClick={addBenefit}>+ Add Benefit</button>
+ *
  * @hook useServiceForm
  * @param {object} initialData - Initial form data (required)
  * @returns {object} Form state and handlers for all fields

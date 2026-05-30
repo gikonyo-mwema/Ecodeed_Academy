@@ -97,11 +97,14 @@
 
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import AdminDashboard from '../components/Admin/AdminDashboard';
 import StudentDashboard from '../components/Student/StudentDashboard';
 
 export default function Dashboard() {
   const { currentUser } = useSelector((state) => state.user);
+  const location = useLocation();
+  const tab = new URLSearchParams(location.search).get('tab') || '';
 
   /**
    * ROUTE DECISION LOGIC
@@ -115,6 +118,12 @@ export default function Dashboard() {
         Please sign in to access your dashboard.
       </div>
     );
+  }
+
+  // Respect explicit student tabs (important for instructor users who are also students)
+  const isStudentTab = tab === 'my-courses' || tab.startsWith('course-') || tab === 'learning';
+  if (currentUser.hasEnrollments && isStudentTab) {
+    return <StudentDashboard />;
   }
 
   /**

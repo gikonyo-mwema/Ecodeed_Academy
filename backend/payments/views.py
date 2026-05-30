@@ -83,7 +83,6 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import views, status, permissions, viewsets
 from rest_framework.response import Response
-from rest_framework.decorators import action
 from django.utils import timezone
 from .models import Payment
 from .serializers import PaymentSerializer
@@ -194,7 +193,7 @@ class VerifyPaymentView(views.APIView):
             
             return Response({'message': 'Payment verified and enrollment active'}, status=status.HTTP_200_OK)
 
-        except Exception as e:
+        except Exception:
             logger.exception('Payment verification failed for ref=%s', reference)
             return Response({'message': 'Verification processing failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

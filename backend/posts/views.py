@@ -14,10 +14,8 @@ Improvements over original:
   - Image upload to Cloudinary with MIME-type validation
 """
 
-import io
 import os
 import uuid
-from datetime import datetime
 
 import cloudinary.uploader
 from django.conf import settings
@@ -25,7 +23,6 @@ from django.db.models import Count, F, Q
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -34,7 +31,6 @@ from rest_framework.views import APIView
 
 from .models import Category, Post, Tag
 from .pagination import PostPageNumberPagination, SmallResultsPagination
-from .permissions import IsOwnerOrAdmin
 from .serializers import CategorySerializer, PostSerializer, TagSerializer
 from .throttles import ImageUploadThrottle, PostWriteThrottle, ViewCountThrottle
 

@@ -1,5 +1,13 @@
+/**
+ * Admin User Profile Component
+ * 
+ * @component
+ * @version 1.0.0
+ * @author Gikonyo Mwema
+ */
+
 import React from 'react';
-import { Alert, Button, Modal, TextInput } from 'flowbite-react';
+import { Alert, Button, Label, Modal, TextInput } from 'flowbite-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { CircularProgressbar } from 'react-circular-progressbar';
@@ -15,7 +23,7 @@ import 'react-circular-progressbar/dist/styles.css';
 
 const DeleteAccountModal = ({ showModal, setShowModal, handleDeleteUser, isLoading }) => (
   <Modal show={showModal} onClose={() => setShowModal(false)} popup size="md">
-    <Modal.Header />
+    <Modal.Header>Delete Account</Modal.Header>
     <Modal.Body>
       <div className="text-center">
         <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
@@ -147,20 +155,26 @@ export default function DashProfile() {
 
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
-      <h1 className="my-7 text-center font-bold text-3xl text-gray-800 dark:text-gray-100">
+      <h1 id="profile-settings-heading" className="my-7 text-center font-bold text-3xl text-gray-800 dark:text-gray-100">
         Profile Settings
       </h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} aria-labelledby="profile-settings-heading" className="flex flex-col gap-4">
         <input
           type="file"
+          id="profile-picture-upload"
           accept="image/*"
+          aria-label="Upload profile picture"
           onChange={handleImageChange}
           ref={filePickerRef}
           hidden
         />
         <div
-          className="relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full"
+          role="button"
+          tabIndex={0}
+          aria-label="Change profile picture"
+          className="relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2"
           onClick={() => filePickerRef.current.click()}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); filePickerRef.current.click(); } }}
         >
           {imageFileUploadProgress > 0 && (
             <CircularProgressbar
@@ -183,42 +197,58 @@ export default function DashProfile() {
           )}
           <img
             src={imageFileUrl || currentUser?.profile_picture}
-            alt="user"
+            alt={`Profile picture of ${currentUser?.first_name || currentUser?.username || 'user'}`}
             className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
               imageFileUploadProgress > 0 && imageFileUploadProgress < 100 && 'opacity-60'
             }`}
           />
         </div>
         {imageFileUploadError && <Alert color="failure">{imageFileUploadError}</Alert>}
-        <TextInput
-          type="text"
-          id="first_name"
-          placeholder="First Name"
-          value={formData.first_name || ''}
-          onChange={handleChange}
-        />
-        <TextInput
-          type="text"
-          id="last_name"
-          placeholder="Last Name"
-          value={formData.last_name || ''}
-          onChange={handleChange}
-        />
-        <TextInput
-          type="text"
-          id="bio"
-          placeholder="Bio"
-          value={formData.bio || ''}
-          onChange={handleChange}
-        />
-        <TextInput
-          type="email"
-          id="email"
-          placeholder="email"
-          value={formData.email || ''}
-          disabled
-          readOnly
-        />
+        <div>
+          <Label htmlFor="first_name" value="First Name" className="mb-1 block" />
+          <TextInput
+            type="text"
+            id="first_name"
+            placeholder="First Name"
+            value={formData.first_name || ''}
+            onChange={handleChange}
+          />
+        </div>
+        <div>
+          <Label htmlFor="last_name" value="Last Name" className="mb-1 block" />
+          <TextInput
+            type="text"
+            id="last_name"
+            placeholder="Last Name"
+            value={formData.last_name || ''}
+            onChange={handleChange}
+          />
+        </div>
+        <div>
+          <Label htmlFor="bio" value="Bio" className="mb-1 block" />
+          <TextInput
+            type="text"
+            id="bio"
+            placeholder="Bio"
+            value={formData.bio || ''}
+            onChange={handleChange}
+          />
+        </div>
+        <div>
+          <Label htmlFor="email" value="Email address" className="mb-1 block" />
+          <TextInput
+            type="email"
+            id="email"
+            placeholder="email"
+            value={formData.email || ''}
+            aria-describedby="email-readonly-hint"
+            disabled
+            readOnly
+          />
+          <p id="email-readonly-hint" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Email address cannot be changed.
+          </p>
+        </div>
         <Button
           type="submit"
           color="none"

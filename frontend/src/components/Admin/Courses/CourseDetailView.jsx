@@ -22,7 +22,7 @@ import {
   HiArrowLeft, HiOutlinePlus, HiOutlinePencilAlt, HiOutlineTrash,
   HiOutlineExclamationCircle, HiClipboardCheck, HiVideoCamera,
   HiArchive, HiShoppingBag, HiInformationCircle, HiClock,
-  HiExternalLink, HiDownload,
+  HiExternalLink, HiDownload, HiOutlineEye,
 } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -225,6 +225,13 @@ export default function CourseDetailView({ course, onBack }) {
             <HiOutlinePencilAlt className="mr-2 w-4 h-4" /> Edit Course
           </Button>
         </Link>
+        {course?.slug && (
+          <Link to={`/learn/${course.slug}?preview=1`}>
+            <Button outline color="none" size="sm" className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors">
+              <HiOutlineEye className="mr-2 w-4 h-4" /> Open Student View
+            </Button>
+          </Link>
+        )}
       </div>
 
       {error && <Alert color="failure" onDismiss={() => setError(null)}>{error}</Alert>}

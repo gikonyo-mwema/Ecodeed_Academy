@@ -319,22 +319,6 @@ export default function PostPage() {
           </div>
         </header>
 
-        {/* ============ HERO IMAGE ============ */}
-        {post.image && (
-          <figure className="mt-8 w-full max-w-4xl mx-auto px-4">
-            <img
-              src={post.image}
-              alt={post.title}
-              className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-lg"
-              loading="eager"
-              decoding="async"
-              width={896}
-              height={500}
-              onError={(e) => { e.target.src = getDefaultImageUrl(); }}
-            />
-          </figure>
-        )}
-
         {/* ============ TOOLBAR (views + share) ============ */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 mx-auto w-full max-w-4xl text-sm">
           <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
@@ -355,6 +339,20 @@ export default function PostPage() {
 
           {/* Main content */}
           <div className="flex-1 min-w-0 max-w-4xl">
+            {/* ============ HERO IMAGE — inside content column so it aligns with text ============ */}
+            {post.image && (
+              <figure className="mb-8">
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  className="w-full max-h-[480px] object-cover rounded-xl shadow-lg"
+                  loading="eager"
+                  decoding="async"
+                  onError={(e) => { e.target.src = getDefaultImageUrl(); }}
+                />
+              </figure>
+            )}
+
             {/* Mobile TOC (collapsible, above content) */}
             <div className="lg:hidden mb-6">
               <TableOfContents contentHtml={post.content} />

@@ -325,7 +325,8 @@ export default function StudentSidebar({
                     label="Student"
                     labelColor="dark"
                     onClick={() => handleTabClick("profile")}
-                    as="div"
+                    as="button"
+                    type="button"
                     className="cursor-pointer"
                   >
                     {!collapsed && "Profile"}
@@ -338,7 +339,8 @@ export default function StudentSidebar({
                     active={tab === "my-courses"}
                     icon={HiAcademicCap}
                     onClick={() => handleTabClick("my-courses")}
-                    as="div"
+                    as="button"
+                    type="button"
                     className="cursor-pointer"
                   >
                     {!collapsed && (
@@ -424,7 +426,8 @@ export default function StudentSidebar({
                     <Sidebar.Item
                       icon={HiCollection}
                       onClick={() => navigate('/courses')}
-                      as="div"
+                      as="button"
+                      type="button"
                       className="cursor-pointer"
                     >
                       {!collapsed && "Browse Courses"}
@@ -440,7 +443,8 @@ export default function StudentSidebar({
                 <Sidebar.Item
                   icon={HiArrowSmRight}
                   onClick={handleSignOut}
-                  as="div"
+                  as="button"
+                  type="button"
                   className="cursor-pointer"
                 >
                   {!collapsed && "Sign Out"}

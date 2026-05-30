@@ -49,6 +49,15 @@
 
 import React from 'react';
 
+/**
+ * Pagination - Navigation for paginated content
+ * 
+ * @param {Object} props - Component props
+ * @param {number} props.currentPage - Current page number
+ * @param {number} props.totalPages - Total pages available
+ * @param {Function} props.onPageChange - Callback for page change
+ * @returns {JSX.Element} Pagination controls
+ */
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
   // Smoothly scroll to top on page change to avoid jumpiness
   const handlePageChange = (page) => {

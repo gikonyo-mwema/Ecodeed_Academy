@@ -36,7 +36,7 @@ import { HiX } from "react-icons/hi";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice";
 import { signOut } from "../redux/user/userSlice";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../utils/api";
 
 /**
@@ -60,7 +60,6 @@ export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const navToggleRef = useRef(null);
 
   // Announcement bar — fetched from API, dismissable per-id
   const [announcement, setAnnouncement] = useState(null);
@@ -210,14 +209,19 @@ export default function Header() {
           onSubmit={handleSubmit}
           className="hidden md:block flex-1 max-w-xs md:max-w-md mx-2 md:mx-4"
         >
+          <label htmlFor="site-search" className="sr-only">
+            Search articles
+          </label>
           <div className={`relative flex items-center rounded-full border ${
             theme === "light" 
               ? "border-gray-300 bg-gray-50 focus-within:border-brand-green" 
               : "border-gray-600 bg-gray-700 focus-within:border-brand-yellow"
           } transition-colors duration-200`}>
             <input
+              id="site-search"
               type="text"
               placeholder="Search articles..."
+              aria-label="Search articles"
               className={`w-full h-10 pl-4 pr-10 text-sm bg-transparent outline-none rounded-full ${
                 theme === "light" ? "text-gray-800" : "text-white"
               }`}
@@ -325,7 +329,7 @@ export default function Header() {
               
               {/* Student Dashboard - shown if user has enrollments (is a student) */}
               {currentUser.hasEnrollments && !currentUser.isAdmin && (
-                <Link to="/dashboard?tab=learning">
+                <Link to="/dashboard?tab=my-courses">
                   <Dropdown.Item className="text-gray-700 dark:text-gray-200 hover:!bg-brand-green dark:hover:!bg-brand-green hover:!text-white dark:hover:!text-white transition-colors duration-200 focus:!bg-brand-green focus:!text-white">
                     Student Dashboard
                   </Dropdown.Item>
@@ -391,7 +395,6 @@ export default function Header() {
           )}
 
           <Navbar.Toggle
-            ref={navToggleRef}
             onClick={() => setIsNavOpen((prev) => !prev)}
             className="lg:hidden text-brand-green dark:text-brand-yellow"
             aria-expanded={isNavOpen}
@@ -402,14 +405,19 @@ export default function Header() {
         {isMobileSearchOpen && (
           <div className="md:hidden w-full mt-3 px-1 sm:px-0">
             <form onSubmit={handleSubmit} className="px-2">
+              <label htmlFor="mobile-site-search" className="sr-only">
+                Search articles
+              </label>
               <div className={`relative flex items-center rounded-full border ${
                 theme === "light" 
                   ? "border-gray-300 bg-gray-50 focus-within:border-brand-green" 
                   : "border-gray-600 bg-gray-700 focus-within:border-brand-yellow"
               } transition-colors duration-200`}>
                 <input
+                  id="mobile-site-search"
                   type="text"
                   placeholder="Search articles..."
+                  aria-label="Search articles"
                   className={`w-full h-10 pl-4 pr-10 text-sm bg-transparent outline-none rounded-full ${
                     theme === "light" ? "text-gray-800" : "text-white"
                   }`}

@@ -6,7 +6,8 @@
  * ═══════════════════════════════════════════════════════════════════════════════════
  * Initializes Firebase with credentials from environment variables. Provides optional
  * Firebase Authentication and Google Analytics support. Gracefully disables when
- * credentials are missing (fallback to JWT auth). Validates config before initialization.\n *
+ * credentials are missing (fallback to JWT auth). Validates config before initialization.
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * ENVIRONMENT VARIABLES REQUIRED
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -16,14 +17,16 @@
  * VITE_FIREBASE_STORAGE_BUCKET    - Storage bucket (optional)
  * VITE_FIREBASE_MESSAGING_SENDER_ID - Sender ID
  * VITE_FIREBASE_APP_ID            - App ID
- * VITE_FIREBASE_MEASUREMENT_ID    - GA4 measurement ID (G-XXXXXXXXXX format)\n *
+ * VITE_FIREBASE_MEASUREMENT_ID    - GA4 measurement ID (G-XXXXXXXXXX format)
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * INITIALIZATION RULES
  * ═══════════════════════════════════════════════════════════════════════════════════
  * • Firebase initialization: Required VITE_FIREBASE_API_KEY (valid format)
  * • Authentication setup: Automatic if API key valid; emulator in development
  * • Analytics initialization: Production only + valid measurement ID (G- prefix)
- *   Disabled on localhost/127.0.0.1 regardless of production flag\n *
+ *   Disabled on localhost/127.0.0.1 regardless of production flag
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * EXPORTED FUNCTIONS & OBJECTS
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -32,7 +35,8 @@
  * analytics: Google Analytics instance (null if not initialized)
  * isFirebaseAvailable(): Returns boolean - true if app & auth initialized
  * getAuthInstance(): Returns auth instance or null
- * trackEvent(eventName, parameters): Safe async event tracking (production only)\n *
+ * trackEvent(eventName, parameters): Safe async event tracking (production only)
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * CONFIGURATION VALIDATION
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -44,7 +48,8 @@
  * hasValidAnalyticsConfig():
  *   • Checks GA4 format (starts with 'G-')
  *   • Rejects placeholder values
- *   • Prevents invalid measurement IDs\n *
+ *   • Prevents invalid measurement IDs
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * USAGE EXAMPLE
  * ═══════════════════════════════════════════════════════════════════════════════════
@@ -58,14 +63,16 @@
  * }
  *
  * // Track analytics event
- * trackEvent('page_view', { page_title: 'Home' });\n *
+ * trackEvent('page_view', { page_title: 'Home' });
+ *
  * ═══════════════════════════════════════════════════════════════════════════════════
  * FALLBACK BEHAVIOR
  * ═══════════════════════════════════════════════════════════════════════════════════
  * If Firebase is not configured:
  * • JWT authentication is used (primary method)
  * • App continues to function normally
- * • Console warnings guide configuration (no errors)\n *
+ * • Console warnings guide configuration (no errors)
+ *
  * @module FirebaseConfig
  * @version 1.0.0
  * @author Gikonyo Mwema
@@ -121,36 +128,26 @@ const hasValidAnalyticsConfig = () => {
 
 try {
   if (hasValidApiKey()) {
-    console.log('🔧 Initializing Firebase with config:', {
-      authDomain: firebaseConfig.authDomain,
-      projectId: firebaseConfig.projectId
-    });
-    
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    
-    // Add debugging for auth domain
-    console.log('🔧 Firebase Auth domain:', auth.config?.authDomain);
     
     // Only initialize analytics in production with proper domain and measurement ID validation
     if (typeof window !== 'undefined' && 
         window.location.hostname !== 'localhost' &&
         window.location.hostname !== '127.0.0.1' &&
         hasValidAnalyticsConfig() &&
-        import.meta.env.NODE_ENV === 'production') {
+        import.meta.env.PROD) {
       
       analytics = getAnalytics(app);
-      console.log('✅ Firebase initialized with Analytics');
-    } else {
-      console.log('🔥 Firebase initialized (Analytics disabled - not production environment or missing configuration)');
     }
-  } else {
+  } else if (import.meta.env.DEV) {
     console.warn('⚠️ Firebase API key not configured. Firebase features will be disabled.');
     console.warn('💡 To enable Firebase, add your API key to VITE_FIREBASE_API_KEY in .env file');
   }
 } catch (error) {
-  console.warn('⚠️ Firebase initialization failed:', error.message);
-  console.warn('💡 This is normal if Firebase is not configured for this environment');
+  if (import.meta.env.DEV) {
+    console.warn('⚠️ Firebase initialization failed:', error.message);
+  }
 }
 
 // Helper function to safely track analytics events

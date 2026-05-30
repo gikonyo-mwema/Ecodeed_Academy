@@ -1,5 +1,31 @@
 /**
- * Unsubscribe Page — Email unsubscription confirmation\n *\n * @component\n * @purpose Unsubscribe user from newsletter and email communications\n * @features\n *   - Token validation from URL parameter\n *   - Loading state during unsubscribe processing\n *   - Success/error messages\n *   - Multiple status states (loading, success, error, not-found)\n *   - Navigation back to home\n *   - Responsive design\n * @api\n *   GET /api/v1/messages/newsletter/unsubscribe?token={token} — Process unsubscribe\n * @state\n *   - status: 'loading' | 'success' | 'error' | 'not-found'\n *   - message: string (confirmation or error message)\n *   - token: from URL query params\n * @flow\n *   User receives unsubscribe email link → Clicks link → API validates token\n *   → Removes user from newsletter list → Shows success/error message\n * @example\n *   /unsubscribe?token=abc123def456xyz\n * @version 2.0.0\n * @author Gikonyo Mwema\n */\nimport React, { useState, useEffect } from 'react';
+ * Unsubscribe Page — Email unsubscription confirmation
+ *
+ * @component
+ * @purpose Unsubscribe user from newsletter and email communications
+ * @features
+ *   - Token validation from URL parameter
+ *   - Loading state during unsubscribe processing
+ *   - Success/error messages
+ *   - Multiple status states (loading, success, error, not-found)
+ *   - Navigation back to home
+ *   - Responsive design
+ * @api
+ *   GET /api/v1/messages/newsletter/unsubscribe?token={token} — Process unsubscribe
+ * @state
+ *   - status: 'loading' | 'success' | 'error' | 'not-found'
+ *   - message: string (confirmation or error message)
+ *   - token: from URL query params
+ * @flow
+ *   User receives unsubscribe email link → Clicks link → API validates token
+ *   → Removes user from newsletter list → Shows success/error message
+ * @example
+ *   /unsubscribe?token=abc123def456xyz
+ * @version 2.0.0
+ * @author Gikonyo Mwema
+ */
+
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Button, Alert, Spinner } from 'flowbite-react';

@@ -110,6 +110,9 @@ class GoogleSignInView(APIView):
       • ``{access_token}`` – raw Google access token verified server-side
     """
     permission_classes = [AllowAny]
+    # Exclude SessionAuthentication so DRF does not enforce CSRF on this
+    # unauthenticated endpoint (JWT is returned, not a session cookie).
+    authentication_classes = []
 
     def post(self, request):
         email = request.data.get('email')
@@ -167,6 +170,7 @@ class FacebookSignInView(APIView):
     The token is verified via the Graph API before authenticating.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []  # No session auth → no CSRF check
 
     def post(self, request):
         access_token = request.data.get('access_token')
