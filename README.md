@@ -3,106 +3,140 @@
 [![Backend CI](https://github.com/gikonyo-mwema/Ecodeed_Academy/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/gikonyo-mwema/Ecodeed_Academy/actions/workflows/backend-ci.yml)
 [![Docker](https://img.shields.io/badge/Docker-gikonyomwema%2Fecodeed--backend-blue)](https://hub.docker.com/r/gikonyomwema/ecodeed-backend)
 
-An online learning platform built with Django REST Framework (backend) and React + Vite (frontend).
-
-## 📚 Comprehensive Documentation
-
-This project uses a reduced, source-of-truth documentation set:
-
-### Quick Navigation
-
-- [**PROJECT_DOCUMENTATION_INDEX.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/PROJECT_DOCUMENTATION_INDEX.md) - Master index and maintenance rules
-- [**FRONTEND_DOCUMENTATION_COMPLETE.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_DOCUMENTATION_COMPLETE.md) - Frontend architecture and component docs
-- [**BACKEND_API_DOCUMENTATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/BACKEND_API_DOCUMENTATION.md) - Complete backend API reference
-- [**FRONTEND_BACKEND_INTEGRATION.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_BACKEND_INTEGRATION.md) - Full-stack request/response flows
-- [**CHANGES_SUMMARY.md**](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/CHANGES_SUMMARY.md) - Historical change log
-
-### Documentation Statistics
-- Reduced to 5 maintainable guides with minimal duplication.
+An online learning platform built with Django REST Framework and React + Vite. Supports courses, blog posts, payments via Paystack, async email via Celery + Brevo, social authentication, and role-based dashboards for students, instructors, and admins.
 
 ---
+
+## 📚 Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [PROJECT_DOCUMENTATION_INDEX.md](PROJECT_DOCUMENTATION_INDEX.md) | Master index and maintenance rules |
+| [FRONTEND_DOCUMENTATION_COMPLETE.md](FRONTEND_DOCUMENTATION_COMPLETE.md) | Frontend architecture and component docs |
+| [BACKEND_API_DOCUMENTATION.md](BACKEND_API_DOCUMENTATION.md) | Complete backend API reference |
+| [FRONTEND_BACKEND_INTEGRATION.md](FRONTEND_BACKEND_INTEGRATION.md) | Full-stack request/response flows |
+| [CHANGES_SUMMARY.md](CHANGES_SUMMARY.md) | Historical change log |
+
+---
+
 ## 🏗️ Project Structure
 
 ```
 Ecodeed_Academy/
-├── backend/                 # Django REST API
-│   ├── config/             # Django settings and configuration
-│   ├── users/              # User authentication and profiles
-│   ├── manage.py           # Django management script
-│   ├── requirements.txt    # Python dependencies
-│   └── Dockerfile          # Backend container definition
-├── frontend/               # React + Vite application
+├── backend/
+│   ├── config/             # Django settings, Celery config, URL routing
+│   ├── users/              # Custom user model, JWT auth, social OAuth
+│   ├── courses/            # Courses, modules, lessons, assignments, live sessions
+│   ├── posts/              # Blog posts, categories, tags, feeds, sitemaps
+│   ├── comments/           # Post & lesson comments with moderation
+│   ├── payments/           # Paystack payment flow and webhook handling
+│   ├── messages_app/       # Contact form, newsletter, Brevo email campaigns
+│   ├── services/           # Professional services catalog
+│   ├── requirements.txt
+│   ├── manage.py
+│   ├── start.sh            # Container entrypoint (Redis → migrate → Celery → Gunicorn)
+│   └── Dockerfile
+├── frontend/
 │   ├── src/
-│   │   ├── components/     # Reusable React components
-│   │   ├── pages/          # Page components
-│   │   ├── redux/          # State management
-│   │   └── utils/          # Utility functions
-│   ├── package.json        # Node.js dependencies
-│   └── Dockerfile.dev      # Frontend dev container
-├── docs/                   # Documentation
-├── .github/workflows/      # CI/CD pipelines
-└── docker-compose.yml      # Multi-container orchestration
+│   │   ├── components/     # Reusable UI components (Admin, Dashboard, etc.)
+│   │   ├── pages/          # Route-level page components
+│   │   ├── redux/          # Redux Toolkit store and slices
+│   │   └── utils/          # API helpers, Cloudinary utils
+│   ├── package.json
+│   ├── vite.config.js
+│   └── Dockerfile / Dockerfile.dev
+├── .github/workflows/
+│   └── backend-ci.yml      # Ruff lint + Django tests on MySQL
+├── docker-compose.yml      # Dev: backend + db + frontend
+└── docker-compose.prod.yml # Prod: pre-built images
 ```
+
+---
 
 ## 🚀 Features
 
-### User Dashboards
-- **Student Dashboard**: Personalized learning experience with enrolled courses, progress tracking, week-based curriculum navigation
-- **Instructor Dashboard**: Teaching tools including course management, student roster, earnings tracking, live session scheduling
-- **Admin Dashboard**: Platform management with user administration, content moderation, statistics, newsletter management, announcement system
+### Role-Based Dashboards
+- **Student**: Enrolled courses, progress tracking, week-based curriculum, assignments
+- **Instructor**: Course authoring, student roster, earnings, live session scheduling
+- **Admin**: User management, enrollment management, content moderation, newsletter campaigns, announcements, platform analytics
 
-### Core Features
-- **User Authentication**: JWT-based auth with social login (Google, Facebook, Twitter)
-- **Course Management**: Create, browse, and enroll in courses with multi-level hierarchy (course → modules → lessons)
-- **Blog System**: Educational content and articles with comments, categories, and tags
-- **Learning System**: Video lessons, assignments, resources, live Zoom sessions, progress tracking
-- **Admin Tools**: Content moderation, user management, analytics, newsletter campaigns
-- **Responsive Design**: Mobile-friendly interface with Tailwind CSS and dark mode support
+### Core Platform
+- **Authentication**: JWT (access 15 min, refresh 7 days), social login (Google, Facebook, Twitter), email-based custom user model
+- **Courses**: Multi-level hierarchy — Course → Modules → Lessons → Assignments → Live Sessions → Resources; draft/publish workflow; free & paid enrollment
+- **Payments**: Paystack integration (card + M-Pesa); webhook-based verification; auto-enrollment on success
+- **Blog**: Rich HTML posts (TipTap editor); categories, tags, search, pagination; RSS/Atom feeds; XML sitemaps
+- **Comments**: Threaded comments on posts and lessons; moderation workflow; like system
+- **Newsletter & Email**: Double opt-in subscriptions; Brevo API for bulk & transactional email; all emails queued via Celery
+- **Services Catalog**: EIA, EA, Training, Consulting, Research — with pricing, timelines, FAQs, deliverables
+- **Media**: Cloudinary CDN for profile pictures and post images (5 MB limit, JPEG/PNG/GIF/WebP/AVIF)
+- **API Docs**: Swagger UI + ReDoc (auto-generated from drf-yasg)
+
+---
 
 ## 🛠️ Tech Stack
 
 ### Backend
-- Python 3.10+
-- Django 4.2
-- Django REST Framework
-- MySQL 8.0
-- JWT Authentication (SimpleJWT)
-- Social Auth (Google, Facebook, Twitter)
+| Layer | Technology |
+|-------|-----------|
+| Framework | Django 4.2 + Django REST Framework |
+| Language | Python 3.10 |
+| Database | MySQL 8.0 (utf8mb4) |
+| Task Queue | Celery 5.5 + Redis 6.1 |
+| Authentication | JWT (SimpleJWT), django-allauth (OAuth) |
+| Email | Brevo API + SMTP relay |
+| Media CDN | Cloudinary |
+| Payments | Paystack |
+| API Docs | drf-yasg (OpenAPI 3.0) |
+| Linting | Ruff |
+| WSGI Server | Gunicorn |
 
 ### Frontend
-- React 18
-- Vite
-- Redux Toolkit
-- Tailwind CSS
-- Firebase (Social Auth)
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 18 + Vite 5 |
+| Styling | Tailwind CSS 3 + Flowbite |
+| State | Redux Toolkit 2 + Redux Persist |
+| Editor | TipTap 3 (rich text) |
+| Auth | Firebase 11 |
+| Payments | @paystack/inline-js |
+| Routing | React Router DOM 6 |
+| Animation | Framer Motion 12 |
+| Video | React Player 2 |
 
-### DevOps
-- Docker & Docker Compose
-- GitHub Actions (CI/CD)
-- Ruff (Linting & Formatting)
+### Infrastructure
+| Component | Technology |
+|-----------|-----------|
+| Containerisation | Docker + Docker Compose |
+| Dev proxy / Prod server | Vite proxy / Nginx |
+| Background jobs | Celery workers (in backend container) |
+| Message broker | Redis (in-process in dev container) |
+| CI/CD | GitHub Actions |
+
+---
 
 ## 📋 Prerequisites
 
-- Python 3.10+
-- Node.js 18+
-- Docker & Docker Compose
-- MySQL 8.0 (or use Docker)
+- Docker & Docker Compose **or** Python 3.10+ / Node.js 18+ / MySQL 8.0 installed locally
+
+---
 
 ## 🏃 Quick Start
 
 ### Using Docker (Recommended)
 
 ```bash
-# Clone the repository
 git clone https://github.com/gikonyo-mwema/Ecodeed_Academy.git
 cd Ecodeed_Academy
 
-# Start all services
+# Copy and fill in environment variables
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
 docker-compose up -d
 
-# Access the application
-# Frontend: http://localhost:5173
+# Frontend:    http://localhost:5173
 # Backend API: http://localhost:8000
+# Swagger UI:  http://localhost:8000/swagger/
 ```
 
 ### Manual Setup
@@ -111,26 +145,12 @@ docker-compose up -d
 
 ```bash
 cd backend
-
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# or: venv\Scripts\activate  # Windows
-
-# Install dependencies
+source venv/bin/activate
 pip install -r requirements.txt
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Run migrations
+cp .env.example .env          # edit with your values
 python manage.py migrate
-
-# Create superuser
 python manage.py createsuperuser
-
-# Start development server
 python manage.py runserver
 ```
 
@@ -138,41 +158,124 @@ python manage.py runserver
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start development server
+cp .env.example .env          # edit with your values
 npm run dev
 ```
 
+---
+
 ## 🔧 Environment Variables
 
-### Backend (.env)
+### Backend (`backend/.env`)
 
 ```env
-SECRET_KEY=your-secret-key
+# ── Core ───────────────────────────────────────────────────────────────────────
+SECRET_KEY=your-django-secret-key          # required
 DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
+ALLOWED_HOSTS=localhost,127.0.0.1,backend
+CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 
-# Database
-MYSQL_DATABASE=ecodeed_db
-MYSQL_USER=ecodeed_user
-MYSQL_PASSWORD=your-password
-MYSQL_HOST=localhost
+# ── Database (MySQL) ──────────────────────────────────────────────────────────
+MYSQL_DATABASE=ecodeed_db                  # required
+MYSQL_USER=ecodeed_user                    # required
+MYSQL_PASSWORD=your-db-password            # required
+MYSQL_ROOT_PASSWORD=your-root-password     # required (Docker)
+MYSQL_HOST=db                              # use 'localhost' outside Docker
 MYSQL_PORT=3306
 
-# Social Auth (optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-secret
-FACEBOOK_APP_ID=your-facebook-app-id
-FACEBOOK_APP_SECRET=your-facebook-secret
+# ── URLs ──────────────────────────────────────────────────────────────────────
+SITE_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:5173
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+
+# ── Celery / Redis ────────────────────────────────────────────────────────────
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/1
+
+# ── Payments (Paystack) ───────────────────────────────────────────────────────
+PAYSTACK_SECRET_KEY=sk_live_...            # required for payments
+PAYSTACK_PUBLIC_KEY=pk_live_...            # required for payments
+PAYSTACK_WEBHOOK_SECRET=                   # optional in dev
+
+# ── Email (Brevo / Sendinblue) ────────────────────────────────────────────────
+BREVO_API_KEY=
+BREVO_SMTP_LOGIN=
+BREVO_SMTP_KEY=
+BREVO_SENDER_EMAIL=noreply@ecodeedacademy.com
+BREVO_SENDER_NAME=Ecodeed
+BREVO_NEWSLETTER_LIST_ID=0
+DEFAULT_FROM_EMAIL=Ecodeed <noreply@ecodeed.co.ke>
+ADMIN_CONTACT_EMAIL=contact@ecodeed.co.ke
+ADMIN_CONTACT_NAME=Ecodeed Team
+
+# ── Social OAuth ──────────────────────────────────────────────────────────────
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
+TWITTER_CLIENT_ID=
+TWITTER_CLIENT_SECRET=
+
+# ── Media / Storage (Cloudinary) ──────────────────────────────────────────────
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
 ```
+
+### Frontend (`frontend/.env`)
+
+```env
+# ── API ───────────────────────────────────────────────────────────────────────
+VITE_API_URL=http://localhost:8000
+VITE_API_BASE_URL=http://localhost:8000
+
+# ── Firebase ──────────────────────────────────────────────────────────────────
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_FIREBASE_MEASUREMENT_ID=
+
+# ── Payments (Paystack) ───────────────────────────────────────────────────────
+VITE_PAYSTACK_PUBLIC_KEY=pk_live_...
+```
+
+---
+
+## 🐳 Docker Architecture
+
+### Development (`docker-compose.yml`)
+
+| Service | Image | Port | Description |
+|---------|-------|------|-------------|
+| `backend` | Custom build | 8000 | Django + Redis (in-process) + Celery worker + Gunicorn |
+| `db` | mysql:8 | 3306 (local only) | MySQL 8.0 with persistent volume |
+| `frontend` | Custom build | 5173 | Vite dev server with HMR |
+
+**Backend startup order** (`start.sh`):
+1. `redis-server` — in-memory broker (no persistence)
+2. `python manage.py migrate` — apply schema changes
+3. `celery -A config worker` — async email/task worker
+4. `gunicorn config.wsgi:application` — API server (3 workers)
+
+### Production (`docker-compose.prod.yml`)
+
+| Service | Image | Port | Description |
+|---------|-------|------|-------------|
+| `frontend` | Docker Hub pre-built | 8080 | Nginx serving compiled React SPA |
+| `backend` | Docker Hub pre-built | — | Same startup as dev |
+| `db` | mysql:8 | — | MySQL with tuned InnoDB buffer pool |
+
+> Requires `DOCKERHUB_USER` environment variable for image pulls.
+
+---
 
 ## 🧪 Running Tests
 
 ```bash
-# Backend tests
 cd backend
 python manage.py test
 
@@ -181,20 +284,32 @@ coverage run manage.py test
 coverage report -m
 ```
 
+---
+
 ## 📝 Code Quality
 
-This project uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting.
+Uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting.
 
 ```bash
-# Check for issues
-ruff check backend/
-
-# Auto-fix issues
-ruff check --fix backend/
-
-# Format code
-ruff format backend/
+ruff check backend/           # lint
+ruff check --fix backend/     # auto-fix
+ruff format backend/          # format
 ```
+
+---
+
+## 🔄 CI/CD Pipeline
+
+**Workflow**: [.github/workflows/backend-ci.yml](.github/workflows/backend-ci.yml)
+
+**Triggers**: push to `develop` or `feature/**`; PRs to `develop` or `master`
+
+| Job | Depends on | What it does |
+|-----|-----------|--------------|
+| `lint` | — | Ruff check + format check |
+| `test` | `lint` | Django tests against MySQL 8 service container |
+
+---
 
 ## 🌿 Git Workflow
 
@@ -202,83 +317,71 @@ ruff format backend/
 |--------|---------|
 | `master` | Production-ready code |
 | `develop` | Integration branch |
-| `feature/*` | New features |
+| `feature/*` | Feature development |
 
-### CI/CD Pipeline
+---
 
-1. **Push to feature branch** → Runs linting + tests
-2. **PR to develop** → Runs linting + tests
-3. **Merge to master** → Runs linting + tests + Docker build/push
+## 📚 Key API Endpoints
 
-## 📚 API Documentation
+Full reference: [BACKEND_API_DOCUMENTATION.md](BACKEND_API_DOCUMENTATION.md)
+Interactive docs: `http://localhost:8000/swagger/` | `http://localhost:8000/redoc/`
 
-API documentation is available at:
-- Swagger UI: `http://localhost:8000/swagger/`
-- ReDoc: `http://localhost:8000/redoc/`
-- **Comprehensive Guide**: [BACKEND_API_DOCUMENTATION.md](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/BACKEND_API_DOCUMENTATION.md)
-
-### Key Endpoints
-
-#### Authentication
+### Auth
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/v1/auth/register/` | POST | User registration |
-| `/api/v1/auth/login/` | POST | User login |
-| `/api/v1/auth/logout/` | POST | User logout |
-| `/api/v1/auth/profile/` | GET/PUT | Get/update user profile |
-| `/api/v1/auth/jwt/refresh/` | POST | Refresh JWT token |
+| `/api/v1/auth/register/` | POST | Register new user |
+| `/api/v1/auth/login/` | POST | Obtain JWT tokens |
+| `/api/v1/auth/logout/` | POST | Blacklist refresh token |
+| `/api/v1/auth/jwt/refresh/` | POST | Refresh access token |
+| `/api/v1/auth/profile/` | GET/PUT | View/update own profile |
+| `/api/v1/auth/users/getUsers/` | GET | List all users (admin) |
 
-#### Courses & Learning
+### Courses & Enrollment
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/v1/courses/` | GET/POST | List/create courses |
-| `/api/v1/enrollments/my-courses/` | GET | Get enrolled courses (Student Dashboard) |
-| `/api/v1/lessons/{id}/complete/` | POST | Mark lesson as complete |
+| `/api/v1/courses/` | GET/POST | Browse / create courses |
+| `/api/v1/enrollments/` | GET/POST | Admin enrollment management |
+| `/api/v1/enrollments/my-courses/` | GET | Student enrolled courses |
+| `/api/v1/lessons/{id}/complete/` | POST | Mark lesson complete |
 | `/api/v1/assignments/{id}/submit/` | POST | Submit assignment |
 
-#### Admin Operations
+### Payments
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/v1/auth/users/getUsers/` | GET | Get all users (Admin Dashboard) |
-| `/api/v1/posts/` | GET/POST | Blog posts management |
-| `/api/v1/comments/` | GET/POST | Comments management |
-| `/api/v1/messages/newsletter/` | POST | Newsletter campaigns (Admin) |
-| `/api/v1/announcements/` | GET/POST | Site announcements |
+| `/api/v1/payments/verify/` | POST | Verify Paystack payment + auto-enroll |
+| `/api/v1/payments/webhook/` | POST | Paystack webhook (HMAC-SHA512) |
 
-## 💡 Getting Help
+### Blog & Comments
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/posts/` | GET/POST | List / create posts |
+| `/api/v1/posts/{slug}/` | GET/PUT/DELETE | Post detail |
+| `/api/v1/comments/` | GET/POST | Post comments |
 
-**New to the project?** Start here:
-1. Read [PROJECT_DOCUMENTATION_INDEX.md](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/PROJECT_DOCUMENTATION_INDEX.md) for complete overview
-2. Check relevant documentation based on your role (frontend/backend/full-stack)
-3. All source code includes professional JSDoc/docstring headers for quick reference
-4. Use quick reference guides for common tasks
-
-**Common Questions:**
-- How do I set up the project? → See [Quick Start](#-quick-start) section
-- How do I understand the code structure? → See [Comprehensive Documentation](#-comprehensive-documentation)
-- How do I work with the API? → See [BACKEND_API_DOCUMENTATION.md](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/BACKEND_API_DOCUMENTATION.md)
-- How do I integrate frontend and backend? → See [FRONTEND_BACKEND_INTEGRATION.md](https://github.com/gikonyo-mwema/Ecodeed_Academy/blob/develop/FRONTEND_BACKEND_INTEGRATION.md)
+### Newsletter & Messaging
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/messages/newsletter/subscribe/` | POST | Subscribe to newsletter |
+| `/api/v1/messages/newsletter/unsubscribe/` | POST | Unsubscribe |
+| `/api/v1/messages/newsletter/broadcast/` | POST | Send campaign (admin) |
+| `/api/v1/messages/contact/` | POST | Send contact form message |
 
 ---
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'feat: your feature description'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request targeting `develop`
+
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ## 👥 Authors
 
-- **Gikonyo Mwema** - [GitHub](https://github.com/gikonyo-mwema)
-
-## 🙏 Acknowledgments
-
-- Django REST Framework documentation
-- React and Vite communities
-- Tailwind CSS team
+**Gikonyo Mwema** — [GitHub](https://github.com/gikonyo-mwema)
