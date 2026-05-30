@@ -12,10 +12,8 @@ An online learning platform built with Django REST Framework and React + Vite. S
 | Guide | Description |
 |-------|-------------|
 | [PROJECT_DOCUMENTATION_INDEX.md](PROJECT_DOCUMENTATION_INDEX.md) | Master index and maintenance rules |
-| [FRONTEND_DOCUMENTATION_COMPLETE.md](FRONTEND_DOCUMENTATION_COMPLETE.md) | Frontend architecture and component docs |
 | [BACKEND_API_DOCUMENTATION.md](BACKEND_API_DOCUMENTATION.md) | Complete backend API reference |
 | [FRONTEND_BACKEND_INTEGRATION.md](FRONTEND_BACKEND_INTEGRATION.md) | Full-stack request/response flows |
-| [CHANGES_SUMMARY.md](CHANGES_SUMMARY.md) | Historical change log |
 
 ---
 
