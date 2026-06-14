@@ -69,11 +69,17 @@ export const CreateCourse = () => {
     shortDescription: '',
     description: '',
     externalUrl: '',
+    category: '', // Added missing required field
     isPopular: false,
-    paymentOption: 'one-time',
+    isLive: false, // Added missing field
+    hasCertificate: false, // Added missing field
+    pacingType: 'self_paced', // Added missing field
+    level: [], // Added missing field
+    format: [], // Added missing field
     features: [''],
     cta: 'Enroll Now',
-    iconName: 'HiOutlineAcademicCap'
+    iconName: 'HiOutlineAcademicCap',
+    curriculum: [] // Added missing field
   });
 
   const handleSubmit = async (e) => {
@@ -88,16 +94,11 @@ export const CreateCourse = () => {
       }
 
       // Validate required fields
-      if (!formData.slug || !formData.externalUrl) {
-        throw new Error('Slug and External URL are required');
+      if (!formData.slug || !formData.externalUrl || !formData.category || !formData.title || !formData.shortDescription) {
+        throw new Error('Title, Slug, Short Description, External URL, and Category are required');
       }
 
-      // Validate slug format
-      if (!/^[a-z0-9-]+$/.test(formData.slug)) {
-        throw new Error('Slug can only contain lowercase letters, numbers, and hyphens');
-      }
-
-      const res = await fetch('/api/courses', {
+      const res = await fetch('/api/v1/courses', {  // Updated to correct API endpoint
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json', 
@@ -105,15 +106,23 @@ export const CreateCourse = () => {
         },
         body: JSON.stringify({
           ...formData,
+          // Map frontend field names to backend field names
+          short_description: formData.shortDescription,
+          full_description: formData.description,
+          external_url: formData.externalUrl,
+          is_free: Number(formData.price) === 0,
+          pacing_type: formData.pacingType,
+          target_audience: formData.targetAudience || [],
+          has_certificate: formData.hasCertificate,
           // Ensure price is stored as number
-          price: Number(formData.price)
+          price: Number(formData.price) || 0
         }),
       });
 
       const data = await res.json();
       
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to create course');
+        throw new Error(data.message || data.detail || 'Failed to create course');
       }
 
       navigate('/dashboard?tab=courses');

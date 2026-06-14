@@ -70,7 +70,8 @@ export const CreateCourse = () => {
     features: [''],
     targetAudience: [''],
     faqs: [{ question: '', answer: '' }],
-    curriculum: [{ title: '', items: [''], live_sessions: [], resources: [] }]
+    curriculum: [{ title: '', items: [''], live_sessions: [], resources: [] }],
+    iconName: 'HiOutlineAcademicCap' // Add default icon name
   });
 
   const validationErrors = useMemo(() => {
@@ -492,6 +493,7 @@ export const CreateCourse = () => {
             addTargetAudience={addTargetAudience}
             removeTargetAudience={removeTargetAudience}
             handleSubmit={handleSubmit}
+            setActiveStep={setActiveStep} // Pass setActiveStep to allow checklist navigation
             title="Create New Course"
           />
         </div>

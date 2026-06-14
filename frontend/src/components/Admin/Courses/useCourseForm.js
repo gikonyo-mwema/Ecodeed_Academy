@@ -108,7 +108,13 @@
 import { useState } from 'react';
 
 export const useCourseForm = (initialState) => {
-  const [formData, setFormData] = useState(initialState);
+  // Ensure iconName is included in the initial state if not present
+  const initialStateWithIcon = {
+    ...initialState,
+    iconName: initialState.iconName || 'HiOutlineAcademicCap'  // Default icon
+  };
+
+  const [formData, setFormData] = useState(initialStateWithIcon);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 

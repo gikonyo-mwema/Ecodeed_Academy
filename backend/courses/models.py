@@ -74,6 +74,7 @@ class Course(models.Model):
       has_certificate (bool): Whether certificate is awarded on completion
       pacing_type (str): Delivery mode (self_paced or weekly)
       image (URL): Course thumbnail/banner image
+      icon_name (str): Name of the icon to display for the course
       created_at (DateTime): Course creation timestamp
       updated_at (DateTime): Last modification timestamp
     
@@ -129,11 +130,14 @@ class Course(models.Model):
     has_certificate = models.BooleanField(default=False, help_text="Whether this course offers a certificate upon completion")
     pacing_type = models.CharField(max_length=20, choices=PACING_CHOICES, default='self_paced', help_text="How weekly content is unlocked")
     
+    # ── Media & Icon ──
+    image = models.URLField(max_length=1000, blank=True, null=True)
+    icon_name = models.CharField(max_length=100, blank=True, null=True, help_text="Name of the icon to display for the course")
+    
     # ── Relationships ──
     instructor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses_taught')
 
-    # ── Media & Timestamps ──
-    image = models.URLField(max_length=1000, blank=True, null=True)
+    # ── Timestamps ──
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

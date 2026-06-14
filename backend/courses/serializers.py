@@ -250,6 +250,7 @@ class CourseSerializer(serializers.ModelSerializer):
       short_description: Brief course summary
       full_description: Complete course description
       image: Featured image URL
+      icon_name: Name of the icon to display for the course
       
     Fields (Pricing & Status):
       price: Course price (decimal)
@@ -299,7 +300,7 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = [
             'id', '_id', 'title', 'slug', 'short_description', 'full_description',
-            'image', 'price', 'category', 'is_free', 'modules', 'curriculum',
+            'image', 'icon_name', 'price', 'category', 'is_free', 'modules', 'curriculum',
             'created_at', 'updated_at', 'level', 'format', 'features', 'faqs',
             'target_audience', 'resources', 'external_url', 'is_popular', 'is_live',
             'has_certificate', 'pacing_type', 'instructor', 'instructor_name',

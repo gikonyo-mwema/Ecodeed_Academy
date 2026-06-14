@@ -6,39 +6,32 @@ import { useCourseForm } from './useCourseForm';
 import { Unauthorized } from './Unauthorized';
 import { apiFetch } from '../../../utils/api';
 import {
-  HiOutlineSave,
+  HiOutlinePencil,
   HiOutlineX,
   HiOutlineArrowLeft,
   HiOutlineExclamationCircle,
   HiCheckCircle,
-  HiOutlineEye,
 } from 'react-icons/hi';
 
 export const EditCourse = () => {
-  const { currentUser } = useSelector((state) => state.user);
+  const AUTOSAVE_KEY_PREFIX = 'course-draft-edit-v1-';
   const { courseId } = useParams();
-  const AUTOSAVE_KEY = `course-draft-edit-${courseId}-v1`;
+  const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | success | error
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [saveTick, setSaveTick] = useState(Date.now());
   const [draftRestored, setDraftRestored] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const lastSavedSerializedRef = useRef('');
   const {
     formData,
     setFormData,
     error,
-    setError,
     loading,
-    setLoading,
     handleChange,
     handleFeatureChange,
-    addFeatureField,
-    removeFeatureField,
-    handleTargetAudienceChange,
-    addTargetAudience,
-    removeTargetAudience,
     handleCurriculumChange,
     handleCurriculumItemChange,
     addCurriculumSection,
@@ -50,15 +43,21 @@ export const EditCourse = () => {
     moveCurriculumLesson,
     removeCurriculumItem,
     handleLessonDetailChange,
+    handleFaqChange,
+    addFaq,
+    removeFaq,
+    addFeatureField,
+    removeFeatureField,
+    handleTargetAudienceChange,
+    addTargetAudience,
+    removeTargetAudience,
     addLiveSession,
     updateLiveSession,
     removeLiveSession,
     addResource,
     updateResource,
     removeResource,
-    handleFaqChange,
-    addFaq,
-    removeFaq
+    setError,
   } = useCourseForm({
     title: '',
     price: '',
@@ -73,8 +72,64 @@ export const EditCourse = () => {
     features: [''],
     targetAudience: [''],
     faqs: [{ question: '', answer: '' }],
-    curriculum: []
+    curriculum: [{ title: '', items: [''], live_sessions: [], resources: [] }],
+    iconName: 'HiOutlineAcademicCap' // Add default icon name
   });
+
+  // Load course data
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const course = await apiFetch(`/api/v1/courses/${courseId}/`);
+        
+        // Convert snake_case to camelCase for form
+        setFormData({
+          id: course.id,
+          title: course.title || '',
+          price: course.price || '',
+          shortDescription: course.short_description || '',
+          description: course.full_description || '',
+          isPopular: course.is_popular || false,
+          isFree: course.is_free || false,
+          isLive: course.is_live || false,
+          hasCertificate: course.has_certificate || false,
+          pacingType: course.pacing_type || 'self_paced',
+          category: course.category || 'specialized',
+          features: course.features || [''],
+          targetAudience: course.target_audience || [''],
+          faqs: course.faqs || [{ question: '', answer: '' }],
+          curriculum: course.modules || [{ title: '', items: [''], live_sessions: [], resources: [] }],
+          image: course.image || '',
+          iconName: course.icon_name || course.iconName || 'HiOutlineAcademicCap' // Handle both snake_case and camelCase
+        });
+        
+        // Check for autosaved draft for this course
+        const AUTOSAVE_KEY = `${AUTOSAVE_KEY_PREFIX}${courseId}`;
+        try {
+          const raw = localStorage.getItem(AUTOSAVE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.formData && typeof parsed.formData === 'object') {
+              setFormData((prev) => ({ ...prev, ...parsed.formData }));
+              setLastSavedAt(parsed.savedAt || Date.now());
+              lastSavedSerializedRef.current = JSON.stringify(parsed.formData);
+              setDraftRestored(true);
+            }
+          }
+        } catch (restoreErr) {
+          // noop
+        }
+        
+        setInitialLoadComplete(true);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    if (courseId) {
+      fetchCourse();
+    }
+  }, [courseId, setFormData]);
 
   const validationErrors = useMemo(() => {
     const errors = {};
@@ -137,6 +192,8 @@ export const EditCourse = () => {
     return null;
   };
 
+  const AUTOSAVE_KEY = `${AUTOSAVE_KEY_PREFIX}${courseId}`;
+
   const getLastSavedLabel = () => {
     if (!lastSavedAt) return 'Not saved yet';
     const sec = Math.max(0, Math.floor((saveTick - lastSavedAt) / 1000));
@@ -147,9 +204,13 @@ export const EditCourse = () => {
 
   const saveDraftToStorage = () => {
     try {
-      const payload = { savedAt: Date.now(), formData };
+      const payload = {
+        savedAt: Date.now(),
+        formData,
+      };
       localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
-      lastSavedSerializedRef.current = JSON.stringify(formData);
+      const serialized = JSON.stringify(formData);
+      lastSavedSerializedRef.current = serialized;
       setLastSavedAt(payload.savedAt);
       setDraftRestored(false);
     } catch (storageErr) {
@@ -158,73 +219,13 @@ export const EditCourse = () => {
   };
 
   useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        setLoading(true);
-        const data = await apiFetch(`/api/v1/courses/${courseId}/`);
-
-        let nextData = {
-          slug: data.slug || '',
-          title: data.title || '',
-          price: data.price || '',
-          shortDescription: data.short_description || data.shortDescription || '',
-          description: data.full_description || data.description || '',
-          isPopular: data.is_popular !== undefined ? data.is_popular : (data.isPopular || false),
-          isFree: data.is_free !== undefined ? data.is_free : (data.isFree || false),
-          hasCertificate: data.has_certificate !== undefined ? data.has_certificate : (data.hasCertificate || false),
-          isLive: data.is_live !== undefined ? data.is_live : (data.isLive || false),
-          pacingType: data.pacing_type || data.pacingType || 'self_paced',
-          category: data.category || 'specialized',
-          features: Array.isArray(data.features) && data.features.length > 0 ? data.features : [''],
-          targetAudience: Array.isArray(data.target_audience) && data.target_audience.length > 0 ? data.target_audience : (Array.isArray(data.targetAudience) && data.targetAudience.length > 0 ? data.targetAudience : ['']),
-          faqs: Array.isArray(data.faqs) && data.faqs.length > 0 ? data.faqs : [{ question: '', answer: '' }],
-          curriculum: Array.isArray(data.curriculum) && data.curriculum.length > 0
-            ? data.curriculum.map(section => ({
-                ...section,
-                items: Array.isArray(section.items) ? section.items : [],
-                live_sessions: Array.isArray(section.live_sessions) ? section.live_sessions : [],
-                resources: Array.isArray(section.resources) ? section.resources : [],
-              }))
-            : []
-        };
-
-        const savedDraftRaw = localStorage.getItem(AUTOSAVE_KEY);
-        if (savedDraftRaw) {
-          try {
-            const savedDraft = JSON.parse(savedDraftRaw);
-            if (savedDraft?.formData) {
-              nextData = { ...nextData, ...savedDraft.formData };
-              setLastSavedAt(savedDraft.savedAt || Date.now());
-              setDraftRestored(true);
-            }
-          } catch (draftErr) {
-            // noop
-          }
-        }
-
-        setFormData(prev => ({
-          ...prev,
-          ...nextData,
-        }));
-        lastSavedSerializedRef.current = JSON.stringify(nextData);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (currentUser?.isAdmin || currentUser?.isInstructor) {
-      fetchCourse();
-    }
-  }, [courseId, currentUser, setFormData, setError, setLoading]);
-
-  useEffect(() => {
     const interval = setInterval(() => setSaveTick(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
+    if (!initialLoadComplete) return; // Don't autosave until initial load is complete
+    
     const interval = setInterval(() => {
       if (saveStatus === 'saving' || saveStatus === 'success') return;
       const serialized = JSON.stringify(formData);
@@ -234,7 +235,7 @@ export const EditCourse = () => {
     }, 25000);
 
     return () => clearInterval(interval);
-  }, [formData, saveStatus]);
+  }, [formData, saveStatus, initialLoadComplete]);
 
   const validateStep = (step) => {
     const message = getStepValidationMessage(step);
@@ -272,16 +273,18 @@ export const EditCourse = () => {
     setActiveStep(step);
   };
 
-  const handleSubmit = async (e, { isLive } = {}) => {
+  const handleSubmit = async (e, { isLive = true } = {}) => {
     e.preventDefault();
     if (hasCriticalErrors) {
       setError('Please resolve required field errors before publishing.');
       return;
     }
     setSaveStatus('saving');
+
     try {
       setError(null);
       
+      // Validate admin or instructor status
       if (!currentUser?.isAdmin && !currentUser?.isInstructor) {
         throw new Error('Only admins and instructors can edit courses');
       }
@@ -297,9 +300,8 @@ export const EditCourse = () => {
         pacing_type: formData.pacingType || 'self_paced',
         target_audience: formData.targetAudience || [],
         price: Number(formData.price) || 0,
-        // If isLive is explicitly passed (from Publish/Unpublish buttons), use it.
-        // Otherwise preserve the current value from formData.
-        is_live: isLive !== undefined ? isLive : Boolean(formData.isLive),
+        is_live: isLive,
+        icon_name: formData.iconName  // Add icon_name for backend
       };
 
       await apiFetch(`/api/v1/courses/${courseId}/`, {
@@ -307,19 +309,20 @@ export const EditCourse = () => {
         body: JSON.stringify(submitData),
       });
 
+      // Remove autosave draft for this course
       localStorage.removeItem(AUTOSAVE_KEY);
 
       setSaveStatus('success');
 
-      // brief success feedback before redirect
+      // Show success briefly before redirect
       setTimeout(() => {
         navigate('/dashboard?tab=courses');
-      }, 1000);
+      }, 1500);
     } catch (error) {
       setError(error.message);
       setSaveStatus('error');
 
-      // reset status chip after a short delay
+      // Clear transient status chip
       setTimeout(() => setSaveStatus('idle'), 3000);
     }
   };
@@ -328,23 +331,19 @@ export const EditCourse = () => {
     return <Unauthorized />;
   }
 
-  if (loading && !formData.title) {
+  if (!initialLoadComplete && loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-brand-blue flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-24 h-24 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
-            <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-400 rounded-full animate-spin absolute top-4 left-1/2 -translate-x-1/2 opacity-60"></div>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Loading course</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-300">Please wait while we fetch your course details...</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-brand-blue dark:to-gray-900 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-brand-green border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading course...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-brand-blue py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-brand-blue dark:to-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -358,31 +357,36 @@ export const EditCourse = () => {
                 <HiOutlineArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Course</h1>
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Course</h1>
+                  <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-700/40">
+                    {formData.isLive ? 'Published' : 'Draft'}
+                  </span>
+                </div>
                 <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
-                  Update your course information below
+                  {formData.title || 'Editing course...'}
                 </p>
               </div>
             </div>
 
-            {/* Save status indicator + save action */}
+            {/* Save status + primary action */}
             <div className="flex items-center space-x-3 flex-wrap">
               {saveStatus === 'saving' && (
-                <div className="flex items-center text-blue-600 bg-blue-50 px-4 py-2 rounded-lg">
+                <div className="flex items-center text-blue-600 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-lg border border-blue-100 dark:border-blue-800/40">
                   <span className="mr-2 h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm font-medium">Saving changes...</span>
+                  <span className="text-sm font-medium">Saving course...</span>
                 </div>
               )}
 
               {saveStatus === 'success' && (
-                <div className="flex items-center text-green-600 bg-green-50 px-4 py-2 rounded-lg">
+                <div className="flex items-center text-green-600 dark:text-green-200 bg-green-50 dark:bg-green-900/30 px-4 py-2 rounded-lg border border-green-100 dark:border-green-800/40">
                   <HiCheckCircle className="w-4 h-4 mr-2" />
-                  <span className="text-sm font-medium">Saved successfully!</span>
+                  <span className="text-sm font-medium">Changes saved!</span>
                 </div>
               )}
 
               {saveStatus === 'error' && (
-                <div className="flex items-center text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                <div className="flex items-center text-red-600 dark:text-red-200 bg-red-50 dark:bg-red-900/30 px-4 py-2 rounded-lg border border-red-100 dark:border-red-800/40">
                   <HiOutlineExclamationCircle className="w-4 h-4 mr-2" />
                   <span className="text-sm font-medium">Save failed</span>
                 </div>
@@ -391,17 +395,6 @@ export const EditCourse = () => {
               <div className="text-xs text-gray-500 dark:text-gray-300 px-2 py-1 rounded-lg bg-gray-100/70 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
                 {getLastSavedLabel()}
               </div>
-
-              {formData?.slug && (
-                <button
-                  type="button"
-                  onClick={() => navigate(`/learn/${formData.slug}?preview=1`)}
-                  className="inline-flex items-center px-4 py-3 bg-transparent border border-brand-green text-brand-green font-medium rounded-xl hover:bg-brand-green hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-green transition-all"
-                >
-                  <HiOutlineEye className="w-4 h-4 mr-2" />
-                  Open Student View
-                </button>
-              )}
 
               <div className="flex items-center gap-2">
                 {activeStep > 1 && (
@@ -428,7 +421,7 @@ export const EditCourse = () => {
                     type="submit"
                     form="course-form"
                     disabled={saveStatus === 'saving' || hasCriticalErrors}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-brand-green to-brand-yellow text-white font-medium rounded-xl hover:from-brand-green/90 hover:to-brand-yellow/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-green disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
                   >
                     {saveStatus === 'saving' ? (
                       <>
@@ -437,8 +430,8 @@ export const EditCourse = () => {
                       </>
                     ) : (
                       <>
-                        <HiOutlineSave className="w-4 h-4 mr-2" />
-                        Save Changes
+                        <HiOutlinePencil className="w-4 h-4 mr-2" />
+                        Update Course
                       </>
                     )}
                   </button>
@@ -457,15 +450,15 @@ export const EditCourse = () => {
 
           {/* Error banner */}
           {error && saveStatus !== 'saving' && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start">
+            <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl flex items-start">
               <HiOutlineExclamationCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-red-800">Error saving course</h3>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error updating course</h3>
+                <p className="text-sm text-red-700 dark:text-red-300 mt-1">{error}</p>
               </div>
               <button
                 onClick={() => setError(null)}
-                className="text-red-600 hover:text-red-800"
+                className="text-red-600 dark:text-red-300 hover:text-red-800 dark:hover:text-red-200 transition-colors"
                 aria-label="Dismiss error"
               >
                 <HiOutlineX className="w-5 h-5" />
@@ -497,7 +490,7 @@ export const EditCourse = () => {
                         ? 'text-blue-600 border-blue-600'
                         : isCompleted
                           ? 'text-green-600 border-green-600'
-                          : 'text-gray-500 border-transparent hover:text-gray-700'
+                          : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                   >
                     <span className="inline-flex items-center gap-2">
@@ -534,12 +527,6 @@ export const EditCourse = () => {
             handleFeatureChange={handleFeatureChange}
             handleCurriculumChange={handleCurriculumChange}
             handleCurriculumItemChange={handleCurriculumItemChange}
-            handleFaqChange={handleFaqChange}
-            addFeatureField={addFeatureField}
-            removeFeatureField={removeFeatureField}
-            handleTargetAudienceChange={handleTargetAudienceChange}
-            addTargetAudience={addTargetAudience}
-            removeTargetAudience={removeTargetAudience}
             addCurriculumSection={addCurriculumSection}
             addCurriculumItem={addCurriculumItem}
             addMultipleCurriculumItems={addMultipleCurriculumItems}
@@ -555,18 +542,70 @@ export const EditCourse = () => {
             addResource={addResource}
             updateResource={updateResource}
             removeResource={removeResource}
+            handleFaqChange={handleFaqChange}
             addFaq={addFaq}
             removeFaq={removeFaq}
+            addFeatureField={addFeatureField}
+            removeFeatureField={removeFeatureField}
+            handleTargetAudienceChange={handleTargetAudienceChange}
+            addTargetAudience={addTargetAudience}
+            removeTargetAudience={removeTargetAudience}
             handleSubmit={handleSubmit}
+            setActiveStep={setActiveStep} // Pass setActiveStep to allow checklist navigation
             title="Edit Course"
           />
+        </div>
+
+        {/* Tips section */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800/40">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <HiOutlinePencil className="w-4 h-4 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200">Pro Tip</h4>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  Make sure your course title accurately reflects the content.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-purple-50/50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-100 dark:border-purple-800/40">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <HiCheckCircle className="w-4 h-4 text-purple-600" />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-purple-900 dark:text-purple-200">Completion</h4>
+                <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                  Review all sections before publishing your updates.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-green-50/50 dark:bg-green-900/20 rounded-xl p-4 border border-green-100 dark:border-green-800/40">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <HiOutlinePencil className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-green-900 dark:text-green-200">Curriculum</h4>
+                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                  Add engaging content to keep students interested.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-400 dark:text-gray-300">
             {activeStep < 3
               ? 'Complete this step to continue to the next section.'
-              : 'Changes are saved when you click "Save Changes"'}
+              : 'Your course will be updated when you click "Update Course"'}
           </p>
         </div>
       </div>

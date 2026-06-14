@@ -278,10 +278,22 @@ function CourseCard({ course, category, index }) {
       {/* Card Header with Gradient */}
       <div className={`h-2 bg-gradient-to-r ${config.color}`}></div>
       
-      {/* Image Placeholder with Icon */}
-      <div className={`relative h-48 ${config.bg} dark:bg-gray-700 flex items-center justify-center overflow-hidden`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${config.color} opacity-10 group-hover:opacity-20 transition-opacity duration-500`}></div>
-        <IconComponent className={`w-20 h-20 text-gray-700 dark:text-gray-300 transform group-hover:scale-110 transition-transform duration-500`} />
+      {/* Course Thumbnail */}
+      <div className={`relative h-48 ${config.bg} dark:bg-gray-700 flex items-center justify-center overflow-hidden bg-cover bg-center`}
+        style={course.image ? { backgroundImage: `url(${course.image})` } : {}}
+      >
+        {/* Fallback icon if no image */}
+        {!course.image && (
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${config.color} opacity-10 group-hover:opacity-20 transition-opacity duration-500`}></div>
+            <IconComponent className={`w-20 h-20 text-gray-700 dark:text-gray-300 transform group-hover:scale-110 transition-transform duration-500`} />
+          </>
+        )}
+        
+        {/* Image overlay for better text contrast */}
+        {course.image && (
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-500"></div>
+        )}
         
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-wrap gap-2">

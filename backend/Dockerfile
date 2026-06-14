@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 # Install system dependencies including redis-server
 # redis-server runs inside this container as the Celery broker
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     default-libmysqlclient-dev \
     pkg-config \
