@@ -586,6 +586,17 @@ CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
 CELERY_TASK_ACKS_LATE = True  # Only acknowledge task after successful execution
 CELERY_TASK_REJECT_ON_WORKER_LOST = True  # Requeue if worker crashes mid-task
 
+# Periodic tasks (celery beat)
+# The worker in start.sh runs with -B (embedded beat) so these fire
+# without a separate beat container.
+CELERY_BEAT_SCHEDULE = {
+    # Promote 'scheduled' posts to 'published' once scheduled_for passes.
+    'publish-due-scheduled-posts': {
+        'task': 'posts.publish_due_posts',
+        'schedule': 60.0,  # every minute
+    },
+}
+
 # Production-specific tuning for 2GB droplet
 if not DEBUG:
     # Reduce queue size to prevent excessive memory usage

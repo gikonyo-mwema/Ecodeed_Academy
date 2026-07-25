@@ -46,13 +46,16 @@ echo "Migrations complete"
 #    --pool=solo     : single-threaded, low memory, perfect for I/O-bound email tasks
 #    --concurrency=2 : two concurrent task slots
 #    --max-tasks-per-child=1000 : recycle worker after 1000 tasks to prevent memory leaks
+#    -B (beat)       : embedded scheduler that fires CELERY_BEAT_SCHEDULE tasks
+#                      (e.g. publishing scheduled blog posts every minute)
 # ---------------------------------------------------------------------------
-echo "Starting Celery worker..."
+echo "Starting Celery worker (with embedded beat)..."
 celery -A config worker \
   --loglevel=info \
   --concurrency=2 \
   --pool=solo \
-  --max-tasks-per-child=1000 &
+  --max-tasks-per-child=1000 \
+  -B &
 echo "Celery worker started"
 
 # ---------------------------------------------------------------------------

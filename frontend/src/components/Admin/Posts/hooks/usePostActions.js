@@ -80,12 +80,15 @@ export default function usePostActions(currentUser, setShowEditForm, setCurrentP
   };
 
   const handleEditPost = (post) => {
-    setCurrentPost(post);
-    setShowEditForm(true);
+    // Optional inline-edit setters (DashPosts now routes to the full
+    // editor page instead, so these may be null)
+    if (setCurrentPost) setCurrentPost(post);
+    if (setShowEditForm) setShowEditForm(true);
   };
 
   return {
     showModal,
+    setShowModal,
     postIdToDelete,
     handleDeleteClick,
     handleDeletePost,

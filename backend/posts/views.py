@@ -19,6 +19,7 @@ import uuid
 
 import cloudinary.uploader
 from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Count, F, Q
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -43,6 +44,25 @@ ALLOWED_IMAGE_TYPES = {
 ALLOWED_MIME_TYPES = {
     "jpeg", "png", "gif", "webp",
 }
+
+
+def promote_due_scheduled_posts():
+    """
+    Safety net for scheduled publishing.
+
+    Celery beat runs posts.publish_due_posts every minute, but if beat is
+    down (or in local dev without Celery) this lazily promotes due posts on
+    read traffic instead.  Cache-throttled to at most once per 60s so it
+    adds a single cheap UPDATE query per minute at worst.
+    """
+    if not cache.add("posts:promote_scheduled_lock", "1", timeout=60):
+        return
+    now = timezone.now()
+    Post.objects.filter(
+        status=Post.Status.SCHEDULED,
+        scheduled_for__isnull=False,
+        scheduled_for__lte=now,
+    ).update(status=Post.Status.PUBLISHED, published_at=F("scheduled_for"), updated_at=now)
 
 
 # ===================================================================
@@ -79,6 +99,9 @@ class PostViewSet(viewsets.ModelViewSet):
 
     # ---------- queryset ----------
     def get_queryset(self):
+        # Publish any scheduled posts that are now due (cache-throttled)
+        promote_due_scheduled_posts()
+
         qs = (
             Post.objects
             .select_related("user", "category_fk")

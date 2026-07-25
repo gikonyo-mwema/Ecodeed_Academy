@@ -64,11 +64,13 @@ export default function usePostFetch(currentUser) {
     
     setLoading(true);
     try {
-      // Backend expects startIndex for offset pagination
+      // Backend expects startIndex for offset pagination.
+      // showAll=1 lets admins see drafts & scheduled posts too.
       const query = new URLSearchParams({
         startIndex: ((pagination.page - 1) * pagination.limit).toString(),
         limit: pagination.limit.toString(),
-        order: 'desc'
+        order: 'desc',
+        showAll: '1'
       }).toString();
 
       const data = await apiFetch(`/api/v1/posts/?${query}`);

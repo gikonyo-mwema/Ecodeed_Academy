@@ -326,7 +326,8 @@ export default function PostEditorPage() {
     const fetchPost = async () => {
       try {
         setLoadingPost(true);
-        const data = await apiFetch(`/api/v1/posts/?postId=${postId}`);
+        // showAll=1 so drafts/scheduled posts load in edit mode too
+        const data = await apiFetch(`/api/v1/posts/?postId=${postId}&showAll=1`);
         const posts = data?.results || data?.posts || data?.data?.posts || [];
         if (cancelled) return;
 
