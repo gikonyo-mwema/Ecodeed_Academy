@@ -13,6 +13,7 @@ Authentication:
   POST   /users/register/              - Register new user
   POST   /users/login/                 - Login with email/password
   POST   /users/logout/                - Logout (invalidate tokens)
+  POST   /users/token/refresh/         - Exchange refresh token for new access token
   
 Profile Management:
   GET    /users/profile/               - Get current user profile
@@ -36,6 +37,7 @@ Social Authentication:
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 from .views import UserViewSet
 from .social_auth import (
@@ -54,6 +56,7 @@ urlpatterns = [
         path('register/', views.UserRegistrationView.as_view(), name='register'),
         path('login/', views.UserLoginView.as_view(), name='login'),
         path('logout/', views.LogoutView.as_view(), name='logout'),
+        path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
         path('profile/', views.UserProfileView.as_view(), name='profile'),
         path('profile/update/', views.UserProfileUpdateView.as_view(), name='profile-update'),
 

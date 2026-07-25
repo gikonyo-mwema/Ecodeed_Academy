@@ -349,9 +349,12 @@ export const signOut = createAsyncThunk(
   'user/signout',
   async (_, { rejectWithValue }) => {
     try {
+      // Send the refresh token so the backend can blacklist it
+      let refresh = null;
+      try { refresh = localStorage.getItem('refresh_token'); } catch {}
       await apiFetch('/api/v1/auth/logout/', {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify(refresh ? { refresh } : {}),
       });
       return true;
     } catch (error) {
@@ -442,12 +445,16 @@ const userSlice = createSlice({
     socialAuthSuccess: (state, action) => {
       const userData = action.payload.user || action.payload;
       const token = action.payload.token || action.payload.access || action.payload.key;
+      const refreshToken = action.payload.refresh || action.payload.refresh_token;
       if (validateUser(userData)) {
         state.loading = false;
         state.currentUser = fixProfileUrl(userData);
         state.token = token;
         state.error = null;
-        try { if (token) localStorage.setItem('token', token); } catch {}
+        try {
+          if (token) localStorage.setItem('token', token);
+          if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
+        } catch {}
       }
     },
   },
@@ -486,6 +493,7 @@ const userSlice = createSlice({
       // Direct access from payload.user based on how backend sends it
       const userData = action.payload.user || action.payload;
       const token = action.payload.token || action.payload.access || action.payload.key;
+      const refreshToken = action.payload.refresh || action.payload.refresh_token;
 
       if (validateUser(userData)) {
         state.loading = false;
@@ -495,6 +503,9 @@ const userSlice = createSlice({
         try {
           if (token) {
             localStorage.setItem('token', token);
+          }
+          if (refreshToken) {
+            localStorage.setItem('refresh_token', refreshToken);
           }
         } catch {}
       } else {
@@ -515,6 +526,7 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = null;
       localStorage.removeItem('token');
+      localStorage.removeItem('refresh_token');
     };
 
     /**

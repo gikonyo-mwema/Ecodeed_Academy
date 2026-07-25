@@ -57,25 +57,26 @@ export const getApiBaseUrl = () => {
   // Prefer explicit base URL if provided (supports split frontend/backend)
   const envBase = import.meta.env.VITE_API_URL?.trim();
   if (envBase) {
-    // Safety: if a localhost API URL is accidentally baked into a production build,
-    // ignore it and use same-origin instead.
-    if (typeof window !== 'undefined') {
-      const isProdHost = !['localhost', '127.0.0.1'].includes(window.location.hostname);
-      const isLocalApi = /localhost|127\.0\.0\.1/.test(envBase);
-      if (isProdHost && isLocalApi) {
-        return window.location.origin;
-      }
+    const normalizedEnvBase = envBase.replace(/\/$/, '');
+    const isLocalApi = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedEnvBase);
+
+    // In production builds, ignore localhost API URLs entirely.
+    // Use relative requests so the browser stays within the same origin and CSP.
+    if (import.meta.env.PROD && isLocalApi) {
+      return '';
     }
 
-    return envBase.replace(/\/$/, '');
+    if (isLocalApi && typeof window !== 'undefined') {
+      // In development, keep localhost API URL so local frontend can reach local backend.
+      return normalizedEnvBase;
+    }
+
+    return normalizedEnvBase;
   }
 
-  // Fallback to same-origin
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
-  }
-
-  // SSR/unknown: use relative
+  // Fallback to relative same-origin requesting path.
+  // This avoids scheme/host mismatches that can trigger CSP violations
+  // when the app is served through a proxy or secure host.
   return '';
 };
 
@@ -94,6 +95,57 @@ export const buildApiUrl = (endpoint) => {
   if (!baseUrl) return normalizedEndpoint;
 
   return `${baseUrl}${normalizedEndpoint}`;
+};
+
+/**
+ * Silent token refresh (single-flight).
+ *
+ * When the access token expires (~60 min) we exchange the stored refresh
+ * token for a fresh access token instead of logging the user out.  This
+ * keeps admins signed in while editing long posts/courses.
+ *
+ * A single in-flight promise is shared so that N parallel 401s trigger
+ * exactly ONE refresh request (important because ROTATE_REFRESH_TOKENS
+ * blacklists the old refresh token after each use).
+ *
+ * @returns {Promise<string|null>} - New access token, or null if refresh failed
+ */
+let refreshInFlight = null;
+
+const tryRefreshToken = () => {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    let refresh = null;
+    try { refresh = localStorage.getItem('refresh_token'); } catch {}
+    if (!refresh || refresh === 'undefined' || refresh === 'null') return null;
+
+    try {
+      const response = await fetch(buildApiUrl('/api/v1/auth/token/refresh/'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh }),
+      });
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      if (!data?.access) return null;
+
+      try {
+        localStorage.setItem('token', data.access);
+        // Backend rotates refresh tokens — store the new one
+        if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+      } catch {}
+      return data.access;
+    } catch {
+      return null;
+    }
+  })().finally(() => {
+    // Allow future refreshes once this one settles
+    setTimeout(() => { refreshInFlight = null; }, 0);
+  });
+
+  return refreshInFlight;
 };
 
 /**
@@ -157,7 +209,8 @@ export const apiFetch = async (endpoint, options = {}) => {
     if (!response.ok) {
         const isAuthEndpoint = endpoint.includes('/auth/login') || 
                               endpoint.includes('/auth/logout') || 
-                              endpoint.includes('/auth/register');
+                              endpoint.includes('/auth/register') ||
+                              endpoint.includes('/auth/token/refresh');
 
         // Special handling for 401 Unauthorized with invalid token
         if (response.status === 401 && !isAuthEndpoint) {
@@ -165,8 +218,6 @@ export const apiFetch = async (endpoint, options = {}) => {
             const isAuthPage = window.location.pathname.includes('/sign-in') || 
                               window.location.pathname.includes('/sign-up');
             
-            // If the token is invalid/expired, we should clear it and potentially retry
-            // if the endpoint allows anonymous access (like getPosts)
             try {
                 const errorClone = response.clone();
                 let errorData = {};
@@ -186,9 +237,46 @@ export const apiFetch = async (endpoint, options = {}) => {
                 );
 
                 if (isTokenError || response.status === 401) {
+                    // ── Step 1: try a silent token refresh ──────────────
+                    // Keeps the admin logged in when the access token
+                    // expires mid-edit instead of forcing a re-login.
+                    const newAccess = await tryRefreshToken();
+
+                    if (newAccess) {
+                        const refreshedOptions = { ...defaultOptions };
+                        refreshedOptions.headers = {
+                            ...refreshedOptions.headers,
+                            Authorization: `Bearer ${newAccess}`,
+                        };
+                        const refreshedResponse = await fetch(url, refreshedOptions);
+                        if (refreshedResponse.ok) {
+                            if (refreshedResponse.status === 204 ||
+                                refreshedResponse.headers.get('content-length') === '0') {
+                                return null;
+                            }
+                            try {
+                                return await refreshedResponse.json();
+                            } catch (e) {
+                                return null;
+                            }
+                        }
+                        // Refresh worked but request still failed → real error
+                        let refreshedErrorData = {};
+                        try {
+                            refreshedErrorData = await refreshedResponse.json();
+                        } catch (e) {}
+                        const refreshedErrorMessage = refreshedErrorData.detail || refreshedErrorData.message ||
+                            `Request failed with status ${refreshedResponse.status}`;
+                        const refreshedError = new Error(refreshedErrorMessage);
+                        refreshedError.status = refreshedResponse.status;
+                        throw refreshedError;
+                    }
+
+                    // ── Step 2: refresh failed → session truly expired ──
                     // Only dispatch logout if we're not already on an auth page and actually have a token to clear
                     if (!isAuthPage && localStorage.getItem('token')) {
                         localStorage.removeItem('token');
+                        localStorage.removeItem('refresh_token');
                         window.dispatchEvent(new CustomEvent('auth:logout'));
                     }
                     
