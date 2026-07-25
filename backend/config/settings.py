@@ -493,7 +493,9 @@ if not _log_writable:
 # In development they are intentionally relaxed so HTTP works locally.
 if not DEBUG:
     # ── HTTPS / HSTS ──
-    SECURE_SSL_REDIRECT = True                   # 301-redirect all HTTP → HTTPS
+    # Env-overridable so the production image can be smoke-tested locally
+    # over plain HTTP (SECURE_SSL_REDIRECT=False). Defaults to True.
+    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)  # 301-redirect all HTTP → HTTPS
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # trust reverse-proxy header
     SECURE_HSTS_SECONDS = 31_536_000             # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True        # apply HSTS to *.ecodeedacademy.com

@@ -1,0 +1,15 @@
+# ===========================================
+# Local testing override — Ecodeed Academy
+# ===========================================
+# Runs the PRODUCTION images locally over plain HTTP.
+# Usage:
+#   DOCKERHUB_USER=gikonyomwema docker compose \
+#     -f docker-compose.prod.yml -f docker-compose.local.yml up -d
+#
+# Only difference from production: disables the HTTP→HTTPS 301 redirect
+# so http://localhost:8080 works without a TLS proxy.
+
+services:
+  backend:
+    environment:
+      - SECURE_SSL_REDIRECT=False
