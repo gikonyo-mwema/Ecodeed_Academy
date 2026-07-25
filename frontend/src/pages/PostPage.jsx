@@ -18,7 +18,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Button } from 'flowbite-react';
 import { Link, useParams } from 'react-router-dom';
-import { FiEye, FiArrowUp, FiClock } from 'react-icons/fi';
+import { FiArrowUp, FiClock } from 'react-icons/fi';
 import { FaExclamationTriangle } from 'react-icons/fa';
 
 import CallToAction from '../components/CallToAction';
@@ -319,12 +319,8 @@ export default function PostPage() {
           </div>
         </header>
 
-        {/* ============ TOOLBAR (views + share) ============ */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 mx-auto w-full max-w-4xl text-sm">
-          <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-            <FiEye size={16} />
-            <span>{(post.views ?? 0).toLocaleString()} views</span>
-          </div>
+        {/* ============ TOOLBAR (share) ============ */}
+        <div className="flex items-center justify-end px-4 py-3 border-b border-gray-200 dark:border-gray-700 mx-auto w-full max-w-4xl text-sm">
           <SocialShareButtons post={post} />
         </div>
 

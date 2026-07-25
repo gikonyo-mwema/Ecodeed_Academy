@@ -248,7 +248,13 @@ class PostViewSet(viewsets.ModelViewSet):
             .order_by("-views")[:limit]
         )
         serializer = self.get_serializer(qs, many=True)
-        return Response({"posts": serializer.data})
+        # Trending is a public, cache_page-cached widget: always strip the
+        # admin-only `views` metric so an admin request can never seed the
+        # shared cache with view counts visible to visitors.
+        data = serializer.data
+        for item in data:
+            item.pop("views", None)
+        return Response({"posts": data})
 
     @action(detail=False, methods=["get"], url_path=r"recommended/(?P<post_id>[0-9]+)")
     def recommended(self, request, post_id=None):

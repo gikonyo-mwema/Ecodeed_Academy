@@ -13,7 +13,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { FiEye, FiClock } from 'react-icons/fi';
+import { FiClock } from 'react-icons/fi';
 import { getDefaultImageUrl, extractFirstImageFromContent } from '../utils/cloudinary';
 import { getCategoryColorClass, formatCategoryLabel } from '../utils/categories';
 
@@ -201,15 +201,9 @@ export default function PostCard({ post, isCompact = false, isLoading = false, c
             <span className="font-medium truncate">{authorName}</span>
           </Link>
 
-          {/* Date · Views · Reading time */}
+          {/* Date · Reading time */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {formattedDate && <time dateTime={post.createdAt || post.created_at}>{formattedDate}</time>}
-
-            <span className="text-gray-300 dark:text-gray-600" aria-hidden="true">·</span>
-            <span className="flex items-center gap-0.5" aria-label={`${post.views || 0} views`}>
-              <FiEye className="w-3 h-3" aria-hidden="true" />
-              {post.views || 0}
-            </span>
 
             <span className="hidden sm:flex items-center gap-0.5" aria-label={`${readingTime} minute read`}>
               <span className="text-gray-300 dark:text-gray-600" aria-hidden="true">·</span>

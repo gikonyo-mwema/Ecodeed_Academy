@@ -221,6 +221,23 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.likes.count()
 
     # ------------------------------------------------------------------
+    # Privacy: view counts are an admin-only metric.  Strip `views` from
+    # the payload unless the requesting user is staff (admin dashboard).
+    # ------------------------------------------------------------------
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        is_admin = bool(
+            request
+            and getattr(request, "user", None)
+            and request.user.is_authenticated
+            and request.user.is_staff
+        )
+        if not is_admin:
+            data.pop("views", None)
+        return data
+
+    # ------------------------------------------------------------------
     # On create, default status to 'published' to match the old behavior
     # so existing frontend "Publish" button keeps working seamlessly.
     # ------------------------------------------------------------------

@@ -79,7 +79,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { HiEye, HiClock, HiTag } from 'react-icons/hi';
+import { HiClock, HiTag } from 'react-icons/hi';
 import { apiFetch } from '../utils/api';
 
 /**
@@ -251,8 +251,8 @@ export default function RightSidebar() {
                   {post.title}
                 </h4>
                 <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                  <HiEye className="w-3 h-3 mr-1" />
-                  <span>{post.views} views</span>
+                  <HiClock className="w-3 h-3 mr-1" />
+                  <span>{new Date(post.createdAt || post.created_at).toLocaleDateString()}</span>
                 </div>
               </Link>
             ))}
