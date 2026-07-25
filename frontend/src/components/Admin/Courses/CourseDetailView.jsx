@@ -82,7 +82,8 @@ export default function CourseDetailView({ course, onBack }) {
   const fetchEnrollments = useCallback(async () => {
     try {
       setEnrollLoading(true);
-      const data = await apiFetch(`/api/v1/enrollments/?course=${course.id}`);
+      // page_size=500: fetch the full roster (backend orders newest first)
+      const data = await apiFetch(`/api/v1/enrollments/?course=${course.id}&page_size=500`);
       setEnrollments(Array.isArray(data) ? data : (data.results || []));
     } catch { setError('Failed to load enrollments'); }
     finally { setEnrollLoading(false); }
@@ -282,10 +283,17 @@ export default function CourseDetailView({ course, onBack }) {
 
         {/* ═══ ENROLLMENTS ═══ */}
         {activeTab === 'enrollments' && (
-          enrollLoading ? <div className="flex justify-center py-12"><Spinner size="xl" /></div> :
-          enrollments.length === 0 ? (
-            <p className="text-center py-12 text-gray-500">No students enrolled yet.</p>
-          ) : (
+          <>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-gray-800 dark:text-white">Enrolled Students</h3>
+              <Button size="sm" color="light" onClick={fetchEnrollments} disabled={enrollLoading}>
+                Refresh
+              </Button>
+            </div>
+            {enrollLoading ? <div className="flex justify-center py-12"><Spinner size="xl" /></div> :
+            enrollments.length === 0 ? (
+              <p className="text-center py-12 text-gray-500">No students enrolled yet.</p>
+            ) : (
             <Table hoverable>
               <Table.Head>
                 <Table.HeadCell>Student</Table.HeadCell>
@@ -324,7 +332,8 @@ export default function CourseDetailView({ course, onBack }) {
                 })}
               </Table.Body>
             </Table>
-          )
+            )}
+          </>
         )}
 
         {/* ═══ ASSIGNMENTS ═══ */}

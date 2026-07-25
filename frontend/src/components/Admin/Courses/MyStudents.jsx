@@ -26,7 +26,8 @@ export default function MyStudents() {
     const fetchData = async () => {
       try {
         const [enrollData, courseData] = await Promise.all([
-          apiFetch('/api/v1/enrollments/'),
+          // page_size=500: full roster, newest enrollments first
+          apiFetch('/api/v1/enrollments/?page_size=500'),
           apiFetch('/api/v1/courses/my-taught-courses/'),
         ]);
         const enrollList = Array.isArray(enrollData) ? enrollData : (enrollData.results || []);

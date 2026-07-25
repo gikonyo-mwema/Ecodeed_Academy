@@ -182,7 +182,8 @@ export default function DashEnrollments() {
         ? '/api/v1/courses/'
         : '/api/v1/courses/my-taught-courses/';
       const [enrollData, courseData] = await Promise.all([
-        apiFetch('/api/v1/enrollments/'),
+        // page_size=500: full roster, newest enrollments first
+        apiFetch('/api/v1/enrollments/?page_size=500'),
         apiFetch(courseEndpoint),
       ]);
       setEnrollments(Array.isArray(enrollData) ? enrollData : enrollData.results || []);

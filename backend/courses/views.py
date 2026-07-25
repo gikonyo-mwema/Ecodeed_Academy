@@ -79,6 +79,7 @@ Response format:
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django.db import transaction
 from django.db.models import Count, Q
@@ -573,9 +574,18 @@ class CourseViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_201_CREATED)
 
 
+class EnrollmentPagination(PageNumberPagination):
+    """Enrollment lists — admin dashboards can request larger pages
+    via ?page_size=N so the full student roster is visible."""
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
 class EnrollmentViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = EnrollmentPagination
 
     def get_queryset(self):
         """Prefetch course → modules → children so EnrollmentSerializer
@@ -596,6 +606,16 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
             total_lessons=Count('course__modules__lessons', distinct=True),
             completed_count=Count('completed_lessons', distinct=True),
         )
+
+        # Optional ?course=<id> filter (admin/instructor course roster drill-down)
+        course_id = self.request.query_params.get('course')
+        if course_id:
+            qs = qs.filter(course_id=course_id)
+
+        # Newest enrollments first so freshly joined students appear
+        # immediately on page 1 of the admin dashboard student lists.
+        qs = qs.order_by('-enrolled_at')
+
         if self.request.user.is_staff:
             return qs
         # Instructors see enrollments for courses they teach
