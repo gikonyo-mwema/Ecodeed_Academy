@@ -98,7 +98,7 @@ export const EditCourse = () => {
           features: course.features || [''],
           targetAudience: course.target_audience || [''],
           faqs: course.faqs || [{ question: '', answer: '' }],
-          curriculum: course.modules || [{ title: '', items: [''], live_sessions: [], resources: [] }],
+          curriculum: course.curriculum || [{ title: '', items: [''], live_sessions: [], resources: [] }],
           image: course.image || '',
           iconName: course.icon_name || course.iconName || 'HiOutlineAcademicCap' // Handle both snake_case and camelCase
         });
