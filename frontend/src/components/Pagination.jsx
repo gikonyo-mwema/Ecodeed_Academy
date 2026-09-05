@@ -109,14 +109,14 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
           onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
           aria-label="Go to previous page"
-          className="px-3 py-2 rounded-md border text-brand-green border-brand-green hover:bg-brand-green hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:border-gray-200 transition-colors"
+          className="px-3 py-2 rounded-md border text-brand-green border-brand-green hover:bg-brand-green hover:text-white dark:hover:bg-brand-green dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 dark:disabled:text-gray-600 disabled:border-gray-200 dark:disabled:border-gray-700 transition-colors"
         >
           Previous
         </button>
         
         {getPageNumbers().map((number, index) => (
           number === '...' ? (
-            <span key={index} aria-hidden="true" className="px-3 py-1">...</span>
+            <span key={index} aria-hidden="true" className="px-3 py-1 text-gray-600 dark:text-gray-400">...</span>
           ) : (
             <button
               key={index}
@@ -126,7 +126,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
               className={`px-3 py-2 rounded-md border transition-colors ${
                 currentPage === number
                   ? 'bg-brand-green text-white border-brand-green'
-                  : 'bg-white text-brand-green border-brand-green hover:bg-brand-green hover:text-white'
+                  : 'bg-white dark:bg-gray-800 text-brand-green border-brand-green hover:bg-brand-green hover:text-white dark:hover:bg-brand-green dark:hover:text-white dark:text-brand-green dark:border-brand-green'
               }`}
             >
               {number}
@@ -138,7 +138,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
           onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
           aria-label="Go to next page"
-          className="px-3 py-2 rounded-md border text-brand-green border-brand-green hover:bg-brand-green hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:border-gray-200 transition-colors"
+          className="px-3 py-2 rounded-md border text-brand-green border-brand-green hover:bg-brand-green hover:text-white dark:hover:bg-brand-green dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:text-gray-400 dark:disabled:text-gray-600 disabled:border-gray-200 dark:disabled:border-gray-700 transition-colors"
         >
           Next
         </button>
