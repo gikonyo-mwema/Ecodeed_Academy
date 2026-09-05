@@ -12,8 +12,7 @@
  * ├─ Overview (dashboard)
  * ├─ Profile (settings)
  * ├─ Teaching (collapsible)
- * │  ├─ All Courses
- * │  └─ All Enrollments
+ * │  └─ All Courses
  * └─ Platform Management (admin-only tabs)
  *    ├─ Posts (moderation)
  *    ├─ Users (role management)
@@ -90,7 +89,6 @@ import {
   HiAcademicCap,
   HiOutlineViewGrid,
   HiMail,
-  HiShoppingBag,
   HiChartPie,
   HiSpeakerphone,
   HiCurrencyDollar,
@@ -185,7 +183,6 @@ export default function DashSidebar() {
   const courseTabs = isAdmin
     ? [
         { id: "courses", name: "All Courses", icon: HiAcademicCap },
-        { id: "enrollments", name: "All Enrollments", icon: HiShoppingBag },
         { id: "instructors", name: "Instructors", icon: HiOutlineUserGroup },
       ]
     : [

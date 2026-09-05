@@ -12,7 +12,6 @@
  * ├─ Overview: Platform-wide KPIs (total users, courses, enrollments, revenue)
  * ├─ Profile: Account settings
  * ├─ Courses: All courses on platform with bulk management
- * ├─ Enrollments: Student enrollment tracking
  * ├─ Users: User management and role assignment
  * ├─ Posts: Content moderation
  * ├─ Comments: Discussion moderation
@@ -52,7 +51,6 @@
  * - /dashboard?tab=dash           → Overview (DashboardComponent)
  * - /dashboard?tab=profile        → Profile settings (DashProfile)
  * - /dashboard?tab=courses        → Course management (DashCourses)
- * - /dashboard?tab=enrollments    → Enrollment tracking (DashEnrollments)
  * - /dashboard?tab=users          → User management (DashUsers) [ADMIN ONLY]
  * - /dashboard?tab=posts          → Post moderation (DashPosts) [ADMIN ONLY]
  * - /dashboard?tab=comments       → Comment moderation (DashComments) [ADMIN ONLY]
@@ -83,7 +81,6 @@ import DashProfile from './Users/DashProfile';
 // Admin & Instructor Shared
 import DashboardComponent from './DashboardComponent';
 import { DashCourses } from './Courses/DashCourses';
-import DashEnrollments from './Courses/DashEnrollments';
 
 // Admin Only
 import DashPosts from './Posts/DashPosts';
@@ -152,7 +149,6 @@ export default function AdminDashboard() {
         {tab === 'dash' && <DashboardComponent />}
         {tab === 'profile' && <DashProfile />}
         {tab === 'courses' && <DashCourses />}
-        {tab === 'enrollments' && <DashEnrollments />}
         {tab === 'instructors' && <DashInstructors />}
 
         {/* ──── INSTRUCTOR-SPECIFIC COMPONENTS ──── */}
