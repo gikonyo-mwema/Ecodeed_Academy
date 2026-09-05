@@ -104,7 +104,7 @@ const Contact = () => {
     } catch (error) {
       setStatus({
         message: error.message || 
-          "We couldn't send your message. Please try again or contact us directly at info@ecodeed.co.ke",
+          "We couldn't send your message. Please try again or contact us directly at contact@ecodeed.co.ke",
         type: "error"
       });
     } finally {
@@ -279,10 +279,10 @@ const Contact = () => {
                   <div>
                     <p className="font-medium">Email</p>
                     <a
-                      href="mailto:info@ecodeed.co.ke"
+                      href="mailto:contact@ecodeed.co.ke"
                       className="hover:underline"
                     >
-                      info@ecodeed.co.ke
+                      contact@ecodeed.co.ke
                     </a>
                   </div>
                 </div>
