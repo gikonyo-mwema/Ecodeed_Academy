@@ -9,6 +9,7 @@ import {
 } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import TipTapEditor from '../../Editor/TipTapEditor';
+import FeaturedImageUpload from './FeaturedImageUpload';
 
 export const CourseForm = ({
   id,
@@ -228,6 +229,17 @@ export const CourseForm = ({
                 required
               />
               {renderInlineError('description')}
+            </div>
+
+            {/* Course Thumbnail */}
+            <div className="md:max-w-xl">
+              <FeaturedImageUpload 
+                value={formData.image || formData.thumbnail || ''} 
+                onChange={(url) => {
+                  handleChange({ target: { id: 'image', value: url, type: 'text' } });
+                }}
+                label="Course Thumbnail"
+              />
             </div>
               </>
             )}
