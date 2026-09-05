@@ -82,7 +82,7 @@ import { Spinner } from "flowbite-react";
 import {
   HiAcademicCap, HiOutlineUserGroup, HiCurrencyDollar,
   HiDocumentText, HiAnnotation, HiClipboardCheck, HiShoppingBag,
-  HiArrowPath,
+  HiRefresh,
 } from "react-icons/hi";
 
 /**
@@ -238,7 +238,7 @@ function AdminOverview() {
           className="flex items-center gap-2 px-4 py-2 bg-brand-green hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Refresh dashboard data"
         >
-          <HiArrowPath className={Object.values(loading).some(l => l) ? "animate-spin" : ""} />
+          <HiRefresh className={Object.values(loading).some(l => l) ? "animate-spin" : ""} />
           Refresh
         </button>
       </div>
