@@ -556,51 +556,6 @@ export const EditCourse = () => {
           />
         </div>
 
-        {/* Tips section */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800/40">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <HiOutlinePencil className="w-4 h-4 text-blue-600" />
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200">Pro Tip</h4>
-                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                  Make sure your course title accurately reflects the content.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-purple-50/50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-100 dark:border-purple-800/40">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <HiCheckCircle className="w-4 h-4 text-purple-600" />
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-purple-900 dark:text-purple-200">Completion</h4>
-                <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
-                  Review all sections before publishing your updates.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-green-50/50 dark:bg-green-900/20 rounded-xl p-4 border border-green-100 dark:border-green-800/40">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <HiOutlinePencil className="w-4 h-4 text-green-600" />
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-green-900 dark:text-green-200">Curriculum</h4>
-                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-                  Add engaging content to keep students interested.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="mt-4 text-center">
           <p className="text-xs text-gray-400 dark:text-gray-300">
             {activeStep < 3
