@@ -82,6 +82,7 @@ import { Spinner } from "flowbite-react";
 import {
   HiAcademicCap, HiOutlineUserGroup, HiCurrencyDollar,
   HiDocumentText, HiAnnotation, HiClipboardCheck, HiShoppingBag,
+  HiArrowPath,
 } from "react-icons/hi";
 
 /**
@@ -127,6 +128,12 @@ function AdminOverview() {
     courses: [], payments: [], enrollments: [],
   });
   
+  // State for total counts (from paginated API responses)
+  const [counts, setCounts] = useState({
+    users: 0, posts: 0, comments: 0, services: 0,
+    courses: 0, payments: 0, enrollments: 0,
+  });
+  
   // Track loading state per data type for granular spinners
   const [loading, setLoading] = useState({
     users: true, posts: true, comments: true, services: true,
@@ -136,10 +143,11 @@ function AdminOverview() {
   /**
    * FETCH DATA BY TYPE
    * Generic data fetcher that handles various API response formats
+   * Handles pagination by extracting 'count' field from API response
    * 
    * Supports multiple response structures:
-   * - { users: [...] }
-   * - { results: [...] }
+   * - { users: [...], count: 100 }
+   * - { results: [...], count: 100 }
    * - { data: [...] }
    * - Direct array: [...]
    * 
@@ -157,9 +165,18 @@ function AdminOverview() {
         response.comments || response.services || response.courses ||
         response.payments || response.data || response.results || [];
       
+      // Extract total count from API response (for pagination)
+      // Most DRF APIs return "count" field in paginated responses
+      const totalCount = response.count !== undefined ? response.count : responseData.length;
+      
       setData(prev => ({
         ...prev,
         [type]: Array.isArray(responseData) ? responseData : [],
+      }));
+      
+      setCounts(prev => ({
+        ...prev,
+        [type]: totalCount,
       }));
     } catch (err) {
       console.error(`Failed to load ${type}:`, err.message);
@@ -184,26 +201,48 @@ function AdminOverview() {
   };
 
   /**
+   * REFRESH ALL DATA
+   * Fetches all data in parallel
+   */
+  const refreshAllData = useCallback(() => {
+    Object.entries(endpoints).forEach(([type, endpoint]) => {
+      fetchData(type, endpoint);
+    });
+  }, [fetchData, endpoints]);
+
+  /**
    * FETCH ALL DATA ON MOUNT
    * Fetches data from all endpoints in parallel
    */
   useEffect(() => {
-    Object.entries(endpoints).forEach(([type, endpoint]) => {
-      fetchData(type, endpoint);
-    });
+    refreshAllData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Calculate KPI totals from first page of data
-  // NOTE: These are first-page counts only, not total database counts
-  const totalUsers       = data.users.length;
-  const totalPosts       = data.posts.length;
-  const totalCourses     = data.courses.length;
-  const totalEnrollments = data.enrollments.length;
+  // Calculate KPI totals using counts from paginated API responses
+  // Falls back to data.length if count is not available
+  const totalUsers       = counts.users || data.users.length;
+  const totalPosts       = counts.posts || data.posts.length;
+  const totalCourses     = counts.courses || data.courses.length;
+  const totalEnrollments = counts.enrollments || data.enrollments.length;
   const totalRevenue     = data.payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
   return (
     <div className="p-3 md:mx-auto space-y-6">
+      {/* HEADER WITH REFRESH BUTTON */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h1>
+        <button
+          onClick={refreshAllData}
+          disabled={Object.values(loading).some(l => l)}
+          className="flex items-center gap-2 px-4 py-2 bg-brand-green hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Refresh dashboard data"
+        >
+          <HiArrowPath className={Object.values(loading).some(l => l) ? "animate-spin" : ""} />
+          Refresh
+        </button>
+      </div>
+
       {/* KPI STAT CARDS - 5 column grid on lg, 2 on sm, 1 on mobile */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard icon={HiOutlineUserGroup} label="Total Users"       value={totalUsers}       loading={loading.users} />
