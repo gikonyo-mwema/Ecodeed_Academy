@@ -136,6 +136,11 @@ export default function RightSidebar() {
     };
 
     fetchData();
+    
+    // Refresh categories every 60 seconds to show new categories
+    const interval = setInterval(fetchData, 60000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Newsletter subscription handler

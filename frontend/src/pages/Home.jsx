@@ -109,12 +109,6 @@ export default function Home() {
         setTotalPages(paginationData.totalPages);
         setPagination(paginationData);
 
-        // Extract unique categories from posts for filtering
-        const uniqueCategories = [...new Set(
-          postsData.map(post => post.category)
-        )].filter(Boolean);
-        setCategories(uniqueCategories);
-
       } catch (err) {
         setError(err.message || 'Failed to load posts');
         
@@ -138,6 +132,32 @@ export default function Home() {
 
     fetchPosts();
   }, [currentPage, pagination.postsPerPage]);
+
+  /**
+   * Effect to fetch categories
+   * Fetches from dedicated categories endpoint and refreshes every 60 seconds
+   */
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const catData = await apiFetch('/api/v1/categories/?limit=10');
+        const catList = catData.results || catData || [];
+        const sorted = [...catList]
+          .sort((a, b) => (b.post_count || 0) - (a.post_count || 0))
+          .slice(0, 10);
+        setCategories(sorted.map(c => ({ name: c.name, slug: c.slug, count: c.post_count || 0 })));
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    };
+
+    fetchCategories();
+    
+    // Refresh categories every 60 seconds to show new categories
+    const interval = setInterval(fetchCategories, 60000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const renderPostGrid = () => {
     if (loading) return (
