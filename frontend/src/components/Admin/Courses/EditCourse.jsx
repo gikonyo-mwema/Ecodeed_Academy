@@ -223,6 +223,16 @@ export const EditCourse = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    // Small delay to ensure DOM has updated
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 50);
+  }, [activeStep]);
+
   useEffect(() => {
     if (!initialLoadComplete) return; // Don't autosave until initial load is complete
     
@@ -345,112 +355,28 @@ export const EditCourse = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-brand-blue dark:to-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate('/dashboard?tab=courses')}
-                className="p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-colors group"
-                aria-label="Go back"
-              >
-                <HiOutlineArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white" />
-              </button>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Course</h1>
-                  <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-700/40">
-                    {formData.isLive ? 'Published' : 'Draft'}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
-                  {formData.title || 'Editing course...'}
-                </p>
-              </div>
-            </div>
-
-            {/* Save status + primary action */}
-            <div className="flex items-center space-x-3 flex-wrap">
-              {saveStatus === 'saving' && (
-                <div className="flex items-center text-blue-600 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-lg border border-blue-100 dark:border-blue-800/40">
-                  <span className="mr-2 h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm font-medium">Saving course...</span>
-                </div>
-              )}
-
-              {saveStatus === 'success' && (
-                <div className="flex items-center text-green-600 dark:text-green-200 bg-green-50 dark:bg-green-900/30 px-4 py-2 rounded-lg border border-green-100 dark:border-green-800/40">
-                  <HiCheckCircle className="w-4 h-4 mr-2" />
-                  <span className="text-sm font-medium">Changes saved!</span>
-                </div>
-              )}
-
-              {saveStatus === 'error' && (
-                <div className="flex items-center text-red-600 dark:text-red-200 bg-red-50 dark:bg-red-900/30 px-4 py-2 rounded-lg border border-red-100 dark:border-red-800/40">
-                  <HiOutlineExclamationCircle className="w-4 h-4 mr-2" />
-                  <span className="text-sm font-medium">Save failed</span>
-                </div>
-              )}
-
-              <div className="text-xs text-gray-500 dark:text-gray-300 px-2 py-1 rounded-lg bg-gray-100/70 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
-                {getLastSavedLabel()}
-              </div>
-
-              <div className="flex items-center gap-2">
-                {activeStep > 1 && (
-                  <button
-                    type="button"
-                    onClick={handlePreviousStep}
-                    disabled={saveStatus === 'saving'}
-                    className="inline-flex items-center px-4 py-3 bg-transparent border border-brand-green text-brand-green font-medium rounded-xl hover:bg-brand-green hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-green disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    Previous
-                  </button>
-                )}
-
-                {activeStep < 3 ? (
-                  <button
-                    type="button"
-                    onClick={handleNextStep}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-brand-green to-brand-yellow text-white font-medium rounded-xl hover:from-brand-green/90 hover:to-brand-yellow/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-green transition-all shadow-sm hover:shadow-md"
-                  >
-                    Next Step
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    form="course-form"
-                    disabled={saveStatus === 'saving' || hasCriticalErrors}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
-                  >
-                    {saveStatus === 'saving' ? (
-                      <>
-                        <span className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <HiOutlinePencil className="w-4 h-4 mr-2" />
-                        Update Course
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
+        {/* Centered Header */}
+        <div className="mb-8 text-center">
+          <button
+            onClick={() => navigate('/dashboard?tab=courses')}
+            className="inline-flex items-center p-2 hover:bg-white dark:hover:bg-gray-800 rounded-full transition-colors group mb-4"
+            aria-label="Go back"
+          >
+            <HiOutlineArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white" />
+          </button>
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Course</h1>
+            <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-700/40">
+              {formData.isLive ? 'Published' : 'Draft'}
+            </span>
           </div>
-
-          {/* Progress indicator */}
-          <div className="mt-6 flex items-center space-x-2">
-            <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(activeStep / 3) * 100}%` }} />
-            </div>
-            <span className="text-xs text-gray-500 dark:text-gray-300 font-medium">Step {activeStep} of 3</span>
-          </div>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            {formData.title || 'Editing course...'}
+          </p>
 
           {/* Error banner */}
           {error && saveStatus !== 'saving' && (
-            <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl flex items-start">
+            <div className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl flex items-start max-w-2xl mx-auto">
               <HiOutlineExclamationCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error updating course</h3>
@@ -469,44 +395,6 @@ export const EditCourse = () => {
 
         {/* Main form */}
         <div className="bg-gray-50 dark:bg-brand-blue/80 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          {/* Guided step header */}
-          <div className="border-b border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-brand-blue/90 px-6 py-3">
-            <div className="flex space-x-6">
-              {[
-                { id: 1, label: 'Basic Information' },
-                { id: 2, label: 'Curriculum' },
-                { id: 3, label: 'Advanced Settings' },
-              ].map((step) => {
-                const isActive = activeStep === step.id;
-                const isCompleted = activeStep > step.id;
-
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    onClick={() => handleStepClick(step.id)}
-                    className={`text-sm font-medium pb-3 px-1 border-b-2 transition-colors ${
-                      isActive
-                        ? 'text-blue-600 border-blue-600'
-                        : isCompleted
-                          ? 'text-green-600 border-green-600'
-                          : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      {step.label}
-                      {sectionErrorCounts[step.id] > 0 && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200">
-                          {sectionErrorCounts[step.id]}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {draftRestored && (
             <div className="mx-6 mt-4 px-4 py-2 rounded-lg text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800/40">
               Unsaved draft restored from local storage.
@@ -556,12 +444,83 @@ export const EditCourse = () => {
           />
         </div>
 
-        <div className="mt-4 text-center">
-          <p className="text-xs text-gray-400 dark:text-gray-300">
-            {activeStep < 3
-              ? 'Complete this step to continue to the next section.'
-              : 'Your course will be updated when you click "Update Course"'}
-          </p>
+        {/* Bottom Action Buttons */}
+        <div className="mt-8 flex flex-col items-center justify-center gap-6 pb-8">
+          {/* Save Status */}
+          {(saveStatus !== 'idle' || lastSavedAt) && (
+            <div className="flex items-center space-x-3 flex-wrap justify-center">
+              {saveStatus === 'saving' && (
+                <div className="flex items-center text-brand-green dark:text-brand-yellow text-sm">
+                  <span className="mr-2 h-3 w-3 border-2 border-brand-green border-t-transparent rounded-full animate-spin" />
+                  <span className="font-medium">Saving...</span>
+                </div>
+              )}
+
+              {saveStatus === 'success' && (
+                <div className="flex items-center text-green-600 dark:text-green-200 text-sm">
+                  <HiCheckCircle className="w-4 h-4 mr-2" />
+                  <span className="font-medium">Saved</span>
+                </div>
+              )}
+
+              {saveStatus === 'error' && (
+                <div className="flex items-center text-red-600 dark:text-red-200 text-sm">
+                  <HiOutlineExclamationCircle className="w-4 h-4 mr-2" />
+                  <span className="font-medium">Save failed</span>
+                </div>
+              )}
+
+              {saveStatus === 'idle' && lastSavedAt && (
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {getLastSavedLabel()}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-4 flex-wrap justify-center">
+            {activeStep > 1 && (
+              <button
+                type="button"
+                onClick={handlePreviousStep}
+                disabled={saveStatus === 'saving'}
+                className="px-6 py-2 text-sm font-medium text-brand-green dark:text-brand-yellow hover:text-brand-green/80 dark:hover:text-brand-yellow/80 border border-brand-green dark:border-brand-yellow rounded-lg hover:bg-brand-green/10 dark:hover:bg-brand-yellow/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+            )}
+
+            {activeStep < 3 && (
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 rounded-lg transition-colors"
+              >
+                Next Step
+              </button>
+            )}
+
+            {activeStep === 3 && (
+              <button
+                type="submit"
+                form="course-form"
+                disabled={saveStatus === 'saving' || hasCriticalErrors}
+                className="px-8 py-2 text-sm font-medium text-white bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {saveStatus === 'saving' ? (
+                  <>
+                    <span className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    Update Course
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

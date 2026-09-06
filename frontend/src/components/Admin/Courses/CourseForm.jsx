@@ -81,10 +81,10 @@ export const CourseForm = ({
   const missingChecks = checklist.filter((item) => !item.done);
   const lessonsWithoutVideo = allLessons.filter((lesson) => !normalizeLesson(lesson).video_url?.trim()).length;
 
-  const renderInlineError = (key) => {
-    if (!validationErrors[key]) return null;
-    return <p className="mt-1 text-xs text-red-600 dark:text-red-300">{validationErrors[key]}</p>;
-  };
+  // Determine which sections to show based on activeStep
+  const shouldShowBasicInfo = activeStep === 1;
+  const shouldShowCurriculum = activeStep === 2;
+  const shouldShowSettings = activeStep === 3;
 
   const toggleWeek = (idx) => {
     setExpandedWeeks(prev => {
@@ -102,82 +102,88 @@ export const CourseForm = ({
     });
   };
 
+  const renderInlineError = (fieldName) => {
+    if (!validationErrors[fieldName]) return null;
+    return (
+      <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+        {validationErrors[fieldName]}
+      </p>
+    );
+  };
+
   return (
-    <div className={isEmbedded ? 'py-6 px-4 sm:px-6 lg:px-8 bg-transparent' : 'min-h-screen bg-gray-50 dark:bg-brand-blue py-12 px-4 sm:px-6 lg:px-8'}>
-      <div className={isEmbedded ? 'max-w-5xl mx-auto' : 'max-w-6xl mx-auto'}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="w-full">
+        {/* Header */}
         {showHeader && (
-          <Link to="/dashboard?tab=courses">
-            <Button outline color="none" className="mb-6 !border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors">
-              <HiOutlineArrowLeft className="mr-2" /> Back to Courses
-            </Button>
-          </Link>
+          <div className="mb-8">
+            <Link to="/dashboard?tab=courses" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 inline-block">
+              ← Back to Courses
+            </Link>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{title}</h1>
+          </div>
         )}
 
-        <div className={isEmbedded ? 'bg-white/80 dark:bg-brand-blue/70 border-0 shadow-none p-6 rounded-b-2xl' : 'bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 border border-brand-green/20 dark:border-gray-700'}>
-          {showHeader && (
-            <h1 className="text-3xl font-bold text-brand-blue dark:text-white mb-6">{title}</h1>
-          )}
+        {/* Single Form */}
+        <form id={id} onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          
+          {/* ──────────────────────────────────────── */}
+          {/* SECTION 1: BASIC INFORMATION - Only show on step 1 */}
+          {/* ──────────────────────────────────────── */}
+          {shouldShowBasicInfo && (
+            <div className="p-6 space-y-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h2>
 
-          <form id={id} onSubmit={handleSubmit} className="space-y-6">
-            {/* STEP 1: Basic Information */}
-            {activeStep === 1 && (
-              <>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Basic Information
-                {sectionErrorCounts?.[1] > 0 && (
-                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200 align-middle">
-                    {sectionErrorCounts[1]} issues
-                  </span>
-                )}
-              </h2>
-              <span className="text-xs text-gray-500 dark:text-gray-300">Step 1 of 3</span>
-            </div>
-
-            {/* Basic Information Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:max-w-xl">
-                <Label htmlFor="title" value="Course Title *" />
+              {/* Title */}
+              <div>
+                <Label htmlFor="title" value="Course Title" />
                 <TextInput
                   id="title"
-                  type="text"
-                  placeholder="Enter course title"
-                  required
+                  placeholder="e.g. Environmental Impact Assessment Expert Training"
                   value={formData.title}
                   onChange={handleChange}
-                  sizing="sm"
+                  required
                 />
                 {renderInlineError('title')}
               </div>
 
-            </div>
-
-            {/* Pricing and Category Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:max-w-sm">
-                <Label htmlFor="price" value="Price (KES) *" />
-                <TextInput
-                  id="price"
-                  type="number"
-                  placeholder="Enter price"
-                  value={formData.price}
+              {/* Short Description */}
+              <div>
+                <Label htmlFor="shortDescription" value="Short Description" />
+                <Textarea
+                  id="shortDescription"
+                  placeholder="Brief description for course cards"
+                  rows={2}
+                  maxLength={100}
+                  value={formData.shortDescription}
                   onChange={handleChange}
-                  min="0"
-                  step="100"
-                  disabled={formData.isFree}
-                  sizing="sm"
+                  required
                 />
-                {renderInlineError('price')}
+                {renderInlineError('shortDescription')}
               </div>
 
-              <div className="md:max-w-sm">
-                <Label htmlFor="category" value="Category *" />
+              {/* Full Description */}
+              <div>
+                <Label htmlFor="description" value="Full Description" />
+                <Textarea
+                  id="description"
+                  placeholder="Detailed course description"
+                  rows={5}
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                />
+                {renderInlineError('description')}
+              </div>
+
+              {/* Category */}
+              <div>
+                <Label htmlFor="category" value="Category" />
                 <Select
                   id="category"
                   value={formData.category}
                   onChange={handleChange}
                   required
-                  sizing="sm"
                 >
                   <option value="">Select category</option>
                   <option value="specialized">Specialized Course</option>
@@ -190,49 +196,49 @@ export const CourseForm = ({
                 {renderInlineError('category')}
               </div>
             </div>
+          )}
 
-            {/* Free Course and Payment Options */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="isFree"
-                  checked={Boolean(formData.isFree)}
-                  onChange={handleChange}
-                />
-                <Label htmlFor="isFree">Free Course</Label>
+          {/* ──────────────────────────────────────── */}
+          {/* SECTION 2: PRICING & THUMBNAIL */}
+          {/* ──────────────────────────────────────── */}
+          {shouldShowBasicInfo && (
+            <div className="p-6 space-y-6 border-t border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pricing & Thumbnail</h2>
+
+              {/* Pricing */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="isFree" value="Pricing Model" />
+                  <div className="mt-2 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="isFree"
+                        checked={Boolean(formData.isFree)}
+                        onChange={handleChange}
+                      />
+                      <label htmlFor="isFree" className="text-sm text-gray-700 dark:text-gray-300">Free Course</label>
+                    </div>
+                  </div>
+                </div>
+
+                {!formData.isFree && (
+                  <div>
+                    <Label htmlFor="price" value="Price (KES)" />
+                    <TextInput
+                      id="price"
+                      type="number"
+                      placeholder="Enter price"
+                      value={formData.price}
+                      onChange={handleChange}
+                      min="0"
+                      step="100"
+                    />
+                    {renderInlineError('price')}
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Descriptions */}
-            <div className="md:max-w-3xl">
-              <Label htmlFor="shortDescription" value="Short Description *" />
-              <Textarea
-                id="shortDescription"
-                placeholder="Brief description for course cards (max 100 characters)"
-                rows={2}
-                maxLength={100}
-                value={formData.shortDescription}
-                onChange={handleChange}
-                required
-              />
-              {renderInlineError('shortDescription')}
-            </div>
-
-            <div className="md:max-w-4xl">
-              <Label htmlFor="description" value="Full Description *" />
-              <Textarea
-                id="description"
-                placeholder="Detailed course description"
-                rows={6}
-                value={formData.description}
-                onChange={handleChange}
-                required
-              />
-              {renderInlineError('description')}
-            </div>
-
-            {/* Course Thumbnail */}
-            <div className="md:max-w-xl">
+              {/* Thumbnail */}
               <FeaturedImageUpload 
                 value={formData.image || formData.thumbnail || ''} 
                 onChange={(url) => {
@@ -241,781 +247,388 @@ export const CourseForm = ({
                 label="Course Thumbnail"
               />
             </div>
-              </>
-            )}
+          )}
 
-            {/* Course Options */}
-            {activeStep === 3 && (
-              <>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Publish & Settings
-                {sectionErrorCounts?.[3] > 0 && (
-                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200 align-middle">
-                    {sectionErrorCounts[3]} issues
-                  </span>
-                )}
-              </h2>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  outline
-                  color="none"
-                  size="xs"
-                  onClick={() => setShowPreview(true)}
-                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                >
-                  <HiOutlineEye className="mr-1" /> Student Preview
-                </Button>
-                <span className="text-xs text-gray-500 dark:text-gray-300">Step 3 of 3</span>
-              </div>
-            </div>
+          {/* ──────────────────────────────────────── */}
+          {/* SECTION 3: COURSE FEATURES & AUDIENCE */}
+          {/* ──────────────────────────────────────── */}
+          {shouldShowBasicInfo && (
+            <div className="p-6 space-y-6 border-t border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Features & Target Audience</h2>
 
-            {/* Publish Checklist */}
-            <div className="border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-brand-blue/50 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Publish Checklist</h3>
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                  {checklistDone}/{checklistTotal} complete
-                </span>
-              </div>
-
-              <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mb-4">
-                <div
-                  className="h-full bg-gradient-to-r from-brand-green to-brand-yellow transition-all duration-500"
-                  style={{ width: `${checklistPercent}%` }}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {checklist.map((item) => (
-                  <div
-                    key={item.key}
-                    className={`text-sm px-3 py-2 rounded-lg border ${
-                      item.done
-                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/40 text-green-700 dark:text-green-300'
-                        : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300'
-                    }`}
-                  >
-                    {item.done ? '✅' : '⚠️'} {item.label}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-3 text-xs text-gray-600 dark:text-gray-300">
-                Completion: <span className="font-semibold">{checklistPercent}%</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="isPopular"
-                  checked={Boolean(formData.isPopular)}
-                  onChange={handleChange}
-                />
-                <Label htmlFor="isPopular">Mark as Popular Course</Label>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="hasCertificate"
-                  checked={Boolean(formData.hasCertificate)}
-                  onChange={handleChange}
-                />
-                <Label htmlFor="hasCertificate">Offers Certificate</Label>
-              </div>
-
+              {/* Course Features */}
               <div>
-                <Label htmlFor="pacingType" value="Pacing Type" />
-                <Select
-                  id="pacingType"
-                  value={formData.pacingType || 'self_paced'}
-                  onChange={handleChange}
-                >
-                  <option value="self_paced">Self-Paced (students unlock by completing previous week)</option>
-                  <option value="weekly">Weekly Content (auto-unlocks one week at a time from go-live)</option>
-                </Select>
-              </div>
-            </div>
-
-
-
-            {/* Course Features */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label value="Course Features" />
-                <Button
-                  type="button"
-                  outline
-                  color="none"
-                  size="xs"
-                  onClick={addFeatureField}
-                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                >
-                  <HiOutlinePlus className="mr-1" /> Add Feature
-                </Button>
-              </div>
-              {formData.features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
-                  <TextInput
-                    type="text"
-                    value={feature}
-                    onChange={(e) => handleFeatureChange(index, e.target.value)}
-                    placeholder={`Feature ${index + 1}`}
-                    className="flex-1"
-                    required
-                  />
-                  <Button
+                <div className="flex justify-between items-center mb-3">
+                  <Label value="What's Included" />
+                  <button
                     type="button"
-                    color="failure"
-                    size="xs"
-                    onClick={() => removeFeatureField(index)}
-                    disabled={formData.features.length <= 1}
+                    onClick={addFeatureField}
+                    className="text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
                   >
-                    <HiOutlineX className="h-4 w-4" />
-                  </Button>
+                    + Add
+                  </button>
                 </div>
-              ))}
-            </div>
-
-            {/* Who This Course Is For (Target Audience) */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label value="Who This Course Is For" />
-                <Button
-                  type="button"
-                  outline
-                  color="none"
-                  size="xs"
-                  onClick={addTargetAudience}
-                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                >
-                  <HiOutlinePlus className="mr-1" /> Add Audience
-                </Button>
-              </div>
-              {(formData.targetAudience || []).map((audience, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
-                  <TextInput
-                    type="text"
-                    value={audience}
-                    onChange={(e) => handleTargetAudienceChange(index, e.target.value)}
-                    placeholder={`e.g. Environmental consultants, Students, NGO staff...`}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    color="failure"
-                    size="xs"
-                    onClick={() => removeTargetAudience(index)}
-                    disabled={(formData.targetAudience || []).length <= 1}
-                  >
-                    <HiOutlineX className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-              </>
-            )}
-
-            {/* Curriculum Builder */}
-            {activeStep === 2 && (
-              <>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Curriculum
-                {sectionErrorCounts?.[2] > 0 && (
-                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200 align-middle">
-                    {sectionErrorCounts[2]} issues
-                  </span>
-                )}
-              </h2>
-              <span className="text-xs text-gray-500 dark:text-gray-300">Step 2 of 3</span>
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-3">
-                <Label value="Course Curriculum (Weeks & Lessons)" className="text-base font-semibold" />
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    outline
-                    color="none"
-                    size="xs"
-                    onClick={addCurriculumSection}
-                    className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                  >
-                    <HiOutlinePlus className="mr-1" /> Add Week
-                  </Button>
+                <div className="space-y-2">
+                  {formData.features.map((feature, index) => (
+                    <div key={index} className="flex gap-2 items-start">
+                      <TextInput
+                        type="text"
+                        value={feature}
+                        onChange={(e) => handleFeatureChange(index, e.target.value)}
+                        placeholder={`Feature ${index + 1}`}
+                        className="flex-1"
+                      />
+                      {formData.features.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeFeatureField(index)}
+                          className="text-xs text-gray-500 hover:text-red-600 dark:hover:text-red-400 pt-3"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-              {(validationErrors.curriculum || validationErrors.weekTitle || validationErrors.lessonTitle) && (
-                <p className="mb-2 text-xs text-red-600 dark:text-red-300">
-                  {validationErrors.curriculum || validationErrors.weekTitle || validationErrors.lessonTitle}
-                </p>
-              )}
 
-              {/* Week Accordion */}
-              <div className="space-y-3">
-                {(Array.isArray(formData.curriculum) ? formData.curriculum : []).map((section, sectionIndex) => {
-                  const isWeekOpen = expandedWeeks.has(sectionIndex);
-                  const lessonCount = (section.items || []).length;
-                  const sessionCount = (section.live_sessions || []).length;
-                  const resourceCount = (section.resources || []).length;
+              {/* Target Audience */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <Label value="Who This Course Is For" />
+                  <button
+                    type="button"
+                    onClick={addTargetAudience}
+                    className="text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
+                  >
+                    + Add
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {(formData.targetAudience || []).map((audience, index) => (
+                    <div key={index} className="flex gap-2 items-start">
+                      <TextInput
+                        type="text"
+                        value={audience}
+                        onChange={(e) => handleTargetAudienceChange(index, e.target.value)}
+                        placeholder="e.g. Environmental consultants, NGO staff..."
+                        className="flex-1"
+                      />
+                      {(formData.targetAudience || []).length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeTargetAudience(index)}
+                          className="text-xs text-gray-500 hover:text-red-600 dark:hover:text-red-400 pt-3"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
-                  return (
-                    <div
-                      key={sectionIndex}
-                      className="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden"
-                      draggable
-                      onDragStart={() => setDraggedWeekIndex(sectionIndex)}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={() => {
-                        if (draggedWeekIndex === null || draggedWeekIndex === sectionIndex) return;
-                        moveCurriculumSection?.(draggedWeekIndex, sectionIndex);
-                        setDraggedWeekIndex(null);
-                      }}
-                      onDragEnd={() => setDraggedWeekIndex(null)}
+          {/* ──────────────────────────────────────── */}
+          {/* SECTION 4: CURRICULUM */}
+          {/* ──────────────────────────────────────── */}
+          {shouldShowCurriculum && (
+            <div className="p-6 space-y-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Curriculum</h2>
+              <button
+                type="button"
+                onClick={addCurriculumSection}
+                className="text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
+              >
+                + Add Week
+              </button>
+            </div>
+
+            {/* Weeks */}
+            <div className="space-y-4">
+              {(Array.isArray(formData.curriculum) ? formData.curriculum : []).map((section, sectionIndex) => {
+                const isWeekOpen = expandedWeeks.has(sectionIndex);
+                const lessonCount = (section.items || []).length;
+
+                return (
+                  <div key={sectionIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    {/* Week Header */}
+                    <button
+                      type="button"
+                      onClick={() => toggleWeek(sectionIndex)}
+                      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                     >
-                      {/* Week Header — click to collapse/expand */}
-                      <div
-                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors ${
-                          isWeekOpen
-                            ? 'bg-brand-green/10 dark:bg-brand-green/20'
-                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
-                        }`}
-                        onClick={() => toggleWeek(sectionIndex)}
-                      >
-                        {isWeekOpen ? (
-                          <HiChevronDown className="w-5 h-5 text-brand-green shrink-0" />
-                        ) : (
-                          <HiChevronRight className="w-5 h-5 text-gray-400 shrink-0" />
-                        )}
-                        <Badge color="info" size="sm" className="shrink-0">Week {sectionIndex + 1}</Badge>
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate flex-1">
-                          {section.title || 'Untitled Week'}
+                      <div className="flex items-center gap-3 flex-1 text-left">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          Week {sectionIndex + 1}
                         </span>
-                        {/* Counts */}
-                        <div className="flex items-center gap-2 shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                          <span title="Lessons">📖 {lessonCount}</span>
-                          {sessionCount > 0 && <span title="Live Sessions">📹 {sessionCount}</span>}
-                          {resourceCount > 0 && <span title="Resources">📎 {resourceCount}</span>}
-                        </div>
-                        <Button
-                          type="button"
-                          outline
-                          color="none"
-                          size="xs"
-                          onClick={(e) => { e.stopPropagation(); duplicateCurriculumSection?.(sectionIndex); }}
-                          title="Duplicate this week"
-                          className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                        >
-                          Copy
-                        </Button>
-                        <Button
-                          type="button"
-                          outline
-                          color="none"
-                          size="xs"
-                          onClick={(e) => { e.stopPropagation(); moveCurriculumSection?.(sectionIndex, Math.max(0, sectionIndex - 1)); }}
-                          disabled={sectionIndex === 0}
-                          title="Move week up"
-                        >
-                          ↑
-                        </Button>
-                        <Button
-                          type="button"
-                          outline
-                          color="none"
-                          size="xs"
-                          onClick={(e) => { e.stopPropagation(); moveCurriculumSection?.(sectionIndex, Math.min((formData.curriculum || []).length - 1, sectionIndex + 1)); }}
-                          disabled={sectionIndex === (formData.curriculum || []).length - 1}
-                          title="Move week down"
-                        >
-                          ↓
-                        </Button>
-                        <Button
-                          type="button"
-                          color="failure"
-                          size="xs"
-                          onClick={(e) => { e.stopPropagation(); removeCurriculumItem(sectionIndex); }}
-                          disabled={(formData.curriculum || []).length <= 1}
-                          title="Delete this week"
-                        >
-                          <HiOutlineX className="h-4 w-4" />
-                        </Button>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {section.title || 'Untitled'}
+                        </span>
+                        <span className="text-xs text-gray-400">({lessonCount} lessons)</span>
                       </div>
+                      <span className="text-gray-400">{isWeekOpen ? '−' : '+'}</span>
+                    </button>
 
-                      {/* Week Body — only shown when expanded */}
-                      {isWeekOpen && (
-                        <div className="p-4 space-y-5 bg-white dark:bg-gray-900/50">
-                          {/* Week title input */}
-                          <div>
-                            <Label value="Week Title" className="text-xs mb-1" />
-                            <TextInput
-                              placeholder="e.g. Environmental Auditing Fundamentals"
-                              value={section.title}
-                              onChange={(e) => handleCurriculumChange(sectionIndex, 'title', e.target.value)}
-                              className="max-w-2xl"
-                              required
-                            />
+                    {/* Week Content */}
+                    {isWeekOpen && (
+                      <div className="px-4 py-4 bg-gray-50 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-700 space-y-4">
+                        {/* Week Title */}
+                        <div>
+                          <Label value="Week Title" className="text-sm" />
+                          <TextInput
+                            placeholder="e.g. Legal Framework"
+                            value={section.title}
+                            onChange={(e) => handleCurriculumChange(sectionIndex, 'title', e.target.value)}
+                          />
+                        </div>
+
+                        {/* Lessons */}
+                        <div>
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Lessons ({lessonCount})</span>
+                            <button
+                              type="button"
+                              onClick={() => addCurriculumItem(sectionIndex)}
+                              className="text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
+                            >
+                              + Add Lesson
+                            </button>
                           </div>
 
-                          {/* ─── LESSONS ─── */}
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                                📖 Lessons
-                              </span>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  type="button"
-                                  outline
-                                  color="none"
-                                  size="xs"
-                                  onClick={() => addCurriculumItem(sectionIndex)}
-                                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                                >
-                                  <HiOutlinePlus className="mr-1" /> Add Lesson
-                                </Button>
-                                <Button
-                                  type="button"
-                                  outline
-                                  color="none"
-                                  size="xs"
-                                  onClick={() => addMultipleCurriculumItems?.(sectionIndex, 5)}
-                                  className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                                >
-                                  +5 Lessons
-                                </Button>
-                              </div>
-                            </div>
+                          <div className="space-y-2">
+                            {(Array.isArray(section.items) ? section.items : []).map((item, itemIndex) => {
+                              const lessonKey = `${sectionIndex}-${itemIndex}`;
+                              const isExpanded = expandedLessons.has(lessonKey);
+                              const itemObj = typeof item === 'object' && item !== null ? item : { title: item || '' };
 
-                            <div className="space-y-2">
-                              {(Array.isArray(section.items) ? section.items : []).map((item, itemIndex) => {
-                                const lessonKey = `${sectionIndex}-${itemIndex}`;
-                                const isExpanded = expandedLessons.has(lessonKey);
-                                const itemObj = typeof item === 'object' && item !== null ? item : { title: item || '' };
-
-                                return (
-                                  <div
-                                    key={itemIndex}
-                                    className="border border-gray-100 dark:border-gray-700 rounded-lg"
-                                    draggable
-                                    onDragStart={() => setDraggedLesson({ sectionIndex, itemIndex })}
-                                    onDragOver={(e) => e.preventDefault()}
-                                    onDrop={() => {
-                                      if (!draggedLesson || draggedLesson.sectionIndex !== sectionIndex) return;
-                                      moveCurriculumLesson?.(sectionIndex, draggedLesson.itemIndex, itemIndex);
-                                      setDraggedLesson(null);
-                                    }}
-                                    onDragEnd={() => setDraggedLesson(null)}
+                              return (
+                                <div key={itemIndex} className="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                  {/* Lesson Header */}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleLessonExpand(lessonKey)}
+                                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                                   >
-                                    {/* Lesson header row */}
-                                    <div className="flex items-center gap-2 p-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => toggleLessonExpand(lessonKey)}
-                                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                                        title={isExpanded ? 'Collapse' : 'Expand to edit video & content'}
-                                      >
-                                        {isExpanded ? (
-                                          <HiChevronDown className="w-4 h-4 text-brand-green" />
-                                        ) : (
-                                          <HiChevronRight className="w-4 h-4 text-gray-400" />
-                                        )}
-                                      </button>
-                                      <span className="text-xs text-gray-400 w-6">{itemIndex + 1}.</span>
-                                      <TextInput
-                                        placeholder={`Lesson ${itemIndex + 1} title`}
-                                        value={itemObj.title || ''}
-                                        onChange={(e) => handleCurriculumItemChange(sectionIndex, itemIndex, e.target.value)}
-                                        className="flex-1 max-w-2xl"
-                                        sizing="sm"
-                                        required
-                                      />
-                                      {/* Indicators */}
-                                      {itemObj.video_url && <Badge color="purple" size="xs" title="Has video">🎬</Badge>}
-                                      {itemObj.content && <Badge color="info" size="xs" title="Has text content">📝</Badge>}
-                                      <Button
-                                        type="button"
-                                        outline
-                                        color="none"
-                                        size="xs"
-                                        onClick={() => duplicateCurriculumLesson?.(sectionIndex, itemIndex)}
-                                        title="Duplicate lesson"
-                                        className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                                      >
-                                        Copy
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        outline
-                                        color="none"
-                                        size="xs"
-                                        onClick={() => moveCurriculumLesson?.(sectionIndex, itemIndex, Math.max(0, itemIndex - 1))}
-                                        disabled={itemIndex === 0}
-                                        title="Move lesson up"
-                                      >
-                                        ↑
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        outline
-                                        color="none"
-                                        size="xs"
-                                        onClick={() => moveCurriculumLesson?.(sectionIndex, itemIndex, Math.min((section.items || []).length - 1, itemIndex + 1))}
-                                        disabled={itemIndex === (section.items || []).length - 1}
-                                        title="Move lesson down"
-                                      >
-                                        ↓
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        color="failure"
-                                        size="xs"
-                                        onClick={() => removeCurriculumItem(sectionIndex, itemIndex)}
-                                        disabled={(section.items || []).length <= 1}
-                                        title="Delete lesson"
-                                      >
-                                        <HiOutlineX className="h-3 w-3" />
-                                      </Button>
+                                    <div className="flex items-center gap-2 flex-1 text-left">
+                                      <span className="text-xs text-gray-400">{itemIndex + 1}.</span>
+                                      <span className="text-sm text-gray-900 dark:text-white">
+                                        {itemObj.title || 'Lesson title'}
+                                      </span>
                                     </div>
+                                    <span className="text-gray-400">{isExpanded ? '−' : '+'}</span>
+                                  </button>
 
-                                    {/* Expanded lesson details */}
-                                    {isExpanded && (
-                                      <div className="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-gray-700 space-y-3 bg-gray-50 dark:bg-gray-800/50 rounded-b-lg">
-                                        <div>
-                                          <Label value="External Video URL (YouTube, Vimeo, etc.)" className="text-xs" />
-                                          <TextInput
-                                            type="url"
-                                            placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
-                                            value={itemObj.video_url || ''}
-                                            onChange={(e) => handleLessonDetailChange(sectionIndex, itemIndex, 'video_url', e.target.value)}
-                                            sizing="sm"
-                                            helperText="This video will play in the lesson's embedded player"
-                                          />
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                          <Checkbox
-                                            checked={Boolean(itemObj.is_free_preview)}
-                                            onChange={(e) => handleLessonDetailChange(sectionIndex, itemIndex, 'is_free_preview', e.target.checked)}
-                                          />
-                                          <Label className="text-xs">Free Preview (visible to non-enrolled users)</Label>
-                                        </div>
-                                        <div>
-                                          <Label value="Lesson Content" className="text-xs mb-1" />
-                                          <TipTapEditor
-                                            content={itemObj.content || ''}
-                                            onChange={(html) => handleLessonDetailChange(sectionIndex, itemIndex, 'content', html)}
-                                            placeholder="Write your lesson content here — multiple paragraphs, headings, lists, images, code blocks…"
-                                            minHeight="250px"
-                                          />
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* ─── LIVE SESSIONS ─── */}
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                                <HiOutlineCalendar className="w-4 h-4" /> Live Sessions
-                              </span>
-                              <Button
-                                type="button"
-                                outline
-                                color="none"
-                                size="xs"
-                                onClick={() => addLiveSession(sectionIndex)}
-                                className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                              >
-                                <HiOutlinePlus className="mr-1" /> Add Session
-                              </Button>
-                            </div>
-
-                            {(section.live_sessions || []).length === 0 ? (
-                              <p className="text-xs text-gray-400 italic">No live sessions for this week yet.</p>
-                            ) : (
-                              <div className="space-y-2">
-                                {(section.live_sessions || []).map((ls, lsIndex) => (
-                                  <div key={lsIndex} className="border border-gray-100 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                      <div>
-                                        <Label value="Session Title" className="text-xs" />
-                                        <TextInput
-                                          placeholder="e.g. Q&A with Instructor"
-                                          value={ls.title || ''}
-                                          onChange={(e) => updateLiveSession(sectionIndex, lsIndex, 'title', e.target.value)}
-                                          sizing="sm"
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label value="Meeting Link (Zoom / Google Meet)" className="text-xs" />
-                                        <TextInput
-                                          type="url"
-                                          placeholder="https://zoom.us/j/... or https://meet.google.com/..."
-                                          value={ls.zoom_link || ''}
-                                          onChange={(e) => updateLiveSession(sectionIndex, lsIndex, 'zoom_link', e.target.value)}
-                                          sizing="sm"
-                                          icon={HiOutlineLink}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label value="Date & Time" className="text-xs" />
-                                        <TextInput
-                                          type="datetime-local"
-                                          value={ls.date_time || ''}
-                                          onChange={(e) => updateLiveSession(sectionIndex, lsIndex, 'date_time', e.target.value)}
-                                          sizing="sm"
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label value="Recording URL (optional, add after session)" className="text-xs" />
-                                        <TextInput
-                                          type="url"
-                                          placeholder="https://..."
-                                          value={ls.recording_url || ''}
-                                          onChange={(e) => updateLiveSession(sectionIndex, lsIndex, 'recording_url', e.target.value)}
-                                          sizing="sm"
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="mt-2 flex justify-end">
-                                      <Button
-                                        type="button"
-                                        color="failure"
-                                        size="xs"
-                                        onClick={() => removeLiveSession(sectionIndex, lsIndex)}
-                                        title="Remove session"
-                                      >
-                                        <HiOutlineX className="h-3 w-3 mr-1" /> Remove
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* ─── RESOURCES ─── */}
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-                                <HiOutlineDocumentText className="w-4 h-4" /> Resources
-                              </span>
-                              <Button
-                                type="button"
-                                outline
-                                color="none"
-                                size="xs"
-                                onClick={() => addResource(sectionIndex)}
-                                className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                              >
-                                <HiOutlinePlus className="mr-1" /> Add Resource
-                              </Button>
-                            </div>
-
-                            {(section.resources || []).length === 0 ? (
-                              <p className="text-xs text-gray-400 italic">No resources for this week yet.</p>
-                            ) : (
-                              <div className="space-y-2">
-                                {(section.resources || []).map((res, rIndex) => (
-                                  <div key={rIndex} className="border border-gray-100 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                  {/* Lesson Details */}
+                                  {isExpanded && (
+                                    <div className="px-3 py-3 bg-gray-50 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                                      {/* Lesson Title */}
                                       <div>
                                         <Label value="Title" className="text-xs" />
                                         <TextInput
-                                          placeholder="e.g. Research Paper PDF"
-                                          value={res.title || ''}
-                                          onChange={(e) => updateResource(sectionIndex, rIndex, 'title', e.target.value)}
+                                          placeholder="Lesson title"
+                                          value={itemObj.title || ''}
+                                          onChange={(e) => handleCurriculumItemChange(sectionIndex, itemIndex, e.target.value)}
                                           sizing="sm"
                                         />
                                       </div>
+
+                                      {/* Video URL */}
                                       <div>
-                                        <Label value="URL / Link" className="text-xs" />
+                                        <Label value="Video URL (YouTube, Vimeo)" className="text-xs" />
                                         <TextInput
                                           type="url"
                                           placeholder="https://..."
-                                          value={res.file_url || ''}
-                                          onChange={(e) => updateResource(sectionIndex, rIndex, 'file_url', e.target.value)}
+                                          value={itemObj.video_url || ''}
+                                          onChange={(e) => handleLessonDetailChange(sectionIndex, itemIndex, 'video_url', e.target.value)}
                                           sizing="sm"
-                                          icon={HiOutlineLink}
                                         />
                                       </div>
+
+                                      {/* Free Preview */}
+                                      <div className="flex items-center gap-2">
+                                        <Checkbox
+                                          checked={Boolean(itemObj.is_free_preview)}
+                                          onChange={(e) => handleLessonDetailChange(sectionIndex, itemIndex, 'is_free_preview', e.target.checked)}
+                                        />
+                                        <Label className="text-xs">Free Preview</Label>
+                                      </div>
+
+                                      {/* Content */}
                                       <div>
-                                        <Label value="Type" className="text-xs" />
-                                        <Select
-                                          value={res.resource_type || 'document'}
-                                          onChange={(e) => updateResource(sectionIndex, rIndex, 'resource_type', e.target.value)}
-                                          sizing="sm"
-                                        >
-                                          <option value="document">Document / PDF</option>
-                                          <option value="link">External Link</option>
-                                          <option value="video">Video</option>
-                                          <option value="other">Other</option>
-                                        </Select>
+                                        <Label value="Content" className="text-xs" />
+                                        <TipTapEditor
+                                          content={itemObj.content || ''}
+                                          onChange={(html) => handleLessonDetailChange(sectionIndex, itemIndex, 'content', html)}
+                                          placeholder="Lesson content..."
+                                          minHeight="200px"
+                                        />
+                                      </div>
+
+                                      {/* Lesson Actions */}
+                                      <div className="flex gap-2 pt-2">
+                                        {(section.items || []).length > 1 && (
+                                          <button
+                                            type="button"
+                                            onClick={() => removeCurriculumItem(sectionIndex, itemIndex)}
+                                            className="text-xs text-red-600 dark:text-red-400 hover:text-red-700"
+                                          >
+                                            Delete Lesson
+                                          </button>
+                                        )}
                                       </div>
                                     </div>
-                                    <div className="mt-2">
-                                      <Label value="Description (optional)" className="text-xs" />
-                                      <TextInput
-                                        placeholder="Brief description of this resource"
-                                        value={res.description || ''}
-                                        onChange={(e) => updateResource(sectionIndex, rIndex, 'description', e.target.value)}
-                                        sizing="sm"
-                                      />
-                                    </div>
-                                    <div className="mt-2 flex justify-end">
-                                      <Button
-                                        type="button"
-                                        color="failure"
-                                        size="xs"
-                                        onClick={() => removeResource(sectionIndex, rIndex)}
-                                        title="Remove resource"
-                                      >
-                                        <HiOutlineX className="h-3 w-3 mr-1" /> Remove
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-              </>
-            )}
 
-              {/* FAQs Section */}
-              {activeStep === 3 && (
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <Label value="Frequently Asked Questions" />
-                  <Button
-                    type="button"
-                    outline
-                    color="none"
-                    size="xs"
-                    onClick={addFaq}
-                    className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                  >
-                    <HiOutlinePlus className="mr-1" /> Add FAQ
-                  </Button>
-                </div>
-                
-                {(Array.isArray(formData.faqs) ? formData.faqs : []).map((faq, index) => (
-                  <div key={index} className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <TextInput
-                        placeholder="Question"
-                        value={faq.question}
-                        onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
-                        className="flex-1 max-w-3xl"
-                        sizing="sm"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        color="failure"
-                        size="xs"
-                        onClick={() => removeFaq(index)}
-                        disabled={(formData.faqs || []).length <= 1}
-                        className="ml-2"
-                      >
-                        <HiOutlineX className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <Textarea
-                      placeholder="Answer"
-                      value={faq.answer}
-                      onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
-                      rows={2}
-                      className="max-w-4xl"
-                      required
-                    />
+                        {/* Week Actions */}
+                        <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                          {(formData.curriculum || []).length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeCurriculumItem(sectionIndex)}
+                              className="text-xs text-red-600 dark:text-red-400 hover:text-red-700"
+                            >
+                              Delete Week
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-              )}
-
-            {/* Submit Buttons */}
-            {showSubmitButtons && activeStep === 3 && (
-            <div className="pt-4 flex flex-col sm:flex-row gap-3">
-              {/* Save as Draft */}
-              <Button
-                type="button"
-                color="none"
-                className="w-full sm:w-auto border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-600"
-                disabled={loading}
-                onClick={(e) => handleSubmit(e, { isLive: false })}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </span>
-                ) : (
-                  '💾 Save as Draft'
-                )}
-              </Button>
-
-              {/* Publish / Update */}
-              <Button
-                type="button"
-                color="none"
-                className="w-full sm:w-auto bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25 shadow-md"
-                disabled={loading}
-                onClick={(e) => handleSubmit(e, { isLive: true })}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Publishing...
-                  </span>
-                ) : formData.isLive ? (
-                  '🚀 Update & Publish'
-                ) : (
-                  '🚀 Publish Course'
-                )}
-              </Button>
+                );
+              })}
             </div>
-            )}
+          </div>
+          )}
 
-            {/* Draft indicator */}
-            {showSubmitButtons && formData.isLive === false && formData.title && (
-              <p className="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
-                ⚠️ This course is currently a <strong>draft</strong> and is not visible to students.
-              </p>
-            )}
+          {/* ──────────────────────────────────────── */}
+          {/* SECTION 5: SETTINGS & PUBLISH */}
+          {/* ──────────────────────────────────────── */}
+          {shouldShowSettings && (
+            <div className="p-6 space-y-6 border-t border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Settings</h2>
 
-            {showSubmitButtons && error && (
-              <div className="mt-4 text-center">
-                <p className="text-red-500 text-sm">{error}</p>
+            {/* Publish Options */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="isPopular"
+                      checked={Boolean(formData.isPopular)}
+                      onChange={handleChange}
+                    />
+                    <Label htmlFor="isPopular" className="text-sm">Mark as Popular Course</Label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="hasCertificate"
+                      checked={Boolean(formData.hasCertificate)}
+                      onChange={handleChange}
+                    />
+                    <Label htmlFor="hasCertificate" className="text-sm">Offers Certificate</Label>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="pacingType" value="Pacing Type" className="text-sm" />
+                  <Select
+                    id="pacingType"
+                    value={formData.pacingType || 'self_paced'}
+                    onChange={handleChange}
+                    sizing="sm"
+                  >
+                    <option value="self_paced">Self-Paced</option>
+                    <option value="weekly">Weekly Release</option>
+                  </Select>
+                </div>
               </div>
-            )}
-          </form>
+            </div>
+          </div>
+          )}
 
-          {/* Student Preview Modal */}
-          <Modal show={showPreview} onClose={() => setShowPreview(false)} size="4xl">
-            <Modal.Header>Student Preview</Modal.Header>
-            <Modal.Body>
-              <div className="space-y-5">
+          {/* ──────────────────────────────────────── */}
+          {/* SECTION 6: FAQs */}
+          {/* ──────────────────────────────────────── */}
+          {shouldShowSettings && (
+            <div className="p-6 space-y-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">FAQs</h2>
+              <button
+                type="button"
+                onClick={addFaq}
+                className="text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
+              >
+                + Add FAQ
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {(Array.isArray(formData.faqs) ? formData.faqs : []).map((faq, index) => (
+                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+                  <TextInput
+                    placeholder="Question"
+                    value={faq.question}
+                    onChange={(e) => handleFaqChange(index, 'question', e.target.value)}
+                  />
+                  <Textarea
+                    placeholder="Answer"
+                    value={faq.answer}
+                    onChange={(e) => handleFaqChange(index, 'answer', e.target.value)}
+                    rows={2}
+                  />
+                  {(formData.faqs || []).length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeFaq(index)}
+                      className="text-xs text-red-600 dark:text-red-400 hover:text-red-700"
+                    >
+                      Delete FAQ
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          )}
+
+          {/* ──────────────────────────────────────── */}
+          {/* ACTION BUTTONS */}
+          {/* ──────────────────────────────────────── */}
+          {showSubmitButtons && (
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+              {error && (
+                <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                  {error}
+                </div>
+              )}
+              <div className="flex gap-3 justify-end">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  onClick={(e) => { e.preventDefault(); handleSubmit(e); }}
+                  className="px-8 py-2 font-medium"
+                >
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </form>
+
+        {/* Student Preview Modal */}
+        <Modal show={showPreview} onClose={() => setShowPreview(false)} size="4xl">
+          <Modal.Header>Student Preview</Modal.Header>
+          <Modal.Body>
+            <div className="space-y-5">
                 <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                     {formData.title?.trim() || 'Untitled Course'}
@@ -1093,7 +706,6 @@ export const CourseForm = ({
               </div>
             </Modal.Body>
           </Modal>
-        </div>
       </div>
     </div>
   );
