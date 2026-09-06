@@ -116,7 +116,7 @@ export default function PostCard({ post, isCompact = false, isLoading = false, c
   const authorName = getAuthorName(post);
   const authorAvatar = getAuthorAvatar(post);
   const authorLink = getAuthorLink(post);
-  const formattedDate = formatDate(post.createdAt || post.publishedAt || post.created_at);
+  const formattedDate = formatDate(post.publishedAt || post.createdAt || post.published_at || post.created_at);
 
   return (
     <article
