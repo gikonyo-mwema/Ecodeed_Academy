@@ -331,66 +331,44 @@ export default function CourseDetails() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-brand-blue dark:to-gray-900">
       {/* Hero Section */}
-      <div className={`relative overflow-hidden bg-gradient-to-r ${courseIcon.color} text-white`}>
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="absolute inset-0 bg-grid-white/[0.2] bg-grid"></div>
+      <div className="relative overflow-hidden bg-gradient-to-br from-brand-green via-brand-green/95 to-brand-yellow text-white">
+        <div className="absolute inset-0 bg-black/5"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {/* Breadcrumb */}
-          <nav className="flex items-center text-sm text-white/80 mb-8">
-            <Link to="/" className="hover:text-white transition-colors">Home</Link>
-            <HiOutlineChevronRight className="w-4 h-4 mx-2" />
-            <Link to="/courses" className="hover:text-white transition-colors">Courses</Link>
-            <HiOutlineChevronRight className="w-4 h-4 mx-2" />
-            <span className="text-white">{course.title}</span>
-          </nav>
-
-          <div className="grid lg:grid-cols-3 gap-12">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+          <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-4 mb-6">
-                <div className={`p-3 rounded-xl ${courseIcon.bg} bg-white/10 backdrop-blur-sm`}>
-                  <IconComponent className="w-8 h-8 text-white" />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-white/15 backdrop-blur-sm">
+                  <IconComponent className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="text-3xl lg:text-4xl font-bold">{course.title}</h1>
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">{course.title}</h1>
               </div>
               
-              <p className="text-xl text-white/90 mb-8">{course.shortDescription}</p>
+              <p className="text-base md:text-lg text-white/90 mb-6">{course.shortDescription}</p>
               
               {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div className="flex items-center gap-2">
-                  <HiOutlineUsers className="w-5 h-5 text-white/80" />
-                  <span className="text-white/90">{course.students}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <HiOutlineStar className="w-5 h-5 text-yellow-300" />
-                  <span className="text-white/90">{course.rating} ({course.reviews} reviews)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <HiOutlineClock className="w-5 h-5 text-white/80" />
-                  <span className="text-white/90">{course.duration}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <HiOutlineGlobe className="w-5 h-5 text-white/80" />
-                  <span className="text-white/90">{course.language}</span>
-                </div>
+              <div className="flex items-center gap-2">
+                <HiOutlineUsers className="w-4 h-4 text-white/80" />
+                <span className="text-sm md:text-base text-white/90">{course.students} students enrolled</span>
               </div>
             </div>
 
             {/* Price Card - Desktop */}
             <div className="hidden lg:block">
-              <div className="bg-white dark:bg-brand-blue rounded-2xl shadow-2xl border border-gray-200 dark:border-brand-yellow/20 p-6">
-                <div className="text-center mb-6">
+              <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-brand-yellow/20 p-7">
+                <div className="text-center mb-7">
                   {!course.isFree ? (
                     <>
                       <span className="text-4xl font-bold text-gray-800 dark:text-white">
                         Ksh {course.price?.toLocaleString()}
                       </span>
-                      <span className="text-gray-500 dark:text-gray-300 ml-2">one-time</span>
+                      <span className="text-gray-500 dark:text-gray-300 ml-2 text-sm">one-time</span>
                     </>
                   ) : (
-                    <span className="text-4xl font-bold text-green-600">Free</span>
+                    <div className="inline-block bg-gradient-to-r from-brand-green to-brand-yellow rounded-full px-5 py-2 mb-4">
+                      <span className="text-xl font-bold text-white">Free Course</span>
+                    </div>
                   )}
                 </div>
 
@@ -399,7 +377,7 @@ export default function CourseDetails() {
                     <Button
                       color="none"
                       size="lg"
-                      className="w-full mb-4 bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
+                      className="w-full mb-5 !bg-brand-yellow !hover:bg-brand-yellow/90 !text-gray-900 !border-0 !font-bold !shadow-md hover:!shadow-lg !transition-all !duration-200"
                       onClick={handleEnroll}
                       disabled={processing}
                     >
@@ -412,15 +390,15 @@ export default function CourseDetails() {
                       )}
                     </Button>
 
-                    <div className="space-y-3 text-sm text-gray-600 dark:text-gray-200">
-                      <p className="flex items-center">
-                          <HiOutlineCheckCircle className="mr-2 text-brand-green w-5 h-5" />
-                        Lifetime access
+                    <div className="space-y-3 text-sm">
+                      <p className="flex items-center text-gray-600 dark:text-gray-300">
+                        <HiOutlineCheckCircle className="mr-3 text-brand-green w-5 h-5 flex-shrink-0" />
+                        <span>Lifetime access</span>
                       </p>
                       {course.certificate && (
-                        <p className="flex items-center">
-                          <HiOutlineCheckCircle className="mr-2 text-brand-green w-5 h-5" />
-                          Certificate of completion
+                        <p className="flex items-center text-gray-600 dark:text-gray-300">
+                          <HiOutlineCheckCircle className="mr-3 text-brand-green w-5 h-5 flex-shrink-0" />
+                          <span>Certificate of completion</span>
                         </p>
                       )}
                     </div>
@@ -432,7 +410,7 @@ export default function CourseDetails() {
                     </Badge>
                     <Button 
                       color="none"
-                      className="w-full bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0"
+                      className="w-full !bg-brand-yellow !hover:bg-brand-yellow/90 !text-gray-900 !border-0 !font-bold"
                       onClick={() => navigate(`/dashboard?tab=course-${course.id || course._id}-weeks`)}
                     >
                       Continue Learning
@@ -450,14 +428,28 @@ export default function CourseDetails() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Course Content */}
           <div className="lg:col-span-2">
-            {/* Tabs */}
-            <div className="bg-white dark:bg-brand-blue rounded-xl shadow-sm border border-gray-200 dark:border-brand-yellow/20 mb-8">
-              <Tabs.Group
-                aria-label="Course tabs"
-                style="underline"
-                onActiveTabChange={(tab) => setActiveTab(tab)}
-              >
-                <Tabs.Item title="Overview" active={activeTab === 0}>
+            {/* Custom Tabs */}
+            <div className="bg-white dark:bg-brand-blue rounded-xl shadow-sm border border-gray-200 dark:border-brand-yellow/20 mb-8 overflow-hidden">
+              {/* Tab Buttons */}
+              <div className="flex border-b border-gray-200 dark:border-gray-700">
+                {['Overview', 'Curriculum', 'FAQs'].map((title, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveTab(index)}
+                    className={`flex-1 px-4 py-4 font-medium text-center transition-all duration-200 border-b-2 ${
+                      activeTab === index
+                        ? 'text-brand-green dark:text-brand-yellow border-brand-green dark:border-brand-yellow bg-brand-green/5 dark:bg-brand-yellow/5'
+                        : 'text-gray-600 dark:text-gray-300 border-transparent hover:text-brand-green dark:hover:text-brand-yellow hover:bg-gray-50 dark:hover:bg-white/5'
+                    }`}
+                  >
+                    {title}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab Content */}
+              <div>
+                {activeTab === 0 && (
                   <div className="p-6">
                     <div className="prose max-w-none dark:prose-invert">
                       <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">About This Course</h2>
@@ -496,9 +488,9 @@ export default function CourseDetails() {
                       ))}
                     </div>
                   </div>
-                </Tabs.Item>
+                )}
 
-                <Tabs.Item title="Curriculum" active={activeTab === 1}>
+                {activeTab === 1 && (
                   <div className="p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                       <div>
@@ -580,9 +572,9 @@ export default function CourseDetails() {
                       </Accordion>
                     )}
                   </div>
-                </Tabs.Item>
+                )}
 
-                <Tabs.Item title="FAQs" active={activeTab === 2}>
+                {activeTab === 2 && (
                   <div className="p-6">
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Frequently Asked Questions</h2>
                     <div className="space-y-4">
@@ -601,8 +593,8 @@ export default function CourseDetails() {
                       ))}
                     </div>
                   </div>
-                </Tabs.Item>
-              </Tabs.Group>
+                )}
+              </div>
             </div>
           </div>
 
@@ -610,8 +602,8 @@ export default function CourseDetails() {
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-6">
               {/* Price Card - Mobile/Tablet */}
-              <div className="lg:hidden bg-white dark:bg-brand-blue rounded-xl shadow-lg border border-gray-200 dark:border-brand-yellow/20 p-6">
-                <div className="text-center mb-6">
+              <div className="lg:hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-brand-yellow/20 p-7">
+                <div className="text-center mb-7">
                   {!course.isFree ? (
                     <>
                       <span className="text-4xl font-bold text-gray-800 dark:text-white">
@@ -620,7 +612,9 @@ export default function CourseDetails() {
                       <span className="text-gray-500 dark:text-gray-300 ml-2">one-time</span>
                     </>
                   ) : (
-                    <span className="text-4xl font-bold text-green-600">Free</span>
+                    <div className="inline-block bg-gradient-to-r from-brand-green to-brand-yellow rounded-full px-5 py-2 mb-4">
+                      <span className="text-xl font-bold text-white">Free Course</span>
+                    </div>
                   )}
                 </div>
 
@@ -629,7 +623,7 @@ export default function CourseDetails() {
                     <Button
                       color="none"
                       size="lg"
-                      className="w-full mb-4 bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
+                      className="w-full mb-5 !bg-brand-yellow !hover:bg-brand-yellow/90 !text-gray-900 !border-0 !font-bold !shadow-md hover:!shadow-lg !transition-all !duration-200"
                       onClick={handleEnroll}
                       disabled={processing}
                     >
@@ -642,14 +636,14 @@ export default function CourseDetails() {
                       )}
                     </Button>
 
-                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-200">
-                      <p className="flex items-center">
-                        <HiOutlineCheckCircle className="mr-2 text-brand-green" />
+                    <div className="space-y-3 text-sm">
+                      <p className="flex items-center text-gray-600 dark:text-gray-300">
+                        <HiOutlineCheckCircle className="mr-3 text-brand-green flex-shrink-0" />
                         Lifetime access
                       </p>
                       {course.certificate && (
-                        <p className="flex items-center">
-                          <HiOutlineCheckCircle className="mr-2 text-brand-green" />
+                        <p className="flex items-center text-gray-600 dark:text-gray-300">
+                          <HiOutlineCheckCircle className="mr-3 text-brand-green flex-shrink-0" />
                           Certificate of completion
                         </p>
                       )}
@@ -662,7 +656,7 @@ export default function CourseDetails() {
                     </Badge>
                     <Button 
                       color="none"
-                      className="w-full bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0"
+                      className="w-full !bg-brand-yellow !hover:bg-brand-yellow/90 !text-gray-900 !border-0 !font-bold"
                       onClick={() => navigate(`/dashboard?tab=course-${course.id || course._id}-weeks`)}
                     >
                       Continue Learning
