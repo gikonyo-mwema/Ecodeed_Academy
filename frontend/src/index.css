@@ -49,6 +49,22 @@ body{
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
 
+/* Service Form Modal Dark Mode - Specific targeting */
+html.dark .service-form-modal .bg-white {
+    background-color: rgb(31, 41, 55) !important;
+    color: rgb(243, 244, 246) !important;
+}
+
+html.dark .service-form-modal .divide-y.divide-gray-200 {
+    --tw-divide-color: rgb(55, 65, 81) !important;
+}
+
+/* Delete Confirmation Modal Dark Mode */
+html.dark .delete-modal .bg-white {
+    background-color: rgb(31, 41, 55) !important;
+    color: rgb(243, 244, 246) !important;
+}
+
 /* Enhanced emoji support with better rendering */
 .emoji-icon {
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols", sans-serif;

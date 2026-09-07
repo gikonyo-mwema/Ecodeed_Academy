@@ -1,18 +1,17 @@
 /**
  * Dashboard Courses Management Component
  *
- * Enriched course table with instructor name, enrollment count, status.
+ * Clean, minimalist course table with essential information.
  * Clicking a row drills into CourseDetailView (assignments, sessions,
  * resources, enrollments — all scoped to that course).
  *
  * @component
- * @version 2.0.0
+ * @version 3.0.0 - Minimalist Design
  * @author Gikonyo Mwema
  */
 
 import React, { useState, useEffect } from 'react';
 import { Button, Table, Modal, Badge } from 'flowbite-react';
-import { HiOutlinePlus, HiOutlinePencilAlt, HiOutlineExclamationCircle, HiEye, HiOutlineEye } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Unauthorized } from './Unauthorized';
@@ -49,7 +48,15 @@ export const DashCourses = () => {
         isPopular: c.is_popular !== undefined ? c.is_popular : c.isPopular,
         shortDescription: c.short_description || c.shortDescription,
         features: Array.isArray(c.features) ? c.features : [],
-        instructor_name: c.instructor_name || null,
+        // Instructor name with fallback to creator/admin
+        instructor_name: c.instructor_name 
+          || c.created_by_name 
+          || c.created_by?.name
+          || c.created_by?.username
+          || c.creator?.name
+          || c.creator?.username
+          || currentUser?.username
+          || 'Admin',
         enrollment_count: c.enrollment_count ?? 0,
       }));
 
@@ -96,153 +103,187 @@ export const DashCourses = () => {
 
   /* ── Courses list table ── */
   return (
-    <div className="table-auto overflow-x-scroll md:mx-auto p-3">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          {isAdmin ? 'All Courses' : 'My Courses'}
+    <div className="w-full p-4 md:p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {isAdmin ? 'Courses' : 'My Courses'}
         </h2>
         <Link to="/create-course">
-          <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25">
-            <HiOutlinePlus className="mr-2" />
-            Add New Course
+          <Button color="gray" className="text-sm font-medium">
+            + New Course
           </Button>
         </Link>
       </div>
 
+      {/* Loading state */}
       {loading && courses.length === 0 ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-pulse text-gray-500">Loading courses...</div>
+          <div className="text-gray-500">Loading...</div>
         </div>
       ) : courses.length > 0 ? (
         <>
-          <Table hoverable className="shadow-md">
-            <Table.Head>
-              <Table.HeadCell>Course</Table.HeadCell>
-              {isAdmin && <Table.HeadCell>Instructor</Table.HeadCell>}
-              <Table.HeadCell>Price</Table.HeadCell>
-              <Table.HeadCell>Students</Table.HeadCell>
-              <Table.HeadCell>Status</Table.HeadCell>
-              <Table.HeadCell>Actions</Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
-              {courses.map((course) => (
-                <Table.Row
-                  key={course.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <Table.Cell>
-                    <div className="flex items-center gap-3">
-                      {course.image && (
-                        <img src={course.image} alt="" className="w-12 h-8 rounded object-cover hidden sm:block" />
-                      )}
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{course.title}</p>
-                        <p className="text-xs text-gray-500">{course.category}</p>
-                      </div>
-                    </div>
-                  </Table.Cell>
-                  {isAdmin && (
-                    <Table.Cell className="text-sm text-gray-600 dark:text-gray-300">
-                      {course.instructor_name || '—'}
-                    </Table.Cell>
-                  )}
-                  <Table.Cell>
-                    {course.is_free ? (
-                      <Badge color="success" size="sm">Free</Badge>
-                    ) : (
-                      <span className="text-sm font-medium">
-                        KES {Number(course.price).toLocaleString()}
-                      </span>
-                    )}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand-green/10 text-brand-green text-sm font-bold">
-                      {course.enrollment_count}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="flex gap-1.5">
-                      {course.is_live ? (
-                        <Badge color="success" size="sm">Live</Badge>
-                      ) : (
-                        <Badge color="gray" size="sm">Draft</Badge>
-                      )}
-                      {course.isPopular && (
-                        <Badge color="warning" size="sm">Popular</Badge>
-                      )}
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="flex space-x-2">
-                      <Button
-                        size="xs" color="light"
+          {/* Table */}
+          <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+            <Table hoverable>
+              <Table.Head className="bg-gray-50 dark:bg-gray-900">
+                <Table.HeadCell className="bg-gray-50 dark:bg-gray-900">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Course</span>
+                </Table.HeadCell>
+                {isAdmin && (
+                  <Table.HeadCell className="bg-gray-50 dark:bg-gray-900">
+                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Instructor</span>
+                  </Table.HeadCell>
+                )}
+                <Table.HeadCell className="bg-gray-50 dark:bg-gray-900">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Price</span>
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-gray-50 dark:bg-gray-900">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Enrolled</span>
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-gray-50 dark:bg-gray-900">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Status</span>
+                </Table.HeadCell>
+                <Table.HeadCell className="bg-gray-50 dark:bg-gray-900">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Actions</span>
+                </Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y divide-gray-200 dark:divide-gray-700">
+                {courses.map((course) => (
+                  <Table.Row key={course.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    {/* Course Title */}
+                    <Table.Cell>
+                      <button
                         onClick={() => setSelectedCourse(course)}
+                        className="text-left hover:text-brand-green transition-colors"
                       >
-                        <HiEye className="mr-1 w-4 h-4" /> View
-                      </Button>
-                      {course.slug && (
-                        <Link to={`/learn/${course.slug}?preview=1`}>
-                          <Button
-                            outline
-                            color="none"
-                            size="xs"
-                            className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors"
-                          >
-                            <HiOutlineEye className="mr-1 w-4 h-4" /> Student View
-                          </Button>
-                        </Link>
-                      )}
-                      <Link to={`/edit-course/${course.id}`}>
-                        <Button outline color="none" size="xs" className="!border-brand-green !text-brand-green hover:!bg-brand-green hover:!text-white transition-colors">
-                          <HiOutlinePencilAlt className="mr-1" /> Edit
-                        </Button>
-                      </Link>
-                      <Button
-                        color="failure" outline size="xs"
-                        onClick={() => { setShowModal(true); setCourseIdToDelete(course.id); }}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
+                        <p className="font-medium text-gray-900 dark:text-white hover:underline">
+                          {course.title}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                          {course.category}
+                        </p>
+                      </button>
+                    </Table.Cell>
 
+                    {/* Instructor (admin only) */}
+                    {isAdmin && (
+                      <Table.Cell>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          {course.instructor_name || 'Not assigned'}
+                        </p>
+                      </Table.Cell>
+                    )}
+
+                    {/* Price */}
+                    <Table.Cell>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {course.is_free ? (
+                          <span className="text-gray-500">Free</span>
+                        ) : (
+                          <span>KES {Number(course.price).toLocaleString()}</span>
+                        )}
+                      </p>
+                    </Table.Cell>
+
+                    {/* Enrolled Count */}
+                    <Table.Cell>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {course.enrollment_count}
+                      </p>
+                    </Table.Cell>
+
+                    {/* Status */}
+                    <Table.Cell>
+                      <div className="flex gap-1">
+                        <Badge
+                          color={course.is_live ? 'green' : 'gray'}
+                          size="sm"
+                          className="text-xs"
+                        >
+                          {course.is_live ? 'Live' : 'Draft'}
+                        </Badge>
+                      </div>
+                    </Table.Cell>
+
+                    {/* Actions */}
+                    <Table.Cell>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedCourse(course)}
+                          className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+                        >
+                          View
+                        </button>
+                        <span className="text-gray-300 dark:text-gray-600">·</span>
+                        <Link to={`/edit-course/${course.id}`}>
+                          <button className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                            Edit
+                          </button>
+                        </Link>
+                        <span className="text-gray-300 dark:text-gray-600">·</span>
+                        <button
+                          onClick={() => {
+                            setShowModal(true);
+                            setCourseIdToDelete(course.id);
+                          }}
+                          className="text-sm text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </div>
+
+          {/* Show More Button */}
           {showMore && (
             <button
               onClick={handleShowMore}
-              className="w-full text-brand-green py-7 text-sm hover:text-brand-green/70 transition-colors"
+              className="w-full py-4 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               disabled={loading}
             >
-              {loading ? 'Loading...' : 'Show more'}
+              {loading ? 'Loading...' : 'Load more'}
             </button>
           )}
         </>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No courses found</p>
+        /* Empty State */
+        <div className="text-center py-16">
+          <p className="text-gray-500 dark:text-gray-400 mb-6">No courses yet</p>
           <Link to="/create-course">
-            <Button color="none" className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25">
-              Create Your First Course
-            </Button>
+            <Button color="gray">Create First Course</Button>
           </Link>
         </div>
       )}
 
+      {/* Delete Modal */}
       <Modal show={showModal} onClose={() => setShowModal(false)} size="md">
-        <Modal.Header className="border-b-0 pb-0">Confirm Deletion</Modal.Header>
-        <Modal.Body className="pt-4">
-          <div className="text-center">
-            <HiOutlineExclamationCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="mb-5 text-lg font-normal text-gray-500">
-              Are you sure you want to delete this course?
-            </h3>
-            <div className="flex justify-center gap-4">
-              <Button color="gray" onClick={() => setShowModal(false)} className="px-5">Cancel</Button>
-              <Button color="failure" onClick={handleDeleteCourse} className="px-5">Yes, delete</Button>
-            </div>
+        <Modal.Body className="p-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            Delete Course?
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            This action cannot be undone.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Button
+              color="gray"
+              onClick={() => setShowModal(false)}
+              size="sm"
+            >
+              Cancel
+            </Button>
+            <Button
+              color="failure"
+              onClick={handleDeleteCourse}
+              size="sm"
+            >
+              Delete
+            </Button>
           </div>
         </Modal.Body>
       </Modal>

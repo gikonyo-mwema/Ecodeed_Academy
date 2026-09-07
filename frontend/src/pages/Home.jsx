@@ -273,13 +273,11 @@ export default function Home() {
               <div className="flex flex-wrap gap-2">
                 {categories.map(category => (
                   <Link 
-                    key={category} 
-                    to={`/search?category=${encodeURIComponent(category)}`}
+                    key={category.slug} 
+                    to={`/search?category=${encodeURIComponent(category.name)}`}
                     className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-sm font-medium transition-colors text-gray-800 dark:text-gray-200"
                   >
-                    {category.split('-').map(word => 
-                      word.charAt(0).toUpperCase() + word.slice(1)
-                    ).join(' ')}
+                    {category.name}
                   </Link>
                 ))}
               </div>

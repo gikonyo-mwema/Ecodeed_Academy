@@ -19,7 +19,8 @@
  *    ├─ Comments (discussion moderation)
  *    ├─ Newsletter (bulk email)
  *    ├─ Announcement (platform announcements)
- *    └─ Services (service management)
+ *    ├─ Services (service management)
+ *    └─ About Us (page content management)
  * └─ Sign Out
  * 
  * INSTRUCTOR USERS see (teaching-focused menu):
@@ -92,6 +93,7 @@ import {
   HiChartPie,
   HiSpeakerphone,
   HiCurrencyDollar,
+  HiInformationCircle,
 } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -176,6 +178,7 @@ export default function DashSidebar() {
     { id: "newsletter", name: "Newsletter", icon: HiMail },
     { id: "announcement", name: "Announcement", icon: HiSpeakerphone },
     { id: "services", name: "Services", icon: HiClipboardCheck },
+    { id: "aboutus", name: "About Us", icon: HiInformationCircle },
   ];
 
   // ════════════════ ROLE-AWARE COURSE TABS ════════════════

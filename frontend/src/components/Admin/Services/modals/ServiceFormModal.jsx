@@ -61,8 +61,8 @@
  * ```
  */
 
-import { Modal, Button, Badge, Tooltip } from 'flowbite-react';
-import { HiOutlineClock, HiOutlineExclamation, HiOutlineCheck } from 'react-icons/hi';
+import { Modal, Button, Badge } from 'flowbite-react';
+import { HiOutlineClock } from 'react-icons/hi';
 import { useEffect, useState } from 'react';
 import ServiceFormTabs from "../ServiceForm/ServiceFormTabs";
 
@@ -138,9 +138,11 @@ const ServiceFormModal = ({
   };
 
   return (
-    <Modal show={show} onClose={onClose} size="7xl">
-      <Modal.Header>
-        {editMode ? `Edit ${currentService?.title}` : 'Create New Service'}
+    <Modal show={show} onClose={onClose} size="7xl" className="service-form-modal dark:bg-gray-900">
+      <Modal.Header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <span className="text-gray-900 dark:text-white">
+          {editMode ? `Edit ${currentService?.title}` : 'Create New Service'}
+        </span>
         {editMode && (
           <Badge color="gray" className="ml-2">
             {currentService?.isPublished ? 'Published' : 'Draft'}
@@ -148,11 +150,12 @@ const ServiceFormModal = ({
         )}
       </Modal.Header>
       
-      <Modal.Body className="max-h-[80vh] overflow-y-auto">
+      <Modal.Body className="max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-800">
         {editMode && (
           <div className="flex justify-end mb-4">
             <Button 
               color="light" 
+              className="dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
               onClick={(e) => {
                 e.preventDefault();
                 onViewHistory();
@@ -190,44 +193,28 @@ const ServiceFormModal = ({
         />
       </Modal.Body>
 
-      <Modal.Footer className="flex justify-between items-center">
-        <div className="flex items-center">
-          {!validationStatus.isValid && (
-            <Tooltip content={validationStatus.errors.join(', ')}>
-              <Badge color="warning" icon={HiOutlineExclamation}>
-                {validationStatus.errors.length} issue{validationStatus.errors.length !== 1 ? 's' : ''}
-              </Badge>
-            </Tooltip>
-          )}
-          {validationStatus.isValid && (
-            <Badge color="success" icon={HiOutlineCheck}>
-              Ready to publish
-            </Badge>
-          )}
-        </div>
-        
-        <div className="flex gap-3">
-          <Button 
-            className="bg-gray-500 hover:bg-gray-600 text-white border-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-          <Button
-            className="bg-brand-yellow hover:bg-brand-yellow/90 text-gray-900 border-0 focus:ring-4 focus:ring-brand-yellow/25 dark:text-gray-800"
-            onClick={handleSaveDraft}
-            disabled={loading.operation || !formData.title}
-          >
-            Save Draft
-          </Button>
-          <Button
-            className="bg-gradient-to-r from-brand-green to-brand-yellow hover:from-brand-green/90 hover:to-brand-yellow/90 text-white border-0 focus:ring-4 focus:ring-brand-green/25"
-            onClick={handlePublish}
-            disabled={loading.operation || !validationStatus.isValid}
-          >
-            {editMode ? 'Update Service' : 'Publish Service'}
-          </Button>
-        </div>
+      <Modal.Footer className="flex justify-end gap-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <Button 
+          className="bg-gray-400 hover:bg-gray-500 text-white border-0"
+          onClick={onClose}
+          disabled={loading.operation}
+        >
+          Cancel
+        </Button>
+        <Button
+          className="bg-brand-yellow hover:bg-brand-yellow/90 text-gray-900 border-0"
+          onClick={handleSaveDraft}
+          disabled={loading.operation || !formData.title}
+        >
+          Save Draft
+        </Button>
+        <Button
+          className="bg-brand-green hover:bg-brand-green/90 text-white border-0"
+          onClick={handlePublish}
+          disabled={loading.operation || !validationStatus.isValid}
+        >
+          {editMode ? 'Update Service' : 'Publish Service'}
+        </Button>
       </Modal.Footer>
     </Modal>
   );

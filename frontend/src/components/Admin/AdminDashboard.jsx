@@ -57,6 +57,7 @@
  * - /dashboard?tab=newsletter     → Newsletter (DashNewsletter) [ADMIN ONLY]
  * - /dashboard?tab=announcement   → Announcements (DashAnnouncement) [ADMIN ONLY]
  * - /dashboard?tab=services       → Services (DashServices) [ADMIN ONLY]
+ * - /dashboard?tab=aboutus        → About Us (DashAboutUs) [ADMIN ONLY]
  * - /dashboard?tab=my-students    → My Students (MyStudents) [INSTRUCTOR ONLY]
  * - /dashboard?tab=my-earnings    → My Earnings (MyEarnings) [INSTRUCTOR ONLY]
  * 
@@ -89,6 +90,7 @@ import DashComments from './Comments/DashComments';
 import DashNewsletter from './DashNewsletter';
 import DashAnnouncement from './DashAnnouncement';
 import DashServices from './Services/DashServices';
+import DashAboutUs from './DashAboutUs';
 
 // Instructor Only
 import MyStudents from './Courses/MyStudents';
@@ -162,6 +164,7 @@ export default function AdminDashboard() {
         {tab === 'newsletter' && <DashNewsletter />}
         {tab === 'announcement' && <DashAnnouncement />}
         {tab === 'services' && <DashServices />}
+        {tab === 'aboutus' && <DashAboutUs />}
       </div>
     </div>
   );

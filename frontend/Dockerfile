@@ -12,7 +12,8 @@ WORKDIR /app
 # Install dependencies first (layer caching)
 # This layer is only re-run when package*.json changes
 COPY package*.json ./
-RUN npm ci --prefer-offline --no-audit --no-fund
+RUN npm config set fetch-timeout 60000 && npm config set fetch-retry-mintimeout 20000 && npm config set fetch-retry-maxtimeout 120000 && npm config set fetch-retries 5
+RUN npm ci --prefer-offline --no-audit --no-fund || npm ci --prefer-offline --no-audit --no-fund
 
 # Copy source and build
 COPY . .

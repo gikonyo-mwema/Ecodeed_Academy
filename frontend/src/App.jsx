@@ -60,6 +60,8 @@ import UserCourses from './components/UserCourses';
 // Admin Components
 import { CreateCourse } from './components/Admin/Courses/CreateCourse';
 import { EditCourse } from './components/Admin/Courses/EditCourse';
+import { CreateService } from './components/Admin/Services/CreateService';
+import { EditService } from './components/Admin/Services/EditService';
 import DashServices from './components/Admin/Services/DashServices'; 
 
 /**
@@ -116,6 +118,8 @@ export default function App() {
             <Route path='/create-post' element={<PostEditorPage />} />
             <Route path='/update-post/:postId' element={<PostEditorPage />} />
             <Route path='/dashboard/services' element={<DashServices />} />
+            <Route path='/create-service' element={<CreateService />} />
+            <Route path='/edit-service/:serviceId' element={<EditService />} />
             <Route path='/create-course' element={<CreateCourse />} />
             <Route path='/edit-course/:courseId' element={<EditCourse />} />
           </Route>

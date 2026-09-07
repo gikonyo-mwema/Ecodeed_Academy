@@ -42,6 +42,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { 
   Table, 
   Button, 
@@ -57,13 +58,13 @@ import {
 } from 'react-icons/hi';
 
 // Import existing components
-import ServiceFormModal from './modals/ServiceFormModal';
 import { useServices } from './hooks/useServices';
 import { sanitizeServicePayload } from '../../../utils/serviceSanitizer';
 import { useServiceForm } from './hooks/useServiceForm';
 
 export default function DashServicesTable() {
   const { currentUser } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   
   // Services hook
   const {
@@ -78,10 +79,8 @@ export default function DashServicesTable() {
   } = useServices();
 
   // Local state
-  const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentService, setCurrentService] = useState(null);
-  const [editMode, setEditMode] = useState(false);
 
   // Default form data to prevent undefined in form components
   const defaultFormData = {
@@ -156,18 +155,11 @@ export default function DashServicesTable() {
 
   // Event handlers
   const handleAddClick = () => {
-    resetForm();
-    setCurrentService(null);
-    setEditMode(false);
-    setShowFormModal(true);
+    navigate('/create-service');
   };
 
   const handleEditClick = (service) => {
-    const normalizedData = normalizeServiceForForm(service);
-    setFormData(normalizedData);
-    setCurrentService(service);
-    setEditMode(true);
-    setShowFormModal(true);
+    navigate(`/edit-service/${service.id}`);
   };
 
   // Get unique categories from services
@@ -331,70 +323,16 @@ export default function DashServicesTable() {
         )}
       </div>
 
-      {/* Service Form Modal */}
-      <ServiceFormModal
-        show={showFormModal}
-        onClose={() => setShowFormModal(false)}
-        service={currentService}
-        editMode={editMode}
-        currentUser={currentUser}
-        onSubmit={async (serviceData) => {
-          try {
-            const sanitizedData = sanitizeServicePayload(serviceData);
-            
-            if (editMode && currentService) {
-              await updateService(currentService.id, sanitizedData);
-              showAlert('Service updated successfully', 'success');
-            } else {
-              await createService(sanitizedData);
-              showAlert('Service created successfully', 'success');
-            }
-            
-            setShowFormModal(false);
-            fetchServices();
-          } catch (error) {
-            console.error('Form submit error:', error);
-            showAlert(
-              editMode ? 'Failed to update service' : 'Failed to create service',
-              'failure'
-            );
-          }
-        }}
-        formData={formData}
-        errors={errors}
-        isValid={isValid}
-        updateFormData={updateFormData}
-        categories={categories}
-        formHandlers={{
-          handleChange,
-          handleProcessStepChange,
-          addProcessStep,
-          removeProcessStep,
-          setFormData,
-          handleExampleChange,
-          addExample,
-          removeExample,
-          handleProjectTypeChange,
-          addProjectType,
-          removeProjectType,
-          handleBenefitChange,
-          addBenefit,
-          removeBenefit,
-          handleFeatureChange,
-          addFeature,
-          removeFeature
-        }}
-      />
-
       {/* Delete Confirmation Modal */}
       <Modal
         show={showDeleteModal}
         size="md"
         onClose={() => setShowDeleteModal(false)}
         popup
+        className="delete-modal dark:bg-gray-900"
       >
-        <Modal.Header />
-        <Modal.Body>
+        <Modal.Header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700" />
+        <Modal.Body className="bg-white dark:bg-gray-800">
           <div className="text-center">
             <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">

@@ -36,7 +36,8 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         """
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user and request.user.is_admin
+        # Allow write access to admin users (is_admin property) or superusers
+        return request.user and (request.user.is_admin or request.user.is_superuser or request.user.is_staff)
 
 class IsOwnerOrAdmin(permissions.BasePermission):
     """

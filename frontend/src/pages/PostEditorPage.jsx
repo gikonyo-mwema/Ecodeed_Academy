@@ -327,12 +327,10 @@ export default function PostEditorPage() {
       try {
         setLoadingPost(true);
         // showAll=1 so drafts/scheduled posts load in edit mode too
-        const data = await apiFetch(`/api/v1/posts/?postId=${postId}&showAll=1`);
-        const posts = data?.results || data?.posts || data?.data?.posts || [];
+        const data = await apiFetch(`/api/v1/posts/${postId}/?showAll=1`);
         if (cancelled) return;
 
-        if (posts.length > 0) {
-          const post = posts[0];
+        const post = data;
           existingPostId.current = post._id || post.id;
           setFormData({
             title: post.title || '',
@@ -351,9 +349,6 @@ export default function PostEditorPage() {
             og_image: post.og_image || '',
             twitter_image: post.twitter_image || '',
           });
-        } else {
-          setError('Post not found');
-        }
       } catch (err) {
         if (!cancelled) setError(err.message || 'Failed to load post');
       } finally {

@@ -12,10 +12,11 @@ WORKDIR /app
 # package.json contains all dependencies (like requirements.txt for Python)
 COPY package*.json ./
 
-# Install dependencies from package.json
-# This reads package.json and installs all listed dependencies
-# Dependencies are cached in this layer - only re-runs if package.json changes
-RUN npm install
+# Install dependencies using npm ci (clean install)
+# npm ci is more reliable for CI/CD and Docker - uses exact versions from package-lock.json
+# This reads package.json and package-lock.json and installs all listed dependencies
+# Dependencies are cached in this layer - only re-runs if package*.json changes
+RUN npm ci
 
 # Note: node_modules is excluded via .dockerignore for faster builds
 # The volume mount in docker-compose.yml may override this

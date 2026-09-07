@@ -9,7 +9,7 @@ Includes backward-compatible camelCase field aliases.
 """
 
 from rest_framework import serializers
-from .models import Service
+from .models import Service, AboutUs
 
 class ServiceSerializer(serializers.ModelSerializer):
     """
@@ -75,3 +75,26 @@ class ServiceSerializer(serializers.ModelSerializer):
         ret['createdAt'] = ret.get('created_at')
         ret['updatedAt'] = ret.get('updated_at')
         return ret
+
+
+class AboutUsSerializer(serializers.ModelSerializer):
+    """
+    Serializer for About Us page content.
+    
+    Provides API endpoints for viewing and editing the About Us page content.
+    Admin users can update hero section, mission, founder info, values, metrics, and team.
+    """
+    updated_by = serializers.StringRelatedField(read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+    
+    class Meta:
+        model = AboutUs
+        fields = [
+            'id', 'hero_title', 'hero_subtitle', 'hero_image_url',
+            'mission_statement', 'vision_statement',
+            'founder_name', 'founder_bio', 'founder_image_url',
+            'values', 'metrics', 'team_members',
+            'is_published', 'updated_by', 'createdAt', 'updatedAt'
+        ]
+        read_only_fields = ['id', 'createdAt', 'updatedAt', 'updated_by']

@@ -54,8 +54,8 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Service
-from .serializers import ServiceSerializer
+from .models import Service, AboutUs
+from .serializers import ServiceSerializer, AboutUsSerializer
 from users.permissions import IsAdminOrReadOnly
 
 class ServiceViewSet(viewsets.ModelViewSet):
@@ -128,4 +128,68 @@ class ServiceViewSet(viewsets.ModelViewSet):
         """
         service = get_object_or_404(self.queryset, slug=slug)
         serializer = self.get_serializer(service)
+        return Response(serializer.data)
+
+
+from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateAPIView
+
+class AboutUsViewSet(viewsets.ModelViewSet):
+    """
+    About Us page content management API.
+    
+    Provides single endpoint for retrieving and updating the About Us page content.
+    Admin users can edit: hero section, mission, founder info, values, metrics, team.
+    
+    Endpoints:
+      GET    /api/v1/aboutus/       - Get About Us content (public)
+      PUT    /api/v1/aboutus/1/     - Update About Us (admin only)
+      PATCH  /api/v1/aboutus/1/     - Partial update (admin only)
+    
+    Permissions:
+      - Public: GET (read-only)
+      - Admin: GET, PUT, PATCH
+    """
+    
+    queryset = AboutUs.objects.all()
+    serializer_class = AboutUsSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    basename = 'aboutus'
+    
+    def get_queryset(self):
+        """Always return the single About Us object"""
+        return AboutUs.objects.filter(id=1)
+    
+    def get_object(self):
+        """Get or create default About Us content"""
+        obj, _ = AboutUs.get_or_create_default()
+        self.check_object_permissions(self.request, obj)
+        return obj
+    
+    def list(self, request, *args, **kwargs):
+        """Get About Us content as singleton"""
+        obj = self.get_object()
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        """Retrieve single About Us content"""
+        obj = self.get_object()
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data)
+    
+    def update(self, request, pk=None, *args, **kwargs):
+        """Update About Us content (admin only)"""
+        obj = self.get_object()
+        serializer = self.get_serializer(obj, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(updated_by=request.user)
+        return Response(serializer.data)
+    
+    def partial_update(self, request, pk=None, *args, **kwargs):
+        """Partial update About Us content (admin only)"""
+        obj = self.get_object()
+        serializer = self.get_serializer(obj, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(updated_by=request.user)
         return Response(serializer.data)

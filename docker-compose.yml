@@ -3,6 +3,8 @@
 # Redis and Celery run inside the backend container via start.sh
 # Environment variables are loaded from .env file
 
+version: '3.3'
+
 services:
   # ===========================================
   # Django Backend Service

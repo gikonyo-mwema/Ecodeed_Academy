@@ -39,6 +39,9 @@ Service (Main offering)
 
 from django.db import models
 from django.utils.text import slugify
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Service(models.Model):
     """
@@ -133,3 +136,136 @@ class Service(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class AboutUs(models.Model):
+    """
+    About Us Page Content Model
+    
+    Stores all editable content for the About Us page including:
+    - Hero section (title, subtitle, image)
+    - Mission and vision statements
+    - Founder information
+    - Core values
+    - Impact metrics
+    - Team members
+    """
+    
+    # Hero Section
+    hero_title = models.TextField(
+        default="Transforming Compliance Into Competitive Advantage",
+        help_text="Main headline for the About Us page"
+    )
+    hero_subtitle = models.TextField(
+        default="Where environmental responsibility meets business success",
+        help_text="Subtitle/tagline for hero section"
+    )
+    hero_image_url = models.URLField(
+        default="https://res.cloudinary.com/dcrubaesi/image/upload/v1737333837/ECODEED_COLORED_LOGO_wj2yy8.png",
+        blank=True,
+        help_text="URL to hero section image or logo"
+    )
+    
+    # Mission & Vision
+    mission_statement = models.TextField(
+        default="At Ecodeed Consulting, we empower businesses, governments, and communities to navigate environmental compliance, implement sustainable practices, and future-proof their operations—so no dream is lost due to regulatory hurdles.",
+        help_text="Company mission statement"
+    )
+    vision_statement = models.TextField(
+        default="",
+        blank=True,
+        help_text="Company vision statement"
+    )
+    
+    # Founder Section
+    founder_name = models.CharField(
+        max_length=255,
+        default="Miriam Mukami Mwema",
+        help_text="Founder's full name"
+    )
+    founder_bio = models.TextField(
+        default="",
+        blank=True,
+        help_text="Founder's biography and background"
+    )
+    founder_image_url = models.URLField(
+        default="",
+        blank=True,
+        help_text="URL to founder's profile photo"
+    )
+    
+    # Core Values (JSON)
+    values = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Array of core values with name and description"
+    )
+    
+    # Impact Metrics (JSON)
+    metrics = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Array of impact metrics (clients served, projects, results)"
+    )
+    
+    # Team Members (JSON)
+    team_members = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Array of team member profiles"
+    )
+    
+    # Status
+    is_published = models.BooleanField(
+        default=True,
+        help_text="Whether this version is live"
+    )
+    
+    # Audit Trail
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="aboutus_updates"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "About Us Page"
+        verbose_name_plural = "About Us Pages"
+        ordering = ['-updated_at']
+    
+    def __str__(self):
+        return f"About Us ({self.updated_at.strftime('%Y-%m-%d %H:%M')})"
+    
+    @classmethod
+    def get_published(cls):
+        """Get the published About Us content"""
+        return cls.objects.filter(is_published=True).first() or cls.objects.first()
+    
+    @classmethod
+    def get_or_create_default(cls):
+        """Get existing or create default About Us content"""
+        about_us, created = cls.objects.get_or_create(
+            id=1,
+            defaults={
+                'hero_title': 'Transforming Compliance Into Competitive Advantage',
+                'hero_subtitle': 'Where environmental responsibility meets business success',
+                'mission_statement': 'At Ecodeed Consulting, we empower businesses, governments, and communities to navigate environmental compliance, implement sustainable practices, and future-proof their operations—so no dream is lost due to regulatory hurdles.',
+                'founder_name': 'Miriam Mukami Mwema',
+                'values': [
+                    {'name': 'Integrity', 'description': 'Honest and transparent in all dealings'},
+                    {'name': 'Innovation', 'description': 'Constantly seeking new solutions'},
+                    {'name': 'Impact', 'description': 'Committed to meaningful change'},
+                    {'name': 'Excellence', 'description': 'Striving for the highest standards'},
+                ],
+                'metrics': [
+                    {'label': 'Clients Served', 'value': '500+'},
+                    {'label': 'Projects Completed', 'value': '1000+'},
+                    {'label': 'Years of Experience', 'value': '15+'},
+                ],
+            }
+        )
+        return about_us, created

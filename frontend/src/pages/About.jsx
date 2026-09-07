@@ -1,45 +1,97 @@
 /**
  * About Page — Company mission, values, founder story, and team
  *
+ * DYNAMIC VERSION: Fetches content from /api/v1/aboutus/ backend endpoint
+ * Displays all content from database instead of hardcoded values.
+ *
  * @component
  * @purpose
  *   Showcases Ecodeed Consulting's mission, vision, leadership, and impact.
- *   Tells the company story with founder background and organizational values.
+ *   All content is managed by admins through the dashboard and displayed here.
  * @features
- *   - Hero section with company mission statement
+ *   - Dynamic hero section from backend
  *   - Mission & vision statements
  *   - Founder biography with photo
- *   - Core values (Integrity, Innovation, Impact, Excellence)
- *   - Impact statistics (clients, projects, results)
- *   - Leadership team showcase
- *   - Call-to-action to services/courses
+ *   - Core values (from database)
+ *   - Impact metrics (from database)
+ *   - Leadership team showcase (from database)
+ *   - Loading and error states
  * @sections
  *   - Hero: Headline and logo
  *   - Mission: Company values and purpose
  *   - Founder: Story and background
  *   - Values: Core principles visualization
  *   - Impact: Key metrics and achievements
- *   - Team: Leadership profiles (if available)
+ *   - Team: Leadership profiles
  * @styles
  *   - Brand colors: Blue (#051836), Green (#008037), Yellow (#F8BF0F)
  *   - Responsive grid layout
  *   - Dark mode support
  * @example
- *   <Route path=\"/about\" element={<About />} />
- * @version 2.0.0
+ *   <Route path="/about" element={<About />} />
+ * @version 3.0.0
  * @author Gikonyo Mwema
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaHandshake, FaLightbulb, FaShieldAlt, FaChartLine } from "react-icons/fa";
+import { Spinner, Alert } from "flowbite-react";
+import { HiExclamation } from "react-icons/hi";
+import { apiFetch } from "../utils/api";
 
 /**
- * About - Company information and mission page
+ * About - Dynamic company information page fetched from API
  * 
- * @returns {JSX.Element} About page with company information
+ * @returns {JSX.Element} About page with content from /api/v1/aboutus/
  */
 export default function About() {
+  const [aboutData, setAboutData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch About Us content from API
+  useEffect(() => {
+    const fetchAboutUs = async () => {
+      try {
+        const data = await apiFetch("/api/v1/aboutus/");
+        if (Array.isArray(data)) {
+          setAboutData(data[0]);
+        } else {
+          setAboutData(data);
+        }
+      } catch (err) {
+        console.error("Error fetching About Us:", err);
+        setError("Failed to load About Us content");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAboutUs();
+  }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
+        <Spinner size="xl" />
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !aboutData) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center p-4">
+        <Alert color="failure" className="max-w-2xl">
+          <HiExclamation className="mr-2" /> {error || "Failed to load content"}
+        </Alert>
+      </div>
+    );
+  }
+
+  const { hero_title, hero_subtitle, hero_image_url, mission_statement, vision_statement, founder_name, founder_bio, founder_image_url, values = [], metrics = [], team_members = [] } = aboutData;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
@@ -48,10 +100,10 @@ export default function About() {
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="md:w-1/2 space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-                Transforming Compliance Into Competitive Advantage
+                {hero_title}
               </h1>
               <p className="text-xl text-brand-yellow">
-                Where environmental responsibility meets business success
+                {hero_subtitle}
               </p>
               <Link
                 to="/contact"
@@ -62,7 +114,7 @@ export default function About() {
             </div>
             <div className="md:w-1/2 flex justify-center">
               <img
-                src="https://res.cloudinary.com/dcrubaesi/image/upload/v1737333837/ECODEED_COLORED_LOGO_wj2yy8.png"
+                src={hero_image_url}
                 alt="Ecodeed Logo"
                 className="w-64 h-64 object-contain"
               />
@@ -80,302 +132,183 @@ export default function About() {
             </h2>
             <div className="w-24 h-1 bg-brand-green mx-auto mb-6"></div>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              At Ecodeed Consulting, we empower businesses, governments, and communities to navigate
-              environmental compliance, implement sustainable practices, and future-proof their
-              operations—so no dream is lost due to regulatory hurdles.
+              {mission_statement}
             </p>
+            {vision_statement && (
+              <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-semibold text-brand-blue dark:text-white mb-3">
+                  Our Vision
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                  {vision_statement}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* Founder Section */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="md:w-1/3 flex justify-center">
-              <div className="relative">
-                <img
-                  src="https://res.cloudinary.com/dcrubaesi/image/upload/v1759583146/Mukami_Mwema_profile_1_luizqu.jpg"
-                  alt="Miriam Mukami Mwema"
-                  className="w-64 h-64 rounded-full object-cover border-4 border-brand-yellow shadow-lg"
-                />
-                <div className="absolute -bottom-4 -right-4 bg-brand-green text-white px-4 py-2 rounded-lg shadow-md">
-                  <span className="font-bold">CEO & Founder</span>
+      {founder_name && (
+        <section className="py-16 bg-gray-50 dark:bg-gray-900">
+          <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
+            <div className="flex flex-col md:flex-row items-center gap-12">
+              <div className="md:w-1/3 flex justify-center">
+                <div className="relative">
+                  <img
+                    src={founder_image_url || "/default-avatar.png"}
+                    alt={founder_name}
+                    className="w-64 h-64 rounded-full object-cover border-4 border-brand-yellow shadow-lg"
+                  />
+                  <div className="absolute -bottom-4 -right-4 bg-brand-green text-white px-4 py-2 rounded-lg shadow-md">
+                    <span className="font-bold">CEO & Founder</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="md:w-2/3">
-              <h2 className="text-3xl font-bold text-brand-blue dark:text-white mb-6">
-                Meet Our Founder: Miriam Mukami Mwema
-              </h2>
-              <div className="w-24 h-1 bg-brand-green mb-6"></div>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Miriam Mukami Mwema is an environmental strategist, sustainability educator, and the
-                driving force behind Ecodeed Consulting. With over{" "}
-                <span className="font-bold">8 years of experience</span> in environmental impact
-                assessments, audits, and regulatory compliance, she has led{" "}
-                <span className="font-bold">100+ projects</span> across Kenya, helping businesses and
-                counties align with environmental laws while fostering sustainable growth.
-              </p>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                A licensed <span className="font-bold">Environmental Impact Assessment & Audit (EIA/EA) Expert</span>,
-                Miriam holds a degree in <span className="font-bold">Environmental Science</span> from Maseno University
-                and is trained in <span className="font-bold">ISO 14001:2015 Environmental Management Systems</span>.
-              </p>
-              <div className="mt-6">
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center text-brand-green hover:text-green-700 font-medium transition duration-300"
-                >
-                  Get in touch
-                  <svg
-                    className="w-4 h-4 ml-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+              <div className="md:w-2/3">
+                <h2 className="text-3xl font-bold text-brand-blue dark:text-white mb-6">
+                  Meet Our Founder: {founder_name}
+                </h2>
+                <div className="w-24 h-1 bg-brand-green mb-6"></div>
+                <div className="text-gray-600 dark:text-gray-300 text-base leading-relaxed whitespace-pre-wrap">
+                  {founder_bio}
+                </div>
+                <div className="mt-6">
+                  <Link
+                    to="/contact"
+                    className="inline-flex items-center text-brand-green hover:text-green-700 font-medium transition duration-300"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
+                    Get in touch
+                    <svg
+                      className="w-4 h-4 ml-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Core Values Section */}
+      {values && values.length > 0 && (
+        <section className="py-16 bg-white dark:bg-gray-800">
+          <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-brand-blue dark:text-white mb-4">
+                Our Core Values
+              </h2>
+              <div className="w-24 h-1 bg-brand-green mx-auto mb-6"></div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {values.map((value, index) => (
+                <div key={index} className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                  <h3 className="text-xl font-bold text-brand-blue dark:text-white mb-3">
+                    {value.name}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {value.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Impact Metrics Section */}
+      {metrics && metrics.length > 0 && (
+        <section className="py-16 bg-brand-blue dark:bg-brand-blue/80 text-white">
+          <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">
+                Our Impact
+              </h2>
+              <div className="w-24 h-1 bg-brand-yellow mx-auto"></div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {metrics.map((metric, index) => (
+                <div key={index} className="bg-white/10 dark:bg-white/5 p-8 rounded-lg text-center hover:bg-white/20 dark:hover:bg-white/10 transition duration-300">
+                  <div className="text-4xl font-bold text-brand-yellow mb-2">
+                    {metric.value}
+                  </div>
+                  <p className="text-xl">
+                    {metric.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Team Section */}
+      {team_members && team_members.length > 0 && (
+        <section className="py-16 bg-gray-50 dark:bg-gray-900">
+          <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-brand-blue dark:text-white mb-4">
+                Our Team
+              </h2>
+              <div className="w-24 h-1 bg-brand-green mx-auto mb-6"></div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {team_members.map((member, index) => (
+                <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                  {member.image && (
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-full h-64 object-cover"
                     />
-                  </svg>
-                </Link>
-              </div>
+                  )}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-brand-blue dark:text-white mb-1">
+                      {member.name}
+                    </h3>
+                    <p className="text-brand-green font-semibold mb-3">
+                      {member.role}
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {member.bio}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Founding Story */}
-      <section className="py-16 bg-white dark:bg-gray-800">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-brand-blue dark:text-white mb-4">
-              The Day Everything Changed
-            </h2>
-            <div className="w-24 h-1 bg-brand-green mx-auto mb-6"></div>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              How one woman's pain became our purpose
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            {/* Story Timeline */}
-            <div className="relative">
-              {/* Timeline line */}
-              <div className="absolute left-4 md:left-1/2 h-full w-0.5 bg-brand-green transform -translate-x-1/2"></div>
-
-              {/* Timeline items */}
-              <div className="space-y-12">
-                {/* Timeline Item 1 */}
-                <div className="relative flex md:justify-center">
-                  <div className="md:w-1/2 md:pr-8 md:text-right">
-                    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md relative">
-                      <div className="absolute -left-2 md:left-auto md:-right-2 top-6 w-4 h-4 bg-brand-green rounded-full border-4 border-white dark:border-gray-800"></div>
-                      <h3 className="text-xl font-bold text-brand-blue dark:text-white mb-2">The Beginning</h3>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        Eight years ago, I was working at NEMA as an assistant, dreaming of climbing the ranks to become a permanent environmental officer.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="hidden md:block md:w-1/2"></div>
-                </div>
-
-                {/* Timeline Item 2 */}
-                <div className="relative flex md:justify-center">
-                  <div className="hidden md:block md:w-1/2 md:pr-8"></div>
-                  <div className="md:w-1/2 md:pl-8">
-                    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md relative">
-                      <div className="absolute -left-2 md:left-auto md:-right-2 top-6 w-4 h-4 bg-brand-green rounded-full border-4 border-white dark:border-gray-800"></div>
-                      <h3 className="text-xl font-bold text-brand-blue dark:text-white mb-2">The Fateful Encounter</h3>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        A distressed woman entered our offices - sweating, anxious, and ultimately breaking down in tears. Her petrol station business was being shut down for NEMA non-compliance.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Timeline Item 3 */}
-                <div className="relative flex md:justify-center">
-                  <div className="md:w-1/2 md:pr-8 md:text-right">
-                    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md relative">
-                      <div className="absolute -left-2 md:left-auto md:-right-2 top-6 w-4 h-4 bg-brand-green rounded-full border-4 border-white dark:border-gray-800"></div>
-                      <h3 className="text-xl font-bold text-brand-blue dark:text-white mb-2">The Harsh Reality</h3>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        She had operated for three years without knowing she needed approvals. Now she faced fines, prosecution, and the loss of her life's investment.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="hidden md:block md:w-1/2"></div>
-                </div>
-
-                {/* Timeline Item 4 */}
-                <div className="relative flex md:justify-center">
-                  <div className="hidden md:block md:w-1/2 md:pr-8"></div>
-                  <div className="md:w-1/2 md:pl-8">
-                    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md relative">
-                      <div className="absolute -left-2 md:left-auto md:-right-2 top-6 w-4 h-4 bg-brand-green rounded-full border-4 border-white dark:border-gray-800"></div>
-                      <h3 className="text-xl font-bold text-brand-blue dark:text-white mb-2">The Turning Point</h3>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        "That woman's pain became my purpose. I couldn't stand by while dreams were crushed by lack of knowledge or guidance."
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Full Story */}
-            <div className="mt-16 bg-brand-blue/10 dark:bg-gray-700 p-8 rounded-lg shadow-md">
-              <div className="prose dark:prose-invert max-w-none">
-                <h3 className="text-2xl font-bold text-brand-blue dark:text-white mb-6">The Full Story</h3>
-                
-                <p className="mb-4">
-                  Eight years ago in 2018, I was an ordinary young woman living simply, trying to find my place in the world. After finishing school, I was lucky enough to land a job at NEMA as an assistant. I loved it. I admired the officers — sharp, confident, committed. I dreamed of one day becoming a permanent and pensionable environmental officer. Maybe rise through the ranks — county director, regional head, and if I worked super hard, maybe even reach the Deputy Director General. That was the vision... until one day changed everything.
-                </p>
-                
-                <div className="my-6 p-4 border-l-4 border-brand-green bg-white dark:bg-gray-800">
-                  <p className="italic text-gray-700 dark:text-gray-300">
-                    "I remember it like it was yesterday. I was in the office, buried in work, when a man and a woman walked in. They asked to see the County Director of Environment, but she was in a meeting with the Environmental Officers. Some non-compliant facilities had been raided earlier on and prosecution preparations was underway."
-                  </p>
-                </div>
-                
-                <p className="mb-4">
-                  I asked them to wait. They looked exhausted — the woman was sweating, visibly anxious. I assumed it was just the stairs. But then, she broke down. She cried. Right there in front of me.
-                </p>
-                
-                <p className="mb-4">
-                  I was confused. I asked if she needed water, help, anything. She asked for the washroom. I escorted her out and she decided what she needed was to catch a breath not the wash room... I didn't know how to console her, I didn't know what to tell her... So we stood outside, in silence. I had no words. She just breathed. I just stood there as she calmed herself down.
-                </p>
-                
-                <p className="mb-4">
-                  Eventually, she gathered herself and we went back to the office. After a short while the meeting was done and they could now talk to the director. As the officers came from the Director's office one of them said: "Haiya, mumefika? Mnataka kumwona Mkubwa?" I asked quietly what was going on. And then I heard her story.
-                </p>
-                
-                <div className="my-6 bg-brand-yellow/20 dark:bg-brand-yellow/10 p-6 rounded-lg">
-                  <h4 className="font-bold text-brand-blue dark:text-white mb-2">The Tragic Reality</h4>
-                  <p>
-                    She had leased a small petrol station business from a former operator three years ago. She invested and built it up for three years but either without knowing she needed NEMA approvals or she had ignored them. So the facility had been red marked as non-compliant. Now she was supposed to pay the License fee for the past years and penalties accumulated...the business had been shut down and a prosecution case to answer...
-                  </p>
-                </div>
-                
-                <p className="mb-4">
-                  I got my nose in this woman's case and I understood that after many months of court case, she lost, paid the penalties. She was still paying off the bank loan and with all the extra penalties, she lost her business. Time. Sweat. Money. Apparently she didn't know she needed NEMA approval and for three years, she operated the petrol station without them.
-                </p>
-                
-                <p className="mb-4 font-semibold">
-                  What happened to all the sweat, blood, tears, time she had invested? What about her children and husband? What about her family? What about the young men & women she had employed? What about her employee's families? What about her money? What about her reputation? What about her confidence? What about her dreams? What about her vision...?
-                </p>
-                
-                <div className="my-6 p-4 border-l-4 border-brand-red bg-white dark:bg-gray-800">
-                  <p className="italic text-gray-700 dark:text-gray-300">
-                    "That woman's pain became my purpose. I was heartbroken for her, I was furious for her, I was mad for her. That triggered my entrepreneur journey."
-                  </p>
-                </div>
-                
-                <p className="mb-4">
-                  I couldn't just sit back anymore and hope to climb some government ladder while people lost everything due to lack of information, lack of someone to answer their questions, lack of a guiding hand. Due to ignorance, confusion, or bureaucracy.
-                </p>
-                
-                <h4 className="text-xl font-bold text-brand-blue dark:text-white mt-8 mb-4">The Birth of Ecodeed</h4>
-                
-                <p className="mb-4">
-                  So I made a decision. To protect dreamers like her. To stand in the gap for investors. To educate businesses, institutions, county governments and communities on environment issues. To help business owners build empires that last, legally, ethically, and sustainably. That was the day Ecodeed Consultancy Company was born.
-                </p>
-                
-                <div className="my-6 bg-brand-green/10 dark:bg-brand-green/20 p-6 rounded-lg">
-                  <h4 className="font-bold text-brand-blue dark:text-white mb-2">Our Core Promise</h4>
-                  <p>
-                    We exist to ensure that no dream dies because of environmental non-compliance. Not under my watch. Not in my time. I decided to dedicate my life, my knowledge, my sweat, my blood, my tears to ensuring investors see their dreams and visions come true.
-                  </p>
-                </div>
-                
-                <p className="mb-4">
-                  I want to see the joy and smile an investor has after the transformation of their dream from paper to real life. I dedicated myself to ensuring what happened to that lady will never happen to any other investor under my watch. No other dream will be killed by NEMA because of non-compliance.
-                </p>
-                
-                <p className="mb-4 font-semibold">
-                  Every Client we work with, Every approval we guide, Every business we support — is a vow to that woman. A vow to all the people like her who don't even know how close they are to losing everything... until it's too late.
-                </p>
-                
-                <p className="text-xl mt-8 font-bold text-brand-blue dark:text-white">
-                  At Ecodeed, we don't just help businesses comply — we help them thrive.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Our Values */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-brand-blue dark:text-white mb-4">
-              What We Stand For
-            </h2>
-            <div className="w-24 h-1 bg-brand-green mx-auto mb-6"></div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: <FaShieldAlt className="w-10 h-10 text-brand-green" />,
-                title: "Expertise",
-                description: "Licensed, experienced, and constantly updating our knowledge"
-              },
-              {
-                icon: <FaChartLine className="w-10 h-10 text-brand-green" />,
-                title: "Impact",
-                description: "From County Environmental Action Plans to ESG audits, we turn policies into action"
-              },
-              {
-                icon: <FaHandshake className="w-10 h-10 text-brand-green" />,
-                title: "Empathy",
-                description: "We listen, educate, and walk with clients every step of the way"
-              },
-              {
-                icon: <FaLightbulb className="w-10 h-10 text-brand-green" />,
-                title: "Advocacy",
-                description: "Pushing for sustainable development in both grassroots projects and national policy"
-              }
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 text-center"
-              >
-                <div className="flex justify-center mb-4">{item.icon}</div>
-                <h3 className="text-xl font-bold text-brand-blue dark:text-white mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
-      <section className="py-16 bg-brand-blue text-white">
+      <section className="py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl text-center">
-          <h2 className="text-3xl font-bold mb-6">Join the Movement</h2>
-          <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Whether you're a <span className="font-bold">business owner</span>,{" "}
-            <span className="font-bold">government agency</span>, or{" "}
-            <span className="font-bold">community leader</span>, Ecodeed is your partner in{" "}
-            <span className="font-bold">building ethically</span>,{" "}
-            <span className="font-bold">operating sustainably</span>, and{" "}
-            <span className="font-bold">thriving legally</span>.
+          <h2 className="text-3xl font-bold text-brand-blue dark:text-white mb-6">
+            Ready to Transform Your Business?
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            Let us help you navigate compliance and build a sustainable future for your organization.
           </p>
-          <div className="space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/contact"
               className="inline-block bg-brand-green hover:bg-green-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300"
             >
-              Contact Us Today
+              Get in Touch
             </Link>
             <Link
               to="/services"

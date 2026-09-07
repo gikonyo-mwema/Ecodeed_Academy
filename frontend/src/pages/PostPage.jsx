@@ -325,7 +325,7 @@ export default function PostPage() {
         </div>
 
         {/* ============ CONTENT AREA (with optional TOC sidebar) ============ */}
-        <div className="flex gap-8 max-w-5xl mx-auto w-full px-4 mt-8 relative">
+        <div className="flex gap-8 max-w-4xl mx-auto w-full px-4 mt-8 relative">
           {/* Table of Contents — sticky sidebar on large screens */}
           <aside className="hidden lg:block w-56 flex-shrink-0">
             <div className="sticky top-20">
@@ -334,7 +334,7 @@ export default function PostPage() {
           </aside>
 
           {/* Main content */}
-          <div className="flex-1 min-w-0 max-w-4xl">
+          <div className="flex-1 min-w-0">
             {/* ============ HERO IMAGE — inside content column so it aligns with text ============ */}
             {post.image && (
               <figure className="mb-8">
@@ -392,7 +392,7 @@ export default function PostPage() {
 
         {/* ============ RECOMMENDED ARTICLES ============ */}
         {recommendedPosts.length > 0 && (
-          <footer className="w-full max-w-6xl mx-auto px-4 mt-12 mb-10">
+          <footer className="w-full max-w-4xl mx-auto px-4 mt-12 mb-10">
             <h2 className="text-xl font-semibold text-center mb-6">
               Recommended Articles
             </h2>
