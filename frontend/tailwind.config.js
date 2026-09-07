@@ -24,9 +24,15 @@ export default {
           '0%': { transform: 'translateY(-100%)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
+        'gradient-shift': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
       },
       animation: {
         'slide-down': 'slide-down 0.3s ease-out',
+        'gradient-shift': 'gradient-shift 6s ease infinite',
       },
       typography: (theme) => ({
         DEFAULT: {
