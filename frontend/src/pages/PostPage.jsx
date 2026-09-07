@@ -255,7 +255,7 @@ export default function PostPage() {
       <article className="flex flex-col max-w-6xl mx-auto min-h-screen bg-white dark:bg-brand-blue dark:text-gray-100">
 
         {/* ============ HEADER ============ */}
-        <header className="px-4 pt-10 max-w-4xl mx-auto w-full text-center">
+        <header className="px-4 pt-10 max-w-6xl mx-auto w-full text-center">
           {/* Category pill */}
           <Link
             to={`/search?category=${encodeURIComponent(categorySlug)}`}
@@ -320,61 +320,51 @@ export default function PostPage() {
         </header>
 
         {/* ============ TOOLBAR (share) ============ */}
-        <div className="flex items-center justify-end px-4 py-3 border-b border-gray-200 dark:border-gray-700 mx-auto w-full max-w-4xl text-sm">
+        <div className="flex items-center justify-end px-4 py-3 border-b border-gray-200 dark:border-gray-700 mx-auto w-full max-w-6xl text-sm">
           <SocialShareButtons post={post} />
         </div>
 
-        {/* ============ CONTENT AREA (with optional TOC sidebar) ============ */}
-        <div className="flex gap-8 max-w-4xl mx-auto w-full px-4 mt-8 relative">
-          {/* Table of Contents — sticky sidebar on large screens */}
-          <aside className="hidden lg:block w-56 flex-shrink-0">
-            <div className="sticky top-20">
-              <TableOfContents contentHtml={post.content} />
-            </div>
-          </aside>
-
-          {/* Main content */}
-          <div className="flex-1 min-w-0">
-            {/* ============ HERO IMAGE — inside content column so it aligns with text ============ */}
-            {post.image && (
-              <figure className="mb-8">
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full max-h-[480px] object-cover rounded-xl shadow-lg"
-                  loading="eager"
-                  decoding="async"
-                  onError={(e) => { e.target.src = getDefaultImageUrl(); }}
-                />
-              </figure>
-            )}
-
-            {/* Mobile TOC (collapsible, above content) */}
-            <div className="lg:hidden mb-6">
-              <TableOfContents contentHtml={post.content} />
-            </div>
-
-            <PostContent html={post.content} />
-
-            {/* Tags */}
-            {post.tags_detail && post.tags_detail.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
-                {post.tags_detail.map((tag) => (
-                  <Link
-                    key={tag.id || tag.slug}
-                    to={`/search?tag=${tag.slug}`}
-                    className="px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-teal-100 dark:hover:bg-teal-900 transition-colors"
-                  >
-                    #{tag.name}
-                  </Link>
-                ))}
-              </div>
-            )}
+        {/* ============ CONTENT AREA ============ */}
+        <div className="max-w-6xl mx-auto w-full px-4 mt-8 relative">
+          {/* TOC (full-width, collapsible on mobile) */}
+          <div className="mb-8">
+            <TableOfContents contentHtml={post.content} />
           </div>
+
+          {/* ============ HERO IMAGE ============ */}
+          {post.image && (
+            <figure className="mb-8 flex justify-center">
+              <img
+                src={post.image}
+                alt={post.title}
+                className="max-w-3xl w-full rounded-xl shadow-lg"
+                loading="eager"
+                decoding="async"
+                onError={(e) => { e.target.src = getDefaultImageUrl(); }}
+              />
+            </figure>
+          )}
+
+          <PostContent html={post.content} />
+
+          {/* Tags */}
+          {post.tags_detail && post.tags_detail.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
+              {post.tags_detail.map((tag) => (
+                <Link
+                  key={tag.id || tag.slug}
+                  to={`/search?tag=${tag.slug}`}
+                  className="px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-teal-100 dark:hover:bg-teal-900 transition-colors"
+                >
+                  #{tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ============ CALL TO ACTION ============ */}
-        <div className="max-w-4xl mx-auto w-full px-4 mt-12">
+        <div className="max-w-6xl mx-auto w-full px-4 mt-12">
           <CallToAction
             type="services"
             title="Need Professional Environmental Consulting?"
@@ -386,13 +376,13 @@ export default function PostPage() {
         </div>
 
         {/* ============ COMMENTS ============ */}
-        <div className="max-w-4xl mx-auto w-full px-4">
+        <div className="max-w-6xl mx-auto w-full px-4">
           <CommentSection postId={post._id} />
         </div>
 
         {/* ============ RECOMMENDED ARTICLES ============ */}
         {recommendedPosts.length > 0 && (
-          <footer className="w-full max-w-4xl mx-auto px-4 mt-12 mb-10">
+          <footer className="w-full max-w-6xl mx-auto px-4 mt-12 mb-10">
             <h2 className="text-xl font-semibold text-center mb-6">
               Recommended Articles
             </h2>
