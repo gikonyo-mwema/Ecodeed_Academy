@@ -161,15 +161,15 @@ export default function Header() {
 
   return (
     <header className={`sticky top-0 z-50 ${theme === "light" ? "bg-white shadow-md" : "bg-brand-blue"}`}>
-      {/* Dismissable Announcement Bar */}
+      {/* Dismissable Announcement Bar - Animated with Gradient Text */}
       {showBanner && announcement && (
-        <div className="bg-brand-green py-2 px-4 text-center hidden sm:flex items-center justify-center gap-3 animate-slide-down">
-          <p className="text-sm text-white">
+        <div className={`py-0.5 px-4 text-center hidden sm:flex items-center justify-center gap-2 animate-slide-down ${theme === "light" ? "bg-brand-yellow/5" : "bg-brand-green/10"} border-b ${theme === "light" ? "border-brand-yellow/20" : "border-brand-green/20"}`}>
+          <p className="text-xs font-semibold bg-gradient-to-r from-brand-green via-brand-yellow to-brand-green bg-clip-text text-transparent animate-gradient-shift" style={{ backgroundSize: '200% 200%' }}>
             {announcement.text}{" "}
             {(announcement.link_url || announcement.linkUrl) && (
               <Link
                 to={announcement.link_url || announcement.linkUrl}
-                className="text-brand-yellow hover:underline font-semibold ml-1"
+                className="text-brand-green dark:text-brand-yellow hover:underline font-bold inline-block ml-1"
               >
                 {announcement.link_label || announcement.linkLabel || 'Learn more →'}
               </Link>
@@ -177,10 +177,10 @@ export default function Header() {
           </p>
           <button
             onClick={dismissBanner}
-            className="text-white/70 hover:text-white transition-colors p-0.5 rounded-full hover:bg-white/10"
+            className="text-brand-green/60 dark:text-brand-yellow/60 hover:text-brand-green dark:hover:text-brand-yellow transition-colors p-0.5 rounded-full hover:bg-brand-green/10 flex-shrink-0"
             aria-label="Dismiss announcement"
           >
-            <HiX className="w-4 h-4" />
+            <HiX className="w-3 h-3" />
           </button>
         </div>
       )}
