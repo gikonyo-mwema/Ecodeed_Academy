@@ -215,7 +215,7 @@ export default function CommentSection({ postId }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full p-3">
+    <div className="w-full p-4 lg:p-6">
       {currentUser ? (
         <div className="flex items-center gap-1 my-5 text-gray-500 text-sm">
           <p>Signed in as:</p>
@@ -242,25 +242,25 @@ export default function CommentSection({ postId }) {
       {currentUser && (
         <form
           onSubmit={handleSubmit}
-          className="border border-teal-500 rounded-md p-3"
+          className="border-2 border-brand-green/30 dark:border-brand-green/50 rounded-lg p-5 bg-white dark:bg-brand-blue/30 shadow-sm hover:shadow-md transition-shadow"
         >
           <Textarea
             placeholder="Add a comment..."
-            rows="3"
+            rows="5"
             maxLength="200"
             onChange={(e) => setComment(e.target.value)}
             value={comment}
+            className="resize-none"
           />
           <div className="flex justify-between items-center mt-5">
-            <p className="text-gray-500 text-xs">
+            <p className="text-gray-500 dark:text-gray-400 text-xs">
               {200 - comment.length} characters remaining
             </p>
             <Button 
-              outline 
-              className="border-brand-green text-brand-green hover:bg-brand-green hover:text-white focus:ring-4 focus:ring-brand-green/25 transition-all duration-300 shadow-sm hover:shadow-md font-medium" 
+              className="!bg-brand-green !hover:bg-brand-green/90 !text-white !border-0 !font-semibold !shadow-md hover:!shadow-lg !transition-all !duration-200 !px-6" 
               type="submit"
             >
-              Submit
+              Post Comment
             </Button>
           </div>
           {commentError && (
@@ -271,27 +271,29 @@ export default function CommentSection({ postId }) {
         </form>
       )}
       {comments.length === 0 ? (
-        <p className="text-sm my-5">No comments yet!</p>
+        <p className="text-sm my-8 text-gray-500 dark:text-gray-400 text-center py-8">No comments yet!</p>
       ) : (
         <>
-          <div className="text-sm my-5 flex items-center gap-1">
-            <p>Comments</p>
-            <div className="border border-gray-400 py-1 px-2 rounded-sm">
-              <p>{comments.length}</p>
+          <div className="text-sm my-8 flex items-center gap-3">
+            <p className="font-semibold text-gray-700 dark:text-gray-200">Comments</p>
+            <div className="border-2 border-brand-green/30 dark:border-brand-green/50 py-2 px-3 rounded-full bg-brand-green/10 dark:bg-brand-green/20">
+              <p className="font-bold text-brand-green dark:text-brand-yellow">{comments.length}</p>
             </div>
           </div>
-          {comments.map((comment) => (
-            <Comment
-              key={comment._id}
-              comment={comment}
-              onLike={handleLike}
-              onEdit={handleEdit}
-              onDelete={(commentId) => {
-                setShowModal(true);
-                setCommentToDelete(commentId);
-              }}
-            />
-          ))}
+          <div className="space-y-5 max-h-96 lg:max-h-none overflow-y-auto lg:overflow-visible">
+            {comments.map((comment) => (
+              <Comment
+                key={comment._id}
+                comment={comment}
+                onLike={handleLike}
+                onEdit={handleEdit}
+                onDelete={(commentId) => {
+                  setShowModal(true);
+                  setCommentToDelete(commentId);
+                }}
+              />
+            ))}
+          </div>
         </>
       )}
       <Modal
