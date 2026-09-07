@@ -232,12 +232,12 @@ export default function Courses() {
         {/* Subtle decorative circles instead of grid */}
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-brand-yellow/20 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="relative max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6">
+        <div className="relative max-w-7xl mx-auto py-8 md:py-12 px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-3">
             Expand Your Environmental
             <span className="block text-brand-yellow drop-shadow-md">Knowledge</span>
           </h1>
-          <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto mb-10">
+          <p className="text-sm md:text-base text-white/90 max-w-3xl mx-auto">
             Discover our carefully curated courses designed to advance your environmental expertise
           </p>
         </div>
